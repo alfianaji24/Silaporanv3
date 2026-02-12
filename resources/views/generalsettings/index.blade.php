@@ -215,7 +215,7 @@
                         <h6 class="mb-0">Pengaturan Email</h6>
                     </div>
                     <div class="card-body">
-                        <x-input-with-icon-label label="Domain Email (contoh: adamadifa.site)" name="domain_email" icon="ti ti-mail" :value="$setting->domain_email ?? ''" />
+                        <x-input-with-icon-label label="Domain Email (contoh: puskesmasbalaraja.com)" name="domain_email" icon="ti ti-mail" :value="$setting->domain_email ?? ''" />
                     </div>
                 </div>
             </div>
@@ -260,7 +260,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="theme_color_1" class="form-label" style="font-weight: 600">Warna Utama (Sidebar/Primary)</label>
-                                    <input type="color" class="form-control form-control-color w-100" id="theme_color_1" name="theme_color_1" 
+                                    <input type="color" class="form-control form-control-color w-100" id="theme_color_1" name="theme_color_1"
                                         value="{{ $setting->theme_color_1 ?? '#053b22' }}" title="Choose your color">
                                 </div>
                             </div>
@@ -413,7 +413,7 @@
                         <div id="group_wa_input" style="display: none;">
                             <x-input-with-icon-label label="ID Group WA" name="id_group_wa" icon="ti ti-users" :value="$setting->id_group_wa ?? ''" />
                         </div>
-                        <x-input-with-icon-label label="Domain WA Gateway (contoh: https://wa.adamadifa.site)" name="domain_wa_gateway"
+                        <x-input-with-icon-label label="Domain WA Gateway (contoh: https://wa.puskesmasbalaraja.com)" name="domain_wa_gateway"
                             icon="ti ti-message" :value="$setting->domain_wa_gateway ?? ''" />
                         <x-input-with-icon-label label="WA API Key" name="wa_api_key" icon="ti ti-brand-whatsapp" :value="$setting->wa_api_key ?? ''" />
                     </div>
@@ -457,7 +457,7 @@
                             </div>
                             <small class="text-muted" id="progressText">Menggenerate icons...</small>
                         </div>
-                        
+
                         <!-- Generated Icons Preview -->
                         <div id="iconsPreview" class="mt-3" style="display: none;">
                             <h6>Generated:</h6>

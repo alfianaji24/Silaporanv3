@@ -155,7 +155,9 @@ class PresensiController extends Controller
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                     if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                         try {
-                            $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen masuk pada " . $jam_presensi . " Semagat Bekerja";
+                            $tanggal_indonesia = DateToIndo($tanggal_sekarang);
+                            $waktu_presensi = date('H:i', strtotime($scan));
+                            $message = "Terima Kasih, " . $karyawan->nama_karyawan . " Absen Masuk Anda Pada " . $tanggal_indonesia . " pukul " . $waktu_presensi . " Telah berhasil tercatat. Selamat Berkerja!";
                             $this->sendwa($karyawan->no_hp, $message);
                         } catch (\Exception $waException) {
                             // Log error pengiriman WA tapi tidak mempengaruhi response sukses
@@ -194,7 +196,9 @@ class PresensiController extends Controller
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                 if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                     try {
-                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                        $tanggal_indonesia = DateToIndo($tanggal_sekarang);
+                        $waktu_presensi = date('H:i', strtotime($scan));
+                        $message = "Terima Kasih, " . $karyawan->nama_karyawan . " Absen Pulang Anda Pada " . $tanggal_indonesia . " pukul " . $waktu_presensi . " Telah berhasil tercatat. Sampai Jumpa Besok!";
                         $this->sendwa($karyawan->no_hp, $message);
                     } catch (\Exception $waException) {
                         // Log error pengiriman WA tapi tidak mempengaruhi response sukses
