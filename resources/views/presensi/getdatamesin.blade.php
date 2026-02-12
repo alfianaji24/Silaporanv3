@@ -1,5 +1,14 @@
 <div class="row">
     <div class="col-12">
+        @if (empty($filtered_array))
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+                <i class="ti ti-fingerprint-off fs-1 me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Tidak Ada Data Finger</h6>
+                    <p class="mb-0">Tidak ditemukan data scan finger pada tanggal yang dipilih. Pastikan karyawan telah melakukan scan di mesin fingerprint atau periksa koneksi mesin.</p>
+                </div>
+            </div>
+        @else
         <table class="table">
             <thead class="table-dark">
                 <tr>
@@ -46,6 +55,7 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 </div>
 

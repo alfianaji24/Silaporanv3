@@ -32,7 +32,7 @@
                                 <div class="col-lg-2 col-sm-12 col-md-12">
                                     <select name="status_aktif" class="form-select" id="status_aktif">
                                         <option value="">Semua Status</option>
-                                        <option value="1" {{ Request('status_aktif') === '1' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="1" {{ Request('status_aktif', '1') === '1' ? 'selected' : '' }}>Aktif</option>
                                         <option value="0" {{ Request('status_aktif') === '0' ? 'selected' : '' }}>Non Aktif</option>
                                     </select>
                                 </div>

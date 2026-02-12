@@ -78,8 +78,10 @@ class KaryawanController extends Controller
             $query->where('nama_karyawan', 'like', '%' . $request->nama_karyawan . '%');
         }
 
-        // Filter status aktif/non aktif
-        if ($request->has('status_aktif') && $request->status_aktif !== '') {
+        // Filter status aktif/non aktif - default Aktif saat pertama buka
+        if (!$request->has('status_aktif')) {
+            $query->where('karyawan.status_aktif_karyawan', 1);
+        } elseif ($request->status_aktif !== '') {
             $query->where('karyawan.status_aktif_karyawan', $request->status_aktif);
         }
 

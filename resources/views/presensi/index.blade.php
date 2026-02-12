@@ -151,7 +151,9 @@
                                                                 <span class="d-block text-primary small fw-bold">{{ $d->nama_jam_kerja }}</span>
                                                                 {{ date('H:i', strtotime($d->jam_masuk)) }} - {{ date('H:i', strtotime($d->jam_pulang)) }}
                                                             @else
-                                                                -
+                                                                <span class="badge bg-warning text-dark" title="Karyawan belum memiliki jadwal kerja. Silakan hubungi HRD untuk mengatur jadwal.">
+                                                                    <i class="ti ti-alert-triangle me-1"></i> Tidak Ada Jadwal
+                                                                </span>
                                                             @endif
                                                         </span>
                                                     </div>

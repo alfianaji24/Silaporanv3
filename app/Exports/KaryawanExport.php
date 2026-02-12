@@ -37,7 +37,10 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             $query->where('karyawan.kode_dept', $this->filters['kode_dept']);
         }
 
-        if (isset($this->filters['status_aktif']) && $this->filters['status_aktif'] !== '') {
+        // Default Aktif jika status_aktif tidak diset (sesuai halaman index)
+        if (!isset($this->filters['status_aktif'])) {
+            $query->where('karyawan.status_aktif_karyawan', 1);
+        } elseif ($this->filters['status_aktif'] !== '') {
             $query->where('karyawan.status_aktif_karyawan', $this->filters['status_aktif']);
         }
 

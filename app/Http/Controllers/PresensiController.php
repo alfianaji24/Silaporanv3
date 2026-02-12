@@ -94,6 +94,9 @@ class PresensiController extends Controller
         $query->leftjoinSub($presensi, 'presensi', function ($join) {
             $join->on('karyawan.nik', '=', 'presensi.nik');
         });
+
+        // Hanya tampilkan karyawan aktif (kolom char(1): '1' = aktif)
+        $query->where('karyawan.status_aktif_karyawan', '1');
         
         // Filter berdasarkan akses cabang dan departemen jika bukan super admin
         if (!$user->isSuperAdmin()) {
@@ -707,11 +710,11 @@ class PresensiController extends Controller
         $result = curl_exec($ch);
         curl_close($ch);
         $res = json_decode($result);
-        $datamesin1 = $res->data;
+        $datamesin1 = $res && isset($res->data) ? $res->data : [];
 
-        $filtered_array = array_filter($datamesin1, function ($obj) use ($specific_value) {
-            return $obj->pin == $specific_value;
-        });
+        $filtered_array = is_array($datamesin1) ? array_filter($datamesin1, function ($obj) use ($specific_value) {
+            return isset($obj->pin) && $obj->pin == $specific_value;
+        }) : [];
 
 
         //Mesin 2
