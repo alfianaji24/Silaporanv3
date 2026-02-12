@@ -97,8 +97,8 @@
                                                     </span>
                                                     <span class="fw-bold text-dark">{{ $d->nama_karyawan }}</span>
                                                     <span class="text-muted" style="font-size: 0.85rem;"><i class="ti ti-id me-1"></i>{{ $d->nik_show ?? $d->nik }}</span>
-                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-building me-1"></i>{{ $d->kode_dept }}</span>
-                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-map-pin me-1"></i>{{ $d->kode_cabang }}</span>
+                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-building me-1"></i>{{ $d->nama_dept }}</span>
+                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-map-pin me-1"></i>{{ $d->nama_cabang }}</span>
                                                 </div>
                                                 
                                                 <div class="d-flex align-items-center gap-2">

@@ -46,11 +46,13 @@ class PresensiController extends Controller
             $nik = $karyawan->nik;
         }
 
+        // Gunakan waktu dari mesin ($scan) sebagai acuan
         $tanggal_sekarang   = date("Y-m-d", strtotime($scan));
         $jam_sekarang = date("H:i", strtotime($scan));
-        $tanggal_kemarin = date("Y-m-d", strtotime("-1 days"));
-
-        $tanggal_besok = date("Y-m-d", strtotime("+1 days"));
+        // Hitung kemarin & besok berdasarkan tanggal scan,
+        // agar lintas hari tetap konsisten meskipun data lama baru masuk
+        $tanggal_kemarin = date("Y-m-d", strtotime($scan . " -1 days"));
+        $tanggal_besok   = date("Y-m-d", strtotime($scan . " +1 days"));
 
         //Cek Presensi Kemarin
         $presensi_kemarin = Presensi::where('nik', $karyawan->nik)
@@ -59,10 +61,18 @@ class PresensiController extends Controller
             ->where('tanggal', $tanggal_kemarin)->first();
 
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
+        $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
 
-        //Jika Presensi Kemarin Status Lintas Hari nya 1 Makan Tanggal Presensi Sekarang adalah Tanggal Kemarin
+        // Jika kemarin lintas hari, secara default tanggal presensi ikut tanggal kemarin
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
-        $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
+        $tanggal_pulang   = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
+
+        // Jika sudah lewat batas presensi lintas hari,
+        // maka tanggal aktif digeser +1 (ke tanggal hari ini)
+        if ($lintas_hari == 1 && $jam_sekarang > $batas_presensi_lintashari) {
+            $tanggal_presensi = $tanggal_sekarang;
+            $tanggal_pulang   = $tanggal_besok;
+        }
 
 
         $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
@@ -99,10 +109,9 @@ class PresensiController extends Controller
                     ->where('kode_cabang', $karyawan->kode_cabang)
                     ->where('hari', $namahari)->first();
             }
-            // Jika Jam Kerja Harian Kosong
-            if ($jamkerja == null) {
-                $jamkerja = Jamkerja::where('kode_jam_kerja', 'JK01')->first();
-            }
+            // Jika Semua Pengecekan Jam Kerja Kosong
+            // Maka biarkan $jamkerja tetap null, supaya presensi TIDAK bisa disimpan
+            // dan mengembalikan response "Jam Kerja Tidak Ditemukan" di bawah.
         }
 
         //Cek Presensi
