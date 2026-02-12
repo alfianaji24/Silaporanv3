@@ -100,6 +100,9 @@ class TrackingKunjunganController extends Controller
             $query->where('kunjungan.nik', $nik);
         }
 
+        // Hanya tampilkan kunjungan karyawan aktif
+        $query->where('karyawan.status_aktif_karyawan', 1);
+
         $kunjungans = $query->orderBy('kunjungan.created_at', 'asc')
             ->get();
 
@@ -236,7 +239,8 @@ class TrackingKunjunganController extends Controller
      */
     private function getKaryawansByAccess($user)
     {
-        $query = Karyawan::query();
+        $query = Karyawan::query()
+            ->where('status_aktif_karyawan', 1);
         
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();

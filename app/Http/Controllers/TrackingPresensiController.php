@@ -77,6 +77,7 @@ class TrackingPresensiController extends Controller
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->where('presensi.tanggal', $tanggal)
+            ->where('karyawan.status_aktif_karyawan', 1)
             ->whereNotNull('presensi.lokasi_in')
             ->where('presensi.lokasi_in', '!=', '');
 

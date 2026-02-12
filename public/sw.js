@@ -1,6 +1,6 @@
 
 
-// Service Worker untuk E-Presensi GPS V2
+// Service Worker untuk Silaporan V3
 // TIDAK akan cache file apapun - semua data selalu fresh dari network
 // FIX: Tidak mengintervensi navigation request (HTML) untuk mencegah blank page
 

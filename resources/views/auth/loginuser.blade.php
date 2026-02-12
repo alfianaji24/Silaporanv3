@@ -8,10 +8,10 @@
     <title>SILAPORAN | Puskesmas Balaraja</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="E-Presensi GPS V2">
+    <meta name="application-name" content="Silaporan V3">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="E-Presensi">
+    <meta name="apple-mobile-web-app-title" content="Silaporan V3">
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -94,7 +94,7 @@
                             @else
                                 <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="easyclass" />
                             @endif
-                            <h4>GAWE V3</h4>
+                            <h4>SILAPORAN V3</h4>
                         </div>
 
                         <div class="heading">
@@ -139,10 +139,10 @@
 
                             <input type="submit" value="Sign In" class="sign-btn" />
 
-                            <p class="text">
+                            <!-- <p class="text">
                                 Forgotten your password or you login datails?
                                 <a href="#">Get help</a> signing in
-                            </p>
+                            </p> -->
 
                         </div>
                     </form>

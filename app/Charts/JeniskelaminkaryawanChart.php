@@ -20,6 +20,7 @@ class JeniskelaminkaryawanChart
         // Ambil jumlah karyawan berdasarkan jenis_kelamin (L, P)
 
         $query = Karyawan::query();
+        $query->where('status_aktif_karyawan', 1);
         $query->select('jenis_kelamin', DB::raw('count(*) as total'));
         $query->groupBy('jenis_kelamin');
         

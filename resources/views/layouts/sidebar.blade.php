@@ -12,7 +12,7 @@
                  @endif
              </span>
              <span class="app-brand-text demo menu-text fw-bold d-flex flex-column ms-2" style="letter-spacing: 1px; color: #fff;">
-                 <span style="font-size: 18px;">GAWE</span>
+                 <span style="font-size: 18px;">SILAPORAN</span>
                  <small class="mt-1" style="font-size: 11px; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.7);">
                      Your Workforce, Simplified
                  </small>
@@ -309,7 +309,14 @@
                  </a>
              </li>
          @endif
-        @if (auth()->user()->hasRole(['super admin']))
+        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
+                'generalsetting.index',
+                'denda.index',
+                'harilibur.index',
+                'jamkerjabydept.index',
+                'jamkerja.index',
+                'approvalfeature.index',
+            ]))
             <li
                 class="menu-item {{ request()->is(['harilibur', 'harilibur/*', 'jamkerjabydept', 'jamkerjabydept/*', 'generalsetting', 'denda', 'jamkerja', 'jamkerja/*','approvalfeature','approvalfeature/*']) ? 'open' : '' }}">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -317,39 +324,57 @@
                     <div>Konfigurasi</div>
                 </a>
                 <ul class="menu-sub">
-                    <li class="menu-item {{ request()->is(['generalsetting', 'generalsetting/*']) ? 'active' : '' }}">
+                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('generalsetting.index'))
+                    <li
+                        class="menu-item {{ request()->is(['generalsetting', 'generalsetting/*']) ? 'active' : '' }}">
                         <a href="{{ route('generalsetting.index') }}" class="menu-link">
                             <div>General Setting</div>
                         </a>
                     </li>
+                    @endif
                     @if ($general_setting->denda)
-                        <li class="menu-item {{ request()->is(['denda', 'denda/*']) ? 'active' : '' }}">
+                        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('denda.index'))
+                        <li
+                            class="menu-item {{ request()->is(['denda', 'denda/*']) ? 'active' : '' }}">
                             <a href="{{ route('denda.index') }}" class="menu-link">
                                 <div>Denda</div>
                             </a>
                         </li>
+                        @endif
                     @endif
 
-                    <li class="menu-item {{ request()->is(['harilibur', 'harilibur/*']) ? 'active' : '' }}">
+                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('harilibur.index'))
+                    <li
+                        class="menu-item {{ request()->is(['harilibur', 'harilibur/*']) ? 'active' : '' }}">
                         <a href="{{ route('harilibur.index') }}" class="menu-link">
                             <div>Hari Libur</div>
                         </a>
                     </li>
-                    <li class="menu-item {{ request()->is(['jamkerjabydept', 'jamkerjabydept/*']) ? 'active' : '' }}">
+                    @endif
+                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerjabydept.index'))
+                    <li
+                        class="menu-item {{ request()->is(['jamkerjabydept', 'jamkerjabydept/*']) ? 'active' : '' }}">
                         <a href="{{ route('jamkerjabydept.index') }}" class="menu-link">
                             <div>Jam Kerja Departemen</div>
                         </a>
                     </li>
-                    <li class="menu-item {{ request()->is(['jamkerja', 'jamkerja/*']) ? 'active' : '' }}">
+                    @endif
+                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerja.index'))
+                    <li
+                        class="menu-item {{ request()->is(['jamkerja', 'jamkerja/*']) ? 'active' : '' }}">
                         <a href="{{ route('jamkerja.index') }}" class="menu-link">
                             <div>Jam Kerja</div>
                         </a>
                     </li>
-                    <li class="menu-item {{ request()->is(['approvalfeature', 'approvalfeature/*']) ? 'active' : '' }}">
+                    @endif
+                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('approvalfeature.index'))
+                    <li
+                        class="menu-item {{ request()->is(['approvalfeature', 'approvalfeature/*']) ? 'active' : '' }}">
                         <a href="{{ route('approvalfeature.index') }}" class="menu-link">
                             <div>Approval Features</div>
                         </a>
                     </li>
+                    @endif
                 </ul>
             </li>
         @endif
@@ -377,7 +402,14 @@
                  </ul>
              </li>
          @endif
-         @if (auth()->user()->hasRole(['super admin']))
+        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
+                'users.index',
+                'roles.index',
+                'permissions.index',
+                'permissiongroups.index',
+                'bersihkanfoto.index',
+                'resetdata.index',
+            ]))
              <li
                  class="menu-item {{ request()->is(['roles', 'roles/*', 'permissiongroups', 'permissiongroups/*', 'permissions', 'permissions/*', 'users', 'users/*', 'bersihkanfoto', 'bersihkanfoto/*', 'resetdata', 'resetdata/*']) ? 'open' : '' }} ">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -385,26 +417,38 @@
                      <div>Utilities</div>
                  </a>
                  <ul class="menu-sub">
-                     <li class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
+                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('users.index'))
+                     <li
+                         class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
                          <a href="{{ route('users.index') }}" class="menu-link">
                              <div>User</div>
                          </a>
                      </li>
-                     <li class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
+                     @endif
+                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('roles.index'))
+                     <li
+                         class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
                          <a href="{{ route('roles.index') }}" class="menu-link">
                              <div>Role</div>
                          </a>
                      </li>
-                     <li class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}"">
+                     @endif
+                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissions.index'))
+                     <li
+                         class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}"">
                          <a href="{{ route('permissions.index') }}" class="menu-link">
                              <div>Permission</div>
                          </a>
                      </li>
-                     <li class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
+                     @endif
+                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissiongroups.index'))
+                     <li
+                         class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
                          <a href="{{ route('permissiongroups.index') }}" class="menu-link">
                              <div>Group Permission</div>
                          </a>
                      </li>
+                     @endif
                      @can('bersihkanfoto.index')
                          <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
                              <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
@@ -412,15 +456,18 @@
                              </a>
                          </li>
                      @endcan
-                     <li class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
+                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('resetdata.index'))
+                     <li
+                         class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
                          <a href="{{ route('resetdata.index') }}" class="menu-link">
                              <div>Reset Data</div>
                          </a>
                      </li>
+                     @endif
                  </ul>
              </li>
          @endif
-         @if (auth()->user()->hasRole(['super admin']))
+        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('wagateway.index'))
              <li class="menu-item {{ request()->is(['wagateway', 'wagateway/*']) ? 'active' : '' }}">
                  <a href="{{ route('wagateway.index') }}" class="menu-link">
                      <i class="menu-icon tf-icons ti ti-brand-whatsapp"></i>

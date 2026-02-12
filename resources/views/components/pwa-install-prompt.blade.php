@@ -5,7 +5,7 @@
             <i class="bx bx-mobile-alt"></i>
         </div>
         <div class="pwa-install-text">
-            <h4>Install E-Presensi</h4>
+            <h4>Install Silaporan</h4>
             <p>Install aplikasi untuk presensi yang lebih mudah dan cepat!</p>
         </div>
         <div class="pwa-install-actions">
@@ -329,7 +329,7 @@
             } else if (isAndroid) {
                 message = 'Untuk menginstall aplikasi di Android:\n1. Tap menu browser (3 titik)\n2. Pilih "Add to Home screen"\n3. Tap "Add"';
             } else {
-                message = 'Untuk menginstall aplikasi:\n1. Klik menu browser\n2. Pilih "Install E-Presensi"\n3. Klik "Install"';
+                message = 'Untuk menginstall aplikasi:\n1. Klik menu browser\n2. Pilih "Install Silaporan"\n3. Klik "Install"';
             }
 
             alert(message);

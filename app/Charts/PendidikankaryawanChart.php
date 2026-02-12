@@ -20,6 +20,7 @@ class PendidikankaryawanChart
         // Ambil jumlah karyawan berdasarkan pendidikan_terakhir
 
         $query = Karyawan::query();
+        $query->where('status_aktif_karyawan', 1);
         $query->select('pendidikan_terakhir', DB::raw('count(*) as total'));
         $query->groupBy('pendidikan_terakhir');
         

@@ -25,15 +25,22 @@
                     <div class="col-12">
                         <form action="{{ route('karyawan.index') }}">
                             <div class="row g-2">
-                                <div class="col-lg-5 col-sm-12 col-md-12">
+                                <div class="col-lg-4 col-sm-12 col-md-12">
                                     <x-input-with-icon label="Cari Nama Karyawan" value="{{ Request('nama_karyawan') }}" name="nama_karyawan"
                                         icon="ti ti-search" hideLabel />
                                 </div>
-                                <div class="col-lg-3 col-sm-12 col-md-12">
+                                <div class="col-lg-2 col-sm-12 col-md-12">
+                                    <select name="status_aktif" class="form-select" id="status_aktif">
+                                        <option value="">Semua Status</option>
+                                        <option value="1" {{ Request('status_aktif') === '1' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="0" {{ Request('status_aktif') === '0' ? 'selected' : '' }}>Non Aktif</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-sm-12 col-md-12">
                                     <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
                                         selected="{{ Request('kode_cabang') }}" hideLabel />
                                 </div>
-                                <div class="col-lg-3 col-sm-12 col-md-12">
+                                <div class="col-lg-2 col-sm-12 col-md-12">
                                     <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                         selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />
                                 </div>

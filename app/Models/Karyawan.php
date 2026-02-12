@@ -20,6 +20,7 @@ class Karyawan extends Model
     function getRekapstatuskaryawan($request = null)
     {
         $query = Karyawan::query();
+        $query->where('status_aktif_karyawan', 1);
         $query->select(
             DB::raw("SUM(IF(status_karyawan = 'K', 1, 0)) as jml_kontrak"),
             DB::raw("SUM(IF(status_karyawan = 'T', 1, 0)) as jml_tetap"),

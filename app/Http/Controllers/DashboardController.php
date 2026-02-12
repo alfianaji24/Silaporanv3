@@ -196,6 +196,7 @@ class DashboardController extends Controller
 
             $queryPresensi = Presensi::query();
             $queryPresensi->join('karyawan', 'presensi.nik', '=', 'karyawan.nik');
+            $queryPresensi->where('karyawan.status_aktif_karyawan', 1);
             $queryPresensi->select(
                 DB::raw("SUM(IF(status='h',1,0)) as hadir"),
                 DB::raw("SUM(IF(status='i',1,0)) as izin"),
@@ -239,7 +240,8 @@ class DashboardController extends Controller
             $data['departemen'] = $user->getDepartemen();
             $data['cabang'] = $user->getCabang();
             $today = Carbon::now(config('app.timezone'));
-            $data['birthday'] = Karyawan::whereMonth('tanggal_lahir', $today->month)->whereDay('tanggal_lahir', $today->day)
+            $data['birthday'] = Karyawan::where('status_aktif_karyawan', 1)
+                ->whereMonth('tanggal_lahir', $today->month)->whereDay('tanggal_lahir', $today->day)
                 ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
                 ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
                 ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
@@ -297,7 +299,8 @@ class DashboardController extends Controller
         try {
             // Ambil karyawan yang ulang tahun hari ini (menggunakan timezone aplikasi)
             $today = Carbon::now(config('app.timezone'));
-            $birthday = Karyawan::whereMonth('tanggal_lahir', $today->month)
+            $birthday = Karyawan::where('status_aktif_karyawan', 1)
+                ->whereMonth('tanggal_lahir', $today->month)
                 ->whereDay('tanggal_lahir', $today->day)
                 ->when($request->kode_cabang, function ($query) use ($request) {
                     $query->where('kode_cabang', $request->kode_cabang);

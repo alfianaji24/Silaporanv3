@@ -20,6 +20,7 @@ class StatusKaryawanChart
         // Ambil jumlah karyawan berdasarkan status (T, K, O)
 
         $query = Karyawan::query();
+        $query->where('status_aktif_karyawan', 1);
         $query->select('status_karyawan', DB::raw('count(*) as total'));
         $query->groupBy('status_karyawan');
         
