@@ -16,16 +16,18 @@
                         <form action="{{ route('presensi.index') }}">
                             <div class="row">
                                 <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <x-input-with-icon label="" value="{{ Request('tanggal') }}" name="tanggal" icon="ti ti-calendar"
+                                    <x-input-with-icon label="" value="{{ request('tanggal', $tanggal) }}" name="tanggal" icon="ti ti-calendar"
                                         datepicker="flatpickr-date" placeholder="Tanggal" />
                                 </div>
-                                <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <div class="form-group mb-3">
-                                        <x-select label="" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
-                                            selected="{{ Request('kode_cabang') }}" upperCase="true" select2="select2Kodecabangsearch"
-                                            placeholder="Cabang" />
+                                @if ($cabang->count() > 1)
+                                    <div class="col-lg-3 col-md-12 col-sm-12">
+                                        <div class="form-group mb-3">
+                                            <x-select label="" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
+                                                selected="{{ Request('kode_cabang') }}" upperCase="true" select2="select2Kodecabangsearch"
+                                                placeholder="Cabang" />
+                                        </div>
                                     </div>
-                                </div>
+                                @endif
                                 <div class="col-lg-5 col-md-12 col-sm-12">
                                     <x-input-with-icon label="" value="{{ Request('nama_karyawan') }}" name="nama_karyawan" icon="ti ti-search"
                                         placeholder="Cari Nama Karyawan" />

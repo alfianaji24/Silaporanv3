@@ -133,6 +133,8 @@ class PresensiController extends Controller
         $data['karyawan'] = $karyawan;
         $data['cabang'] = $user->getCabang();
         $data['denda_list'] = Denda::all()->toArray();
+        // Kirim tanggal aktif ke view untuk default filter
+        $data['tanggal'] = $tanggal;
         return view('presensi.index', $data);
     }
     public function create(Request $request)
