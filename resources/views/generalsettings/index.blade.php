@@ -371,7 +371,7 @@
                     </div>
                     <div class="card-body">
                         <x-input-with-icon-label label="Cloud Id" name="cloud_id" icon="ti ti-cloud" :value="$setting->cloud_id ?? ''" />
-                        <x-input-with-icon-label label="API Key (contoh: uxlLxWx36Q4KzaPlbFMCsuCRO7MvXn)" name="api_key" icon="ti ti-key" :value="$setting->api_key ?? ''" />
+                        <x-input-with-icon-label label="API Key" name="api_key" icon="ti ti-key" :value="$setting->api_key ?? ''" />
                     </div>
                 </div>
                 <!-- WA -->
@@ -415,7 +415,7 @@
                         </div>
                         <x-input-with-icon-label label="Domain WA Gateway (contoh: https://wa.puskesmasbalaraja.com)" name="domain_wa_gateway"
                             icon="ti ti-message" :value="$setting->domain_wa_gateway ?? ''" />
-                        <x-input-with-icon-label label="WA API Key" name="wa_api_key" icon="ti ti-brand-whatsapp" :value="$setting->wa_api_key ?? ''" />
+                        <x-input-with-icon-label label="WA API Key (contoh: uxlLxWx36Q4KzaPlbFMCsuCRO7MvXn)" name="wa_api_key" icon="ti ti-brand-whatsapp" :value="$setting->wa_api_key ?? ''" />
                     </div>
                 </div>
 
