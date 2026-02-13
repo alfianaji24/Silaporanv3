@@ -639,6 +639,54 @@ Route::get('/createrolepermission', function () {
     }
 });
 
+Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admin as it doesn't exist. Permissions handle access control.
+    Route::group(['middleware' => ['permission:kpi.period.index']], function () {
+        Route::get('/kpi/periods', [KpiPeriodController::class, 'index'])->name('kpi.periods.index');
+        Route::get('/kpi/periods/create', [KpiPeriodController::class, 'create'])->name('kpi.periods.create');
+        Route::post('/kpi/periods/store', [KpiPeriodController::class, 'store'])->name('kpi.periods.store');
+        Route::post('/kpi/periods/edit', [KpiPeriodController::class, 'edit'])->name('kpi.periods.edit');
+        Route::post('/kpi/periods/{id}/update', [KpiPeriodController::class, 'update'])->name('kpi.periods.update');
+        Route::delete('/kpi/periods/{id}/delete', [KpiPeriodController::class, 'destroy'])->name('kpi.periods.delete');
+    });
+
+    Route::group(['middleware' => ['permission:kpi.indicator.index']], function () {
+        Route::get('/kpi/indicators', [KpiIndicatorController::class, 'index'])->name('kpi.indicators.index');
+        Route::get('/kpi/indicators/create', [KpiIndicatorController::class, 'create'])->name('kpi.indicators.create');
+        Route::post('/kpi/indicators/store', [KpiIndicatorController::class, 'store'])->name('kpi.indicators.store');
+        Route::get('/kpi/indicators/{id}/edit', [KpiIndicatorController::class, 'edit'])->name('kpi.indicators.edit');
+        Route::put('/kpi/indicators/{id}/update', [KpiIndicatorController::class, 'update'])->name('kpi.indicators.update');
+        Route::delete('/kpi/indicators/{id}/delete', [KpiIndicatorController::class, 'destroy'])->name('kpi.indicators.destroy');
+    });
+
+    Route::group(['middleware' => ['permission:kpi.employee.index']], function () {
+        Route::get('/kpi/transactions', [KpiEmployeeController::class, 'index'])->name('kpi.transactions.index');
+        Route::get('/kpi/transactions/{nik}/settarget', [KpiEmployeeController::class, 'settarget'])->name('kpi.transactions.settarget');
+        Route::post('/kpi/transactions/store', [KpiEmployeeController::class, 'store'])->name('kpi.transactions.store');
+        Route::get('/kpi/transactions/{id}/show', [KpiEmployeeController::class, 'show'])->name('kpi.transactions.show');
+        Route::post('/kpi/transactions/{id}/update', [KpiEmployeeController::class, 'update'])->name('kpi.transactions.update');
+        Route::post('/kpi/transactions/{id}/approve', [KpiEmployeeController::class, 'approve'])->name('kpi.transactions.approve');
+        Route::get('/kpi/transactions/{id}/print', [KpiEmployeeController::class, 'print'])->name('kpi.transactions.print');
+        Route::delete('/kpi/transactions/{id}/delete', [KpiEmployeeController::class, 'destroy'])->name('kpi.transactions.delete');
+    });
+
+    Route::get('/kpi/myscore', [KpiEmployeeController::class, 'myScore'])->name('kpi.transactions.myscore');
+});
+    // Ajuan Jadwal Routes
+    Route::group(['middleware' => ['permission:ajuanjadwal.index']], function () {
+        Route::get('/ajuanjadwal', [App\Http\Controllers\AjuanJadwalController::class, 'index'])->name('ajuanjadwal.index');
+    });
+
+    Route::group(['middleware' => ['permission:ajuanjadwal.create']], function () {
+        Route::get('/ajuanjadwal/create', [App\Http\Controllers\AjuanJadwalController::class, 'create'])->name('ajuanjadwal.create');
+        Route::post('/ajuanjadwal/store', [App\Http\Controllers\AjuanJadwalController::class, 'store'])->name('ajuanjadwal.store');
+        Route::delete('/ajuanjadwal/{id}/delete', [App\Http\Controllers\AjuanJadwalController::class, 'destroy'])->name('ajuanjadwal.delete');
+    });
+
+    Route::group(['middleware' => ['permission:ajuanjadwal.approve']], function () {
+        Route::post('/ajuanjadwal/{id}/approve', [App\Http\Controllers\AjuanJadwalController::class, 'approve'])->name('ajuanjadwal.approve');
+        Route::post('/ajuanjadwal/{id}/reject', [App\Http\Controllers\AjuanJadwalController::class, 'reject'])->name('ajuanjadwal.reject');
+        Route::post('/ajuanjadwal/{id}/cancelapprove', [App\Http\Controllers\AjuanJadwalController::class, 'cancelapprove'])->name('ajuanjadwal.cancelapprove');
+    });
 // Route::get('/storage/{path}', function ($path) {
 //     return response()->file(storage_path('app/public/' . $path));
 // })->where('path', '.*');

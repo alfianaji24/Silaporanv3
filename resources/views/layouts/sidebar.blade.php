@@ -298,6 +298,39 @@
                  </a>
              </li>
          @endif
+
+         @if (auth()->user()->hasAnyPermission(['kpi.period.index', 'kpi.indicator.index', 'kpi.employee.index']))
+             <li class="menu-item {{ request()->is(['kpi', 'kpi/*']) ? 'open' : '' }}">
+                 <a href="javascript:void(0);" class="menu-link menu-toggle">
+                     <i class="menu-icon tf-icons ti ti-chart-bar"></i>
+                     <div>Manajemen KPI</div>
+                 </a>
+                 <ul class="menu-sub">
+                     @can('kpi.period.index')
+                         <li class="menu-item {{ request()->is(['kpi/periods', 'kpi/periods/*']) ? 'active' : '' }}">
+                             <a href="{{ route('kpi.periods.index') }}" class="menu-link">
+                                 <div>Periode Penilaian</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('kpi.indicator.index')
+                        <li class="menu-item {{ request()->is(['kpi/indicators', 'kpi/indicators/*']) ? 'active' : '' }}">
+                            <a href="{{ route('kpi.indicators.index') }}" class="menu-link">
+                                <div>Indikator KPI</div>
+                            </a>
+                        </li>
+
+                    @endcan
+                     @can('kpi.employee.index')
+                         <li class="menu-item {{ request()->is(['kpi/transactions', 'kpi/transactions/*']) ? 'active' : '' }}">
+                             <a href="{{ route('kpi.transactions.index') }}" class="menu-link">
+                                 <div>Input Penilaian</div>
+                             </a>
+                         </li>
+                     @endcan
+                 </ul>
+             </li>
+         @endif
          @if (auth()->user()->hasAnyPermission(['lembur.index']))
              <li class="menu-item {{ request()->is(['lembur', 'lembur/*']) ? 'active' : '' }}">
                  <a href="{{ route('lembur.index') }}" class="menu-link">

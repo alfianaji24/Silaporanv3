@@ -101,7 +101,7 @@
             @endcan
             <div class="col-3 mb-1">
                 {{-- Assuming button triggers modal or action --}}
-                <a href="{{route('facerecognition.karyawan.create')}}"> 
+                <a href="{{route('facerecognition.karyawan.create')}}">
                     <div class="card">
                         <div class="card-body text-center" style="padding: 5px 5px !important; line-height:0.8rem">
                              <ion-icon name="scan-outline" style="font-size: 40px; color: var(--color-nav); margin-bottom: 5px;"></ion-icon>
@@ -155,6 +155,19 @@
                             <br>
                             <span style="font-size: 0.8rem; font-weight:500" class="mb-2">
                                 Informasi
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-3 mb-1">
+                <a href="{{ route('kpi.transactions.myscore') }}">
+                    <div class="card">
+                        <div class="card-body text-center" style="padding: 5px 5px !important; line-height:0.8rem">
+                             <ion-icon name="trending-up-outline" style="font-size: 40px; color: var(--color-nav); margin-bottom: 5px;"></ion-icon>
+                            <br>
+                            <span style="font-size: 0.8rem; font-weight:500" class="mb-2">
+                                KPI
                             </span>
                         </div>
                     </div>

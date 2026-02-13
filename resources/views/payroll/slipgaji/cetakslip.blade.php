@@ -8,7 +8,7 @@
     $grandtotal_all_t_istri = 0;
     $grandtotal_all_t_skill = 0;
 
-    //INsentif Umum
+    //Insentif Umum
     $grandtotal_all_iu_masakerja = 0;
     $grandtotal_all_iu_lembur = 0;
     $grandtotal_all_iu_penempatan = 0;

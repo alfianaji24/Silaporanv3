@@ -12,4 +12,9 @@ class Jabatan extends Model
     protected $primaryKey = "kode_jabatan";
     public $incrementing = false;
     protected $guarded = [];
+
+    public function kpi_indicator()
+    {
+        return $this->hasOne(KpiIndicator::class, 'kode_jabatan', 'kode_jabatan');
+    }
 }
