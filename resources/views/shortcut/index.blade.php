@@ -173,6 +173,19 @@
                     </div>
                 </a>
             </div>
+            <div class="col-3 mb-1">
+                <a href="{{ route('ajuanjadwal.index') }}">
+                    <div class="card">
+                        <div class="card-body text-center" style="padding: 5px 5px !important; line-height:0.8rem">
+                             <ion-icon name="calendar-number-outline" style="font-size: 40px; color: var(--color-nav); margin-bottom: 5px;"></ion-icon>
+                            <br>
+                            <span style="font-size: 0.8rem; font-weight:500" class="mb-2">
+                                Ubah Jadwal
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 @endsection

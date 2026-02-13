@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AjuanJadwal;
 use App\Models\Cabang;
 use App\Models\Denda;
 use App\Models\Detailharilibur;
@@ -191,39 +192,51 @@ class PresensiController extends Controller
 
 
         if ($kode_jam_kerja == null) {
-            //Cek Jam Kerja By Date
-            $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                ->where('nik', $karyawan->nik)
+            // PRIORITAS UTAMA: Cek Ajuan Jadwal yang sudah disetujui
+            $ajuan_jadwal = AjuanJadwal::where('nik', $karyawan->nik)
                 ->where('tanggal', $hariini)
+                ->where('status', 'a') // Approved
                 ->first();
 
-            //Jika Tidak Memiliki Jam Kerja By Date
-            if ($jamkerja == null) {
-                //Cek Jam Kerja Grup
-                $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
-                if ($cek_group) {
-                    $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
-                        ->where('tanggal', $hariini)
-                        ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                        ->first();
-                } else {
-                    $jamkerja = null;
-                }
+            if ($ajuan_jadwal) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', $ajuan_jadwal->kode_jam_kerja_tujuan)->first();
+            } else {
+                // Jika tidak ada ajuan, cek prioritas berikutnya
 
+                //Cek Jam Kerja By Date
+                $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                    ->where('nik', $karyawan->nik)
+                    ->where('tanggal', $hariini)
+                    ->first();
+
+                //Jika Tidak Memiliki Jam Kerja By Date
                 if ($jamkerja == null) {
-                    //Cek Jam Kerja harian / Jam Kerja Khusus / Jam Kerja Per Orangannya
-                    $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                        ->where('nik', $karyawan->nik)->where('hari', $namahari)->first();
-                }
+                    //Cek Jam Kerja Grup
+                    $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
+                    if ($cek_group) {
+                        $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
+                            ->where('tanggal', $hariini)
+                            ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                            ->first();
+                    } else {
+                        $jamkerja = null;
+                    }
+
+                    if ($jamkerja == null) {
+                        //Cek Jam Kerja harian / Jam Kerja Khusus / Jam Kerja Per Orangannya
+                        $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                            ->where('nik', $karyawan->nik)->where('hari', $namahari)->first();
+                    }
 
 
-                // Jika Jam Kerja Harian Kosong
-                if ($jamkerja == null) {
-                    $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
-                        ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                        ->where('kode_dept', $kode_dept)
-                        ->where('kode_cabang', $karyawan->kode_cabang)
-                        ->where('hari', $namahari)->first();
+                    // Jika Jam Kerja Harian Kosong
+                    if ($jamkerja == null) {
+                        $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+                            ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                            ->where('kode_dept', $kode_dept)
+                            ->where('kode_cabang', $karyawan->kode_cabang)
+                            ->where('hari', $namahari)->first();
+                    }
                 }
             }
         } else {

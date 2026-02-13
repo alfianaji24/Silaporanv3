@@ -41,5 +41,12 @@
                 </a>
             </li>
         @endcan
+        @can('ajuanjadwal.index')
+            <li class="nav-item" role="presentation">
+                <a href="{{ route('ajuanjadwal.index') }}" class="nav-link {{ request()->is(['ajuanjadwal']) ? 'active' : '' }}">
+                    <i class="tf-icons ti ti-calendar-stats ti-md me-1"></i> Ajuan Jadwal
+                </a>
+            </li>
+        @endcan
     </ul>
 @endif

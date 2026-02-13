@@ -299,6 +299,15 @@
              </li>
          @endif
 
+         @can('ajuanjadwal.index')
+             <li class="menu-item {{ request()->is(['ajuanjadwal', 'ajuanjadwal/*']) ? 'active' : '' }}">
+                 <a href="{{ route('ajuanjadwal.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons ti ti-calendar-stats"></i>
+                     <div>Ajuan Jadwal</div>
+                 </a>
+             </li>
+         @endcan
+         
          @if (auth()->user()->hasAnyPermission(['kpi.period.index', 'kpi.indicator.index', 'kpi.employee.index']))
              <li class="menu-item {{ request()->is(['kpi', 'kpi/*']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">

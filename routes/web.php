@@ -673,7 +673,7 @@ Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admi
     });
 
     Route::get('/kpi/myscore', [KpiEmployeeController::class, 'myScore'])->name('kpi.transactions.myscore');
-});
+    });
     // Ajuan Jadwal Routes
     Route::group(['middleware' => ['permission:ajuanjadwal.index']], function () {
         Route::get('/ajuanjadwal', [App\Http\Controllers\AjuanJadwalController::class, 'index'])->name('ajuanjadwal.index');
