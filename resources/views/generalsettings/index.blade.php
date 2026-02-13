@@ -371,7 +371,7 @@
                     </div>
                     <div class="card-body">
                         <x-input-with-icon-label label="Cloud Id" name="cloud_id" icon="ti ti-cloud" :value="$setting->cloud_id ?? ''" />
-                        <x-input-with-icon-label label="API Key" name="api_key" icon="ti ti-key" :value="$setting->api_key ?? ''" />
+                        <x-input-with-icon-label label="API Key (contoh: uxlLxWx36Q4KzaPlbFMCsuCRO7MvXn)" name="api_key" icon="ti ti-key" :value="$setting->api_key ?? ''" />
                     </div>
                 </div>
                 <!-- WA -->
