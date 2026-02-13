@@ -20,6 +20,8 @@ use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\JamkerjabydeptController;
 use App\Http\Controllers\JamkerjaController;
 use App\Http\Controllers\KontrakController;
+use App\Http\Controllers\KpiEmployeeController;
+use App\Http\Controllers\KpiIndicatorController;
 use App\Http\Controllers\KpiPeriodController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\TrackingKunjunganController;
