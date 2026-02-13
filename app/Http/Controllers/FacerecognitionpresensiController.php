@@ -212,7 +212,7 @@ class FacerecognitionpresensiController extends Controller
                     Storage::put($file, $image_base64);
 
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                    if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
+                    if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
                         try {
                             $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen masuk pada " . $jam_presensi . " Semagat Bekerja";
                             $this->sendwa($karyawan->no_hp, $message);
@@ -261,7 +261,7 @@ class FacerecognitionpresensiController extends Controller
                     Storage::put($file, $image_base64);
 
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                    if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
+                    if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
                         try {
                             $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
                             $this->sendwa($karyawan->no_hp, $message);

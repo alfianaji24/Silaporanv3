@@ -65,12 +65,19 @@ class SendWaMessage implements ShouldQueue
         ]);
         //$penerima = $tujuanNotifikasi == 1 ? $generalsetting->id_group_wa : $this->phoneNumber;
         if (empty($penerima)) {
-            Log::warning('SendWaMessage: Nomor penerima kosong', [
+            $errorMsg = 'SendWaMessage: Nomor penerima kosong. ';
+            if ($tujuanNotifikasi == 1) {
+                $errorMsg .= 'Tujuan notifikasi adalah grup WA, tapi id_group_wa kosong.';
+            } else {
+                $errorMsg .= 'Tujuan notifikasi adalah nomor personal, tapi phoneNumber kosong.';
+            }
+            Log::error($errorMsg, [
                 'tujuanNotifikasi' => $tujuanNotifikasi,
                 'phoneNumber' => $this->phoneNumber,
                 'id_group_wa' => $generalsetting->id_group_wa,
+                'message' => $this->message,
             ]);
-            return;
+            throw new \RuntimeException($errorMsg);
         }
 
         if ($providerWa === 'fe') {
@@ -127,8 +134,14 @@ class SendWaMessage implements ShouldQueue
         $url = rtrim($domain, '/') . '/send-message';
         $sender = Device::where('status', 1)->first();
         if (!$sender) {
-            Log::warning('SendWaMessage: Device sender aktif tidak ditemukan');
-            return;
+            $errorMsg = 'SendWaMessage: Device sender aktif tidak ditemukan. Pastikan ada device dengan status=1 di tabel devices.';
+            Log::error($errorMsg, [
+                'domain' => $domainWaGateway,
+                'provider' => $providerWa,
+                'penerima' => $penerima,
+                'message' => $this->message,
+            ]);
+            throw new \RuntimeException($errorMsg);
         }
 
         $payload = [
@@ -159,7 +172,21 @@ class SendWaMessage implements ShouldQueue
         ]);
 
         if (!$response->successful()) {
-            throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
+            $errorBody = $response->body();
+            $errorMsg = 'SendWaMessage Gateway gagal: HTTP ' . $response->status() . ' - ' . $errorBody;
+            Log::error($errorMsg, [
+                'http_status' => $response->status(),
+                'response_body' => $errorBody,
+                'url' => $url,
+                'payload' => $payload,
+            ]);
+            throw new \RuntimeException($errorMsg);
         }
+        
+        Log::info('SendWaMessage: Pesan berhasil dikirim', [
+            'penerima' => $penerima,
+            'sender' => $sender->number,
+            'response' => $response->json(),
+        ]);
     }
 }

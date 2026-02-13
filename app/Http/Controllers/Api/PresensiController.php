@@ -162,7 +162,7 @@ class PresensiController extends Controller
                         ]);
                     }
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                    if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
+                    if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
                         try {
                             $tanggal_indonesia = DateToIndo($tanggal_sekarang);
                             $waktu_presensi = date('H:i', strtotime($scan));
@@ -203,7 +203,7 @@ class PresensiController extends Controller
                     ]);
                 }
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
+                if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
                     try {
                         $tanggal_indonesia = DateToIndo($tanggal_sekarang);
                         $waktu_presensi = date('H:i', strtotime($scan));
