@@ -56,6 +56,8 @@ class DatabaseSeeder extends Seeder
             KaryawanSetCabangPermissionSeeder::class,
             KontrakKaryawanPermissionSeeder::class,
             Kontrakpermissionseeder::class,
+            Sippermissionseeder::class,
+            SipKaryawanPermissionSeeder::class,
             KunjunganPermissionSeeder::class,
             Laporanpermissionseeder::class,
             LaporanCutiPermissionSeeder::class,

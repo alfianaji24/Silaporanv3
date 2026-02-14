@@ -107,7 +107,7 @@ class KontrakController extends Controller
 
         DB::beginTransaction();
         try {
-            // Buat gaji pokok baru jika ada nominal_gaji
+            // Buat gaji pokok baru jika ada nominal_gaji; jika karyawan sudah punya di Payroll, pakai kode_gaji yang dikirim
             if (!empty($request->nominal_gaji)) {
                 $jumlah_gaji = toNumber($request->nominal_gaji);
                 if ($jumlah_gaji > 0) {
@@ -120,6 +120,9 @@ class KontrakController extends Controller
                     ]);
                     $data['kode_gaji'] = $kode_gaji;
                 }
+            } elseif (!empty($request->kode_gaji)) {
+                // Karyawan sudah punya gaji di Payroll Gaji Pokok, pakai kode_gaji tersebut
+                $data['kode_gaji'] = $request->kode_gaji;
             }
 
             // Buat tunjangan baru jika ada nominal_tunjangan_detail
@@ -534,10 +537,13 @@ class KontrakController extends Controller
             'kode_cabang' => ['required', 'exists:cabang,kode_cabang'],
             'kode_dept' => ['required', 'exists:departemen,kode_dept'],
             'status_kontrak' => ['required', 'string', 'max:20'],
-            'nominal_gaji' => ['nullable', 'string'],
             'nominal_tunjangan_detail' => ['nullable', 'array'],
             'kode_jenis_tunjangan' => ['nullable', 'array'],
         ];
+
+        // Gaji Pokok: wajib diisi jika karyawan belum punya data di Payroll Gaji Pokok
+        $hasGajiPayroll = Gajipokok::where('nik', $request->nik)->exists();
+        $rules['nominal_gaji'] = $hasGajiPayroll ? ['nullable', 'string'] : ['required', 'string'];
 
         // Validasi akses cabang dan departemen jika bukan super admin
         if (!$user->isSuperAdmin()) {
@@ -559,6 +565,7 @@ class KontrakController extends Controller
         $messages = [
             'kode_cabang.in' => 'Anda tidak memiliki akses ke cabang yang dipilih.',
             'kode_dept.in' => 'Anda tidak memiliki akses ke departemen yang dipilih.',
+            'nominal_gaji.required' => 'Gaji Pokok wajib diisi karena karyawan belum memiliki data di Payroll Gaji Pokok.',
         ];
 
         $validated = $request->validate($rules, $messages);

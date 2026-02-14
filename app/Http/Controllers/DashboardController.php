@@ -289,7 +289,12 @@ class DashboardController extends Controller
             $data['kontrak_bulanini'] = $sk->getRekapkontrak(1, $userCabangs, $userDepartemens);
             $data['kontrak_bulandepan'] = $sk->getRekapkontrak(2, $userCabangs, $userDepartemens);
             $data['kontrak_duabulan'] = $sk->getRekapkontrak(3, $userCabangs, $userDepartemens);
-            // dd($data['rekappresensi']);
+
+            $data['sip_lewat'] = $sk->getRekapSip(0, $userCabangs, $userDepartemens);
+            $data['sip_bulanini'] = $sk->getRekapSip(1, $userCabangs, $userDepartemens);
+            $data['sip_bulandepan'] = $sk->getRekapSip(2, $userCabangs, $userDepartemens);
+            $data['sip_duabulan'] = $sk->getRekapSip(3, $userCabangs, $userDepartemens);
+
             return view('dashboard.dashboard', $data);
         }
     }

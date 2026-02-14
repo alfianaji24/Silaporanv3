@@ -20,6 +20,7 @@ use App\Http\Controllers\JabatanController;
 use App\Http\Controllers\JamkerjabydeptController;
 use App\Http\Controllers\JamkerjaController;
 use App\Http\Controllers\KontrakController;
+use App\Http\Controllers\SipController;
 use App\Http\Controllers\KpiEmployeeController;
 use App\Http\Controllers\KpiIndicatorController;
 use App\Http\Controllers\KpiPeriodController;
@@ -198,6 +199,16 @@ Route::middleware('auth')->group(function () {
         Route::put('/kontrak/{id}', 'update')->name('kontrak.update')->can('kontrak.edit');
         Route::delete('/kontrak/{id}/delete', 'destroy')->name('kontrak.delete')->can('kontrak.delete');
         Route::get('/kontrak/{id}/print', 'print')->name('kontrak.print')->can('kontrak.index');
+    });
+
+    Route::controller(SipController::class)->group(function () {
+        Route::get('/sip', 'index')->name('sip.index')->can('sip.index');
+        Route::get('/sip/create', 'create')->name('sip.create')->can('sip.create');
+        Route::post('/sip', 'store')->name('sip.store')->can('sip.create');
+        Route::get('/sip/{id}/download', 'downloadFile')->name('sip.download')->can('sip.index');
+        Route::get('/sip/{id}/edit', 'edit')->name('sip.edit')->can('sip.edit');
+        Route::put('/sip/{id}', 'update')->name('sip.update')->can('sip.edit');
+        Route::delete('/sip/{id}/delete', 'destroy')->name('sip.delete')->can('sip.delete');
     });
 
     Route::controller(DepartemenController::class)->group(function () {

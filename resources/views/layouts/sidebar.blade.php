@@ -141,6 +141,14 @@
                  </a>
              </li>
          @endcan
+         @can('sip.index')
+             <li class="menu-item {{ request()->is(['sip', 'sip/*']) ? 'active' : '' }}">
+                 <a href="{{ route('sip.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons ti ti-certificate"></i>
+                     <div>Surat Izin Praktik (SIP)</div>
+                 </a>
+             </li>
+         @endcan
 
          @if (auth()->user()->hasAnyPermission(['karyawan.index', 'departemen.index', 'cabang.index', 'cuti.index', 'jabatan.index', 'grup.index']))
              <li
@@ -307,7 +315,7 @@
                  </a>
              </li>
          @endcan
-         
+
          @if (auth()->user()->hasAnyPermission(['kpi.period.index', 'kpi.indicator.index', 'kpi.employee.index']))
              <li class="menu-item {{ request()->is(['kpi', 'kpi/*']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">

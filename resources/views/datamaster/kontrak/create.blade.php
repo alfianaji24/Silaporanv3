@@ -4,7 +4,7 @@
 
         <x-input-with-icon label="No Kontrak" name="no_kontrak" icon="ti ti-file-certificate" :disabled="true" placeholder="Auto" />
         <x-input-with-icon label="Tanggal Kontrak" name="tanggal" icon="ti ti-calendar" datepicker="flatpickr-date" value="{{ old('tanggal') }}" />
-        
+
         <div class="form-group mb-1">
             <select name="jenis_kontrak" id="jenis_kontrak" class="form-select">
                 <option value="" disabled selected>Pilih Status Kontrak</option>
@@ -21,6 +21,7 @@
             <x-input-with-icon label="Tanggal Selesai" name="sampai" icon="ti ti-calendar" datepicker="flatpickr-date" value="{{ old('sampai') }}" />
         </div>
         <div class="form-group mb-1">
+            <label class="form-label">Karyawan <span class="text-danger">*</span></label>
             <select name="nik" id="nik" class="form-select select2" data-placeholder="Pilih Karyawan">
                 <option value="">Pilih Karyawan</option>
                 @foreach ($karyawans as $karyawan)
@@ -31,67 +32,19 @@
                 @endforeach
             </select>
             @error('nik')
-                <small class="text-danger">{{ $message }}</small>
+                <small class="text-danger d-block">{{ $message }}</small>
             @enderror
         </div>
 
 
         <div class="form-group mb-1">
-            <div class="input-group input-group-merge">
-                <span class="input-group-text"><i class="ti ti-briefcase"></i></span>
-                <select name="kode_cabang" id="kode_cabang" class="form-select">
-                    <option value="">Pilih Cabang</option>
-                    @foreach ($cabangs as $cabang)
-                        <option value="{{ $cabang->kode_cabang }}" @selected(old('kode_cabang') == $cabang->kode_cabang)>
-                            {{ $cabang->nama_cabang }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            @error('kode_cabang')
+            <label class="form-label">Gaji Pokok Kontrak <span id="gaji_label_suffix" class="text-muted"></span></label>
+            <x-input-with-icon name="nominal_gaji" icon="ti ti-currency-dollar" money="true" align="right"
+                value="{{ old('nominal_gaji') }}" />
+            @error('nominal_gaji')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-
-
-        <div class="form-group mb-1">
-            <div class="input-group input-group-merge">
-                <span class="input-group-text"><i class="ti ti-layout-grid"></i></span>
-                <select name="kode_dept" id="kode_dept" class="form-select">
-                    <option value="">Pilih Departemen</option>
-                    @foreach ($departemens as $dept)
-                        <option value="{{ $dept->kode_dept }}" @selected(old('kode_dept') == $dept->kode_dept)>
-                            {{ $dept->nama_dept }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            @error('kode_dept')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-        <div class="form-group mb-1">
-            <div class="input-group input-group-merge">
-                <span class="input-group-text"><i class="ti ti-layout-grid"></i></span>
-                <select name="kode_jabatan" id="kode_jabatan" class="form-select">
-                    <option value="">Pilih Jabatan</option>
-                    @foreach ($jabatans as $jabatan)
-                        <option value="{{ $jabatan->kode_jabatan }}" @selected(old('kode_jabatan') == $jabatan->kode_jabatan)>
-                            {{ $jabatan->nama_jabatan }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            @error('kode_jabatan')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        <input type="hidden" name="status_kontrak" value="1">
-        <input type="hidden" name="kode_gaji" id="kode_gaji" value="{{ old('kode_gaji') }}">
-        <input type="hidden" name="kode_tunjangan" id="kode_tunjangan" value="{{ old('kode_tunjangan') }}">
-        <x-input-with-icon label="Gaji Pokok Kontrak (opsional)" name="nominal_gaji" icon="ti ti-currency-dollar" money="true" align="right"
-            value="{{ old('nominal_gaji') }}" />
 
         @if ($jenisTunjangans->count())
             @foreach ($jenisTunjangans as $index => $jenis)
@@ -152,25 +105,27 @@
             $('.money').maskMoney();
         }
 
-        $('#nik').on('change', function() {
-            const option = $(this).find(':selected');
-            const nik = $(this).val();
-            const cabang = option.data('kode_cabang');
-            const dept = option.data('kode_dept');
-            const jabatan = option.data('kode_jabatan');
+        function updateCabangDeptJabatanFromKaryawan() {
+            const option = $('#nik').find(':selected');
+            const cabang = option.attr('data-kode_cabang');
+            const dept = option.attr('data-kode_dept');
+            const jabatan = option.attr('data-kode_jabatan');
+            $('#formKontrak').find('input[name="kode_cabang"]').val(cabang || '');
+            $('#formKontrak').find('input[name="kode_dept"]').val(dept || '');
+            $('#formKontrak').find('input[name="kode_jabatan"]').val(jabatan || '');
+            $('#formKontrak').find('#kode_cabang_display').val(cabang || '');
+            $('#formKontrak').find('#kode_dept_display').val(dept || '');
+            $('#formKontrak').find('#kode_jabatan_display').val(jabatan || '');
+        }
 
-            if (cabang) {
-                $("#formKontrak").find('#kode_cabang').val(cabang).trigger('change');
-            }
-            if (dept) {
-                $("#formKontrak").find('#kode_dept').val(dept).trigger('change');
-            }
-            if (jabatan) {
-                $("#formKontrak").find('#kode_jabatan').val(jabatan).trigger('change');
-            }
+        $('#nik').on('change', function() {
+            const nik = $(this).val();
+            updateCabangDeptJabatanFromKaryawan();
 
             if (!nik) {
                 resetSummary();
+                $('#has_gaji_payroll').val('0');
+                $('#gaji_label_suffix').text('(wajib diisi jika belum ada di Payroll Gaji Pokok)').removeClass('text-success').addClass('text-muted');
                 return;
             }
 
@@ -179,24 +134,27 @@
                     let hasData = false;
                     if (res.salary) {
                         hasData = true;
+                        $('#has_gaji_payroll').val('1');
+                        $('#gaji_label_suffix').text('(diambil dari Payroll Gaji Pokok)').removeClass('text-muted').addClass('text-success');
                         $salaryAmount.text(formatRupiah(res.salary.jumlah));
                         $salaryMeta.text(res.salary.tanggal || '-');
                         $salaryCode.text(res.salary.kode || '-');
                         if (res.salary.kode) {
                             $('#kode_gaji').val(res.salary.kode).trigger('change');
                         }
-                        // Set nilai gaji pokok dari data terakhir berdasarkan tanggal berlaku
                         if (res.salary.jumlah) {
                             $inputSalaryNominal.val(res.salary.jumlah);
-                            // Trigger maskMoney untuk update format tampilan
                             if ($.fn.maskMoney) {
                                 $inputSalaryNominal.maskMoney('mask');
                             }
                         }
                     } else {
+                        $('#has_gaji_payroll').val('0');
+                        $('#gaji_label_suffix').text('(wajib diisi - belum ada di Payroll Gaji Pokok)').removeClass('text-success').addClass('text-muted');
                         $salaryAmount.text('-');
                         $salaryMeta.text('-');
                         $salaryCode.text('-');
+                        $('#kode_gaji').val('');
                         $inputSalaryNominal.val('');
                         if ($.fn.maskMoney) {
                             $inputSalaryNominal.maskMoney('mask');
@@ -257,6 +215,7 @@
         // Trigger once if already selected (old input)
         const preselectedNik = $('#nik').val();
         if (preselectedNik) {
+            updateCabangDeptJabatanFromKaryawan();
             $('#nik').trigger('change');
         }
 
@@ -269,7 +228,7 @@
             }
         }
         $('#jenis_kontrak').on('change', togglePeriodeKontrak);
-        
+
         // Trigger on load if old value exists
         togglePeriodeKontrak();
 
@@ -281,10 +240,12 @@
             const dari = $('#dari').val();
             const sampai = $('#sampai').val();
             const nik = $('#nik').val();
-            const kode_cabang = $('#kode_cabang').val();
-            const kode_dept = $('#kode_dept').val();
-            const kode_jabatan = $('#kode_jabatan').val();
+            const kode_cabang = $('#formKontrak').find('input[name="kode_cabang"]').val();
+            const kode_dept = $('#formKontrak').find('input[name="kode_dept"]').val();
+            const kode_jabatan = $('#formKontrak').find('input[name="kode_jabatan"]').val();
             const jenis_kontrak = $('#jenis_kontrak').val();
+            const hasGajiPayroll = $('#has_gaji_payroll').val() === '1';
+            const nominalGaji = $('input[name="nominal_gaji"]').val();
 
             // Validasi
             let errors = [];
@@ -315,21 +276,25 @@
                     }
                 }
             }
-            
+
             if (!nik) {
                 errors.push('Karyawan harus dipilih');
             }
 
             if (!kode_cabang) {
-                errors.push('Cabang harus dipilih');
+                errors.push('Cabang harus dipilih (pilih Karyawan terlebih dahulu)');
             }
 
             if (!kode_dept) {
-                errors.push('Departemen harus dipilih');
+                errors.push('Departemen harus dipilih (pilih Karyawan terlebih dahulu)');
             }
 
             if (!kode_jabatan) {
-                errors.push('Jabatan harus dipilih');
+                errors.push('Jabatan harus dipilih (pilih Karyawan terlebih dahulu)');
+            }
+
+            if (!hasGajiPayroll && !nominalGaji) {
+                errors.push('Gaji Pokok wajib diisi karena karyawan belum memiliki data di Payroll Gaji Pokok');
             }
 
             // Jika ada error, tampilkan Sweet Alert

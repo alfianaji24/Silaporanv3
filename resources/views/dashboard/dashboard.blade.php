@@ -800,6 +800,129 @@
                     </div>
                 </div>
             </div>
+
+            @php
+                $sipTabs = [
+                    ['id' => 'sip_lewatjatuhtempo', 'label' => 'Lewat Jatuh Tempo', 'badge' => 'bg-label-danger', 'icon' => 'ti ti-alert-octagon', 'items' => $sip_lewat ?? [], 'showRemaining' => false, 'accent' => '#dc2626', 'active' => false],
+                    ['id' => 'sip_bulanini', 'label' => 'Bulan Ini', 'badge' => 'bg-label-danger', 'icon' => 'ti ti-calendar-event', 'items' => $sip_bulanini ?? [], 'showRemaining' => true, 'accent' => '#f97316', 'active' => true],
+                    ['id' => 'sip_bulandepan', 'label' => 'Bulan Depan', 'badge' => 'bg-label-warning', 'icon' => 'ti ti-calendar-stats', 'items' => $sip_bulandepan ?? [], 'showRemaining' => true, 'accent' => '#facc15', 'active' => false],
+                    ['id' => 'sip_duabulan', 'label' => '2 Bulan Lagi', 'badge' => 'bg-label-success', 'icon' => 'ti ti-calendar-time', 'items' => $sip_duabulan ?? [], 'showRemaining' => true, 'accent' => '#22c55e', 'active' => false],
+                ];
+                $sipSummary = [
+                    ['label' => 'Lewat Tempo', 'count' => count($sip_lewat ?? []), 'icon' => 'ti ti-alert-triangle', 'accent' => 'linear-gradient(120deg,#f43f5e,#b91c1c)'],
+                    ['label' => 'Bulan Ini', 'count' => count($sip_bulanini ?? []), 'icon' => 'ti ti-calendar-event', 'accent' => 'linear-gradient(120deg,#f97316,#ea580c)'],
+                    ['label' => 'Bulan Depan', 'count' => count($sip_bulandepan ?? []), 'icon' => 'ti ti-calendar-stats', 'accent' => 'linear-gradient(120deg,#facc15,#eab308)'],
+                    ['label' => '2 Bulan', 'count' => count($sip_duabulan ?? []), 'icon' => 'ti ti-calendar-time', 'accent' => 'linear-gradient(120deg,#34d399,#059669)'],
+                ];
+            @endphp
+
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="card contract-card">
+                        <div class="card-header contract-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-info">
+                                        <i class="ti ti-certificate fs-4"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <h4 class="mb-0">Surat Izin Praktik (SIP) Habis</h4>
+                                    <small class="text-muted">Pantau SIP yang segera atau sudah melewati jatuh tempo</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-label-info rounded-pill mt-3 mt-lg-0">
+                                Total {{ count($sip_lewat ?? []) + count($sip_bulanini ?? []) + count($sip_bulandepan ?? []) + count($sip_duabulan ?? []) }}
+                                SIP
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="contract-summary">
+                                @foreach ($sipSummary as $summary)
+                                    <div class="contract-summary__item" style="--contract-summary-bg: {{ $summary['accent'] }};">
+                                        <div class="contract-summary__icon">
+                                            <i class="{{ $summary['icon'] }}"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-1" style="opacity: 0.9; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;">{{ $summary['label'] }}</p>
+                                            <p class="contract-summary__count">{{ $summary['count'] }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="contract-tabs nav-align-top mt-4">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    @foreach ($sipTabs as $tab)
+                                        <li class="nav-item" role="presentation">
+                                            <button type="button" class="nav-link {{ $tab['active'] ? 'active' : '' }}" role="tab"
+                                                data-bs-toggle="tab" data-bs-target="#{{ $tab['id'] }}" aria-controls="{{ $tab['id'] }}"
+                                                aria-selected="{{ $tab['active'] ? 'true' : 'false' }}" tabindex="{{ $tab['active'] ? '0' : '-1' }}"
+                                                style="--contract-accent: {{ $tab['accent'] }};">
+                                                <i class="{{ $tab['icon'] }} me-2"></i>
+                                                {{ $tab['label'] }}
+                                                <span class="badge rounded-pill badge-center h-px-20 w-px-20 {{ $tab['badge'] }} ms-2">{{ count($tab['items']) }}</span>
+                                            </button>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <div class="tab-content mt-3" style="padding: 0 !important;">
+                                    @foreach ($sipTabs as $tab)
+                                        <div class="tab-pane fade {{ $tab['active'] ? 'show active' : '' }}" id="{{ $tab['id'] }}" role="tabpanel">
+                                            @if (count($tab['items']) === 0)
+                                                <div class="contract-empty">
+                                                    <i class="ti ti-confetti fs-1 mb-2 d-block"></i>
+                                                    Tidak ada SIP pada kategori ini.
+                                                </div>
+                                            @else
+                                                <div class="table-responsive contract-table-wrapper">
+                                                    <table class="table table-hover align-middle mb-0 contract-table">
+                                                        <thead class="table-dark">
+                                                            <tr>
+                                                                <th>No. SIP</th>
+                                                                <th>NIK</th>
+                                                                <th>Nama Karyawan</th>
+                                                                <th>Jabatan</th>
+                                                                <th>Dept</th>
+                                                                <th>Cabang</th>
+                                                                <th>Akhir SIP</th>
+                                                                @if ($tab['showRemaining'])
+                                                                    <th class="text-center">Sisa Waktu</th>
+                                                                @endif
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($tab['items'] as $d)
+                                                                @php
+                                                                    $sisahari = hitungSisahari($d->tanggal_akhir);
+                                                                    $isLate = $sisahari < 0;
+                                                                @endphp
+                                                                <tr class="{{ $isLate ? 'contract-row--overdue' : '' }}">
+                                                                    <td>{{ $d->no_sip }}</td>
+                                                                    <td>{{ $d->nik }}</td>
+                                                                    <td>{{ formatName($d->nama_karyawan) }}</td>
+                                                                    <td>{{ singkatString($d->nama_jabatan) }}</td>
+                                                                    <td>{{ $d->kode_dept }}</td>
+                                                                    <td>{{ textupperCase($d->kode_cabang) }}</td>
+                                                                    <td>{{ formatIndo($d->tanggal_akhir) }}</td>
+                                                                    @if ($tab['showRemaining'])
+                                                                        <td class="text-center">
+                                                                            <span class="contract-pill {{ $isLate ? 'contract-pill--danger' : 'contract-pill--safe' }}">{{ $sisahari }} Hari</span>
+                                                                        </td>
+                                                                    @endif
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-lg-4 col-md-6 col-sm-12">

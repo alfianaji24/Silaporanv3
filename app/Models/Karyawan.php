@@ -95,6 +95,54 @@ class Karyawan extends Model
         return $query->get();
     }
 
+    public function getRekapSip($kategori, $userCabangs = null, $userDepartemens = null)
+    {
+        $bulanini = date("m");
+        $tahunini = date("Y");
+        $start_date_bulanini = $tahunini . "-" . $bulanini . "-01";
+        $end_date_bulanini = date("Y-m-t", strtotime($start_date_bulanini));
+
+        $bulandepan = date("m") + 1 > 12 ? (date("m") + 1) - 12 : date("m") + 1;
+        $tahunbulandepan = date("m") + 1 > 12 ? $tahunini + 1 : $tahunini;
+        $start_date_bulandepan = $tahunbulandepan . "-" . $bulandepan . "-01";
+        $end_date_bulandepan = date("Y-m-t", strtotime($start_date_bulandepan));
+
+        $duabulan = date("m") + 2 > 12 ? (date("m") + 2) - 12 : date("m") + 2;
+        $tahunduabulan = date("m") + 2 > 12 ? $tahunini + 1 : $tahunini;
+        $start_date_duabulan = $tahunduabulan . "-" . $duabulan . "-01";
+        $end_date_duabulan = date("Y-m-t", strtotime($start_date_duabulan));
+
+        $query = Sip::query();
+        $query->select('sip.no_sip', 'sip.nik', 'sip.tanggal_akhir', 'karyawan.nama_karyawan', 'nama_jabatan', 'karyawan.kode_dept', 'karyawan.kode_cabang', 'nama_cabang');
+        $query->join('karyawan', 'sip.nik', '=', 'karyawan.nik');
+        $query->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang');
+        $query->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan');
+
+        if (!empty($userCabangs) && is_array($userCabangs)) {
+            $query->whereIn('karyawan.kode_cabang', $userCabangs);
+        }
+
+        if (!empty($userDepartemens) && is_array($userDepartemens)) {
+            $query->whereIn('karyawan.kode_dept', $userDepartemens);
+        }
+
+        if ($kategori == 0) {
+            $query->where('sip.tanggal_akhir', '<', $start_date_bulanini);
+        } elseif ($kategori == 1) {
+            $query->whereBetween('sip.tanggal_akhir', [$start_date_bulanini, $end_date_bulanini]);
+        } elseif ($kategori == 2) {
+            $query->whereBetween('sip.tanggal_akhir', [$start_date_bulandepan, $end_date_bulandepan]);
+        } elseif ($kategori == 3) {
+            $query->whereBetween('sip.tanggal_akhir', [$start_date_duabulan, $end_date_duabulan]);
+        }
+
+        $query->where('karyawan.status_aktif_karyawan', 1);
+        $query->where('sip.status_sip', 1);
+        $query->orderBy('sip.tanggal_akhir');
+        $query->orderBy('karyawan.nama_karyawan');
+        return $query->get();
+    }
+
     // Relasi dengan GrupDetail
     // public function grupDetail()
     // {
