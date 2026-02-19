@@ -128,7 +128,9 @@
                     <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} />
                     Ingat saya
                 </label>
-                <a href="#" class="forgot-link">Lupa Kata Sandi?</a>
+                @if (Route::has('register'))
+                <div>Lupa Kata Sandi? <a href="#" id="linkDaftar">Lupa Kata Sandi?</a>
+                @endif
             </div>
 
             <!-- <div style="text-align: center;">
