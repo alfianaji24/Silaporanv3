@@ -11,6 +11,7 @@
             <div class="card-body">
                 <form action="{{ route('laporan.cetakpresensi') }}" method="POST" target="_blank" id="formPresensi">
                     @csrf
+                    @if ($cabang->count() > 1)
                     <div class="form-group mb-3">
                         <select name="kode_cabang" id="kode_cabang_presensi" class="form-select select2Kodecabangpresensi">
                             <option value="">Semua Cabang</option>
@@ -19,6 +20,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
                     <div class="form-group mb-3">
                         <select name="kode_dept" id="kode_dept_presensi" class="form-select select2Kodedeptpresensi">
                             <option value="">Semua Departemen</option>
@@ -154,26 +156,30 @@
             });
         }
 
-        $("#kode_cabang_presensi").change(function() {
-            const kode_cabang = $(this).val();
+        function loadKaryawanPresensi(kode_cabang) {
             $.ajax({
                 type: "GET",
                 url: "{{ route('karyawan.getkaryawan') }}",
-                data: {
-                    kode_cabang: kode_cabang
-                },
+                data: { kode_cabang: kode_cabang || '' },
                 cache: false,
                 success: function(respond) {
                     $("#nik_presensi").empty();
                     $("#nik_presensi").append("<option value=''>Semua Karyawan</option>");
                     respond.forEach(function(item) {
-                        $("#nik_presensi").append("<option value='" + item.nik + "'>" + item.nik + " - " + item
-                            .nama_karyawan +
-                            "</option>");
+                        $("#nik_presensi").append("<option value='" + item.nik + "'>" + item.nik + " - " + item.nama_karyawan + "</option>");
                     });
                 }
             });
+        }
+
+        $("#kode_cabang_presensi").on('change', function() {
+            loadKaryawanPresensi($(this).val());
         });
+
+        // Jika filter cabang disembunyikan (hanya 1 cabang), load karyawan aktif saat halaman ready
+        if ($("#kode_cabang_presensi").length === 0) {
+            loadKaryawanPresensi('');
+        }
 
         $("#formPresensi").submit(function(e) {
             const periode_laporan = $("#periode_laporan").val();

@@ -485,7 +485,8 @@ class KontrakController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        $karyawanQuery = Karyawan::select('nik', 'nama_karyawan', 'kode_dept', 'kode_cabang', 'kode_jabatan');
+        $karyawanQuery = Karyawan::select('nik', 'nama_karyawan', 'kode_dept', 'kode_cabang', 'kode_jabatan')
+            ->where('status_aktif_karyawan', 1);
 
         // Filter karyawan berdasarkan akses jika bukan super admin
         if (!$user->isSuperAdmin()) {

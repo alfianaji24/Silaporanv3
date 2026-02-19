@@ -83,7 +83,8 @@ class KunjunganController extends Controller
      */
     private function getKaryawansByAccess($user)
     {
-        $query = Karyawan::query();
+        $query = Karyawan::query()
+            ->where('status_aktif_karyawan', 1);
         
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();

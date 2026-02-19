@@ -3,81 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>401 Unauthorized</title>
+  <title>429 Too Many Requests</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-
+    
     @keyframes float {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(-2deg); }
+      50% { transform: translateY(-20px) rotate(1deg); }
     }
-
+    
     @keyframes pulse-glow {
       0%, 100% { opacity: 0.4; }
       50% { opacity: 0.9; }
     }
-
-    @keyframes rotate-lock {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    
+    @keyframes gauge-fill {
+      0%, 100% { stroke-dashoffset: 50; }
+      50% { stroke-dashoffset: 10; }
     }
-
-    @keyframes dot-pulse {
+    
+    @keyframes wave-pulse {
+      0%, 100% { transform: translateX(0) scaleY(1); }
+      50% { transform: translateX(-5px) scaleY(1.2); }
+    }
+    
+    @keyframes wave-pulse-2 {
+      0%, 100% { transform: translateX(0) scaleY(1); }
+      50% { transform: translateX(5px) scaleY(1.2); }
+    }
+    
+    @keyframes speedometer-spin {
+      from { transform: rotate(-90deg); }
+      to { transform: rotate(90deg); }
+    }
+    
+    @keyframes speedometer-needle {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(120deg); }
+    }
+    
+    @keyframes pulse-warn {
       0%, 100% { opacity: 0.3; }
       50% { opacity: 1; }
     }
-
-    @keyframes key-glow {
-      0%, 100% { filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.3)); }
-      50% { filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.7)); }
+    
+    @keyframes throttle-blink {
+      0%, 100% { fill: #ef4444; opacity: 0.4; }
+      50% { fill: #dc2626; opacity: 1; }
     }
-
+    
+    @keyframes bounce-request {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
+    
     @keyframes slide-down {
       from { opacity: 0; transform: translateY(-30px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
+    
     .float-animation {
       animation: float 4s ease-in-out infinite;
     }
-
+    
     .pulse-glow {
       animation: pulse-glow 2s ease-in-out infinite;
     }
-
-    .rotate-lock {
-      animation: rotate-lock 8s linear infinite;
+    
+    .gauge-fill {
+      animation: gauge-fill 2.5s ease-in-out infinite;
+    }
+    
+    .wave-pulse {
+      animation: wave-pulse 1.5s ease-in-out infinite;
       transform-origin: center;
     }
-
-    .dot-pulse {
-      animation: dot-pulse 1.5s ease-in-out infinite;
+    
+    .wave-pulse-2 {
+      animation: wave-pulse-2 1.5s ease-in-out infinite;
+      transform-origin: center;
     }
-
-    .dot-pulse-2 {
-      animation: dot-pulse 1.5s ease-in-out infinite 0.3s;
+    
+    .speedometer-needle {
+      animation: speedometer-needle 3s ease-in-out infinite;
+      transform-origin: center;
     }
-
-    .dot-pulse-3 {
-      animation: dot-pulse 1.5s ease-in-out infinite 0.6s;
+    
+    .pulse-warn {
+      animation: pulse-warn 1.5s ease-in-out infinite;
     }
-
-    .key-glow {
-      animation: key-glow 3s ease-in-out infinite;
+    
+    .pulse-warn-2 {
+      animation: pulse-warn 1.5s ease-in-out infinite 0.3s;
     }
-
+    
+    .pulse-warn-3 {
+      animation: pulse-warn 1.5s ease-in-out infinite 0.6s;
+    }
+    
+    .throttle-blink {
+      animation: throttle-blink 1s ease-in-out infinite;
+    }
+    
+    .bounce-request {
+      animation: bounce-request 2s ease-in-out infinite;
+    }
+    
+    .bounce-request-2 {
+      animation: bounce-request 2.2s ease-in-out infinite 0.2s;
+    }
+    
+    .bounce-request-3 {
+      animation: bounce-request 2.4s ease-in-out infinite 0.4s;
+    }
+    
     .fade-in {
       animation: fade-in 0.8s ease-out forwards;
     }
-
+    
     .slide-down {
       animation: slide-down 0.8s ease-out forwards;
     }
@@ -85,122 +136,122 @@
 </head>
 <body class="h-full overflow-auto">
   <div id="app-container" class="min-h-full w-full flex items-center justify-center p-8" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
-
+    
     <!-- Background decorative elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <!-- Floating circles -->
       <div class="absolute top-20 right-10 w-40 h-40 rounded-full pulse-glow" style="background: radial-gradient(circle, rgba(248, 113, 113, 0.2) 0%, transparent 70%);"></div>
       <div class="absolute bottom-20 left-10 w-48 h-48 rounded-full pulse-glow" style="background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%); animation-delay: 1.5s;"></div>
-
+      
       <!-- Grid pattern -->
       <svg class="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <pattern id="grid-401" width="50" height="50" patternUnits="userSpaceOnUse">
+          <pattern id="grid-429" width="50" height="50" patternUnits="userSpaceOnUse">
             <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#f87171" stroke-width="0.5"/>
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="url(#grid-401)" />
+        <rect width="100%" height="100%" fill="url(#grid-429)" />
       </svg>
     </div>
-
+    
     <div class="relative z-10 text-center max-w-2xl mx-auto">
-
+      
       <!-- Main illustration -->
       <div class="float-animation mb-8">
         <svg viewBox="0 0 400 320" class="w-full max-w-md mx-auto" xmlns="http://www.w3.org/2000/svg">
           <!-- Ground -->
           <ellipse cx="200" cy="290" rx="180" ry="20" fill="#ffffff" opacity="0.05"/>
-
-          <!-- Background lock (subtle) -->
-          <g opacity="0.1">
-            <rect x="140" y="80" width="120" height="130" rx="10" fill="none" stroke="#ef4444" stroke-width="3"/>
-            <path d="M 160 80 Q 160 50 200 45 Q 240 50 240 80" fill="none" stroke="#ef4444" stroke-width="3"/>
-          </g>
-
-          <!-- Main user avatar with lock -->
-          <g style="transform: translate(200px, 130px);">
-            <!-- Avatar circle -->
-            <circle cx="0" cy="-10" r="35" fill="none" stroke="#94a3b8" stroke-width="3"/>
-            <!-- Head -->
-            <circle cx="0" cy="-10" r="28" fill="#cbd5e1" opacity="0.3"/>
-            <!-- Head details -->
-            <circle cx="-10" cy="-20" r="4" fill="#94a3b8"/>
-            <circle cx="10" cy="-20" r="4" fill="#94a3b8"/>
-            <!-- Mouth (confused) -->
-            <path d="M -8 -5 Q 0 0 8 -5" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"/>
-
-            <!-- Lock overlay on avatar -->
-            <g class="rotate-lock" style="transform-origin: 0 -5px;">
-              <rect x="-18" y="-5" width="36" height="35" rx="5" fill="none" stroke="#ef4444" stroke-width="2.5"/>
-              <path d="M -12 -5 Q -12 -18 0 -20 Q 12 -18 12 -5" fill="none" stroke="#ef4444" stroke-width="2.5"/>
-              <circle cx="0" cy="8" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+          
+          <!-- Speedometer gauge -->
+          <g style="transform: translate(200px, 110px);">
+            <!-- Gauge circle -->
+            <circle cx="0" cy="0" r="50" fill="none" stroke="#94a3b8" stroke-width="2" opacity="0.3"/>
+            <!-- Gauge arc (red zone) -->
+            <path d="M -35 -35 A 50 50 0 0 1 35 -35" fill="none" stroke="#ef4444" stroke-width="4" opacity="0.5"/>
+            <!-- Gauge arc (danger zone - animated) -->
+            <path d="M 25 -42 A 50 50 0 0 1 35 -30" fill="none" stroke="#fbbf24" stroke-width="3" class="gauge-fill" stroke-dasharray="100" stroke-dashoffset="50"/>
+            <!-- Needle -->
+            <g class="speedometer-needle" style="transform-origin: 0 0;">
+              <line x1="0" y1="0" x2="0" y2="-45" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
             </g>
-
-            <!-- Question mark in center -->
-            <text x="0" y="15" font-family="'JetBrains Mono', monospace" font-size="28" font-weight="bold" fill="#ef4444" text-anchor="middle" opacity="0.5">?</text>
+            <!-- Center point -->
+            <circle cx="0" cy="0" r="6" fill="#ef4444"/>
           </g>
-
-          <!-- Password dots (authentication indicator) -->
-          <g style="transform: translate(200px, 230px);">
-            <circle cx="-30" cy="0" r="6" fill="#fbbf24" class="dot-pulse"/>
-            <circle cx="0" cy="0" r="6" fill="#fbbf24" class="dot-pulse-2"/>
-            <circle cx="30" cy="0" r="6" fill="#fbbf24" class="dot-pulse-3"/>
-
-            <!-- Lines connecting dots -->
-            <line x1="-24" y1="0" x2="-6" y2="0" stroke="#fbbf24" stroke-width="1" opacity="0.3"/>
-            <line x1="6" y1="0" x2="24" y2="0" stroke="#fbbf24" stroke-width="1" opacity="0.3"/>
+          
+          <!-- Incoming request waves -->
+          <g style="transform: translate(80px, 200px);">
+            <g class="bounce-request">
+              <circle cx="0" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="2" class="pulse-warn"/>
+              <text x="0" y="3" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" fill="#fbbf24" text-anchor="middle">→</text>
+            </g>
           </g>
-
-          <!-- Key icon (authentication) -->
-          <g class="key-glow" style="transform: translate(300px, 100px);">
-            <!-- Key shaft -->
-            <line x1="-10" y1="0" x2="15" y2="0" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
-            <!-- Key head (circle) -->
-            <circle cx="-15" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
-            <!-- Key teeth -->
-            <rect x="15" y="-2" width="4" height="4" fill="#fbbf24"/>
-            <rect x="20" y="-2" width="3" height="4" fill="#fbbf24"/>
+          
+          <g style="transform: translate(200px, 200px);">
+            <g class="bounce-request-2">
+              <circle cx="0" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="2" class="pulse-warn-2"/>
+              <text x="0" y="3" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" fill="#fbbf24" text-anchor="middle">→</text>
+            </g>
           </g>
-
-          <!-- Shield background -->
-          <g opacity="0.15" style="transform: translate(100px, 80px);">
-            <path d="M 0 -15 L 15 -5 L 15 10 Q 0 20 -15 10 L -15 -5 Z" fill="none" stroke="#ef4444" stroke-width="2"/>
+          
+          <g style="transform: translate(320px, 200px);">
+            <g class="bounce-request-3">
+              <circle cx="0" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="2" class="pulse-warn-3"/>
+              <text x="0" y="3" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" fill="#fbbf24" text-anchor="middle">→</text>
+            </g>
+          </g>
+          
+          <!-- Rate limiter indicator -->
+          <g style="transform: translate(200px, 250px);">
+            <rect x="-45" y="-8" width="90" height="16" rx="8" fill="none" stroke="#ef4444" stroke-width="2" opacity="0.4"/>
+            <!-- Filled portion (rate limit) -->
+            <rect x="-45" y="-8" width="75" height="16" rx="8" fill="#ef4444" opacity="0.3" class="throttle-blink"/>
+            <!-- Warning text -->
+            <text x="0" y="4" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="bold" fill="#fbbf24" text-anchor="middle" opacity="0.7">LIMITED</text>
+          </g>
+          
+          <!-- Wave motion lines showing traffic -->
+          <g class="wave-pulse" style="transform-origin: 100px 150px;">
+            <path d="M 70 150 Q 85 140 100 150 Q 115 160 130 150" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.4"/>
+          </g>
+          
+          <g class="wave-pulse-2" style="transform-origin: 300px 150px;">
+            <path d="M 270 150 Q 285 140 300 150 Q 315 160 330 150" fill="none" stroke="#fbbf24" stroke-width="1.5" opacity="0.4"/>
           </g>
         </svg>
       </div>
-
+      
       <!-- Error code -->
       <h1 id="error-title" class="text-8xl md:text-9xl font-bold mb-4 tracking-tight slide-down" style="font-family: 'JetBrains Mono', monospace; background: linear-gradient(135deg, #ef4444 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-        401
+        429
       </h1>
-
+      
       <!-- Subtitle -->
       <h2 id="error-subtitle" class="text-2xl md:text-3xl font-semibold mb-6 fade-in" style="font-family: 'Space Grotesk', sans-serif; color: #e2e8f0; animation-delay: 0.2s;">
-        Unauthorized
+        Too Many Requests
       </h2>
-
+      
       <!-- Message -->
       <p id="error-message" class="text-lg mb-10 max-w-md mx-auto leading-relaxed fade-in" style="font-family: 'Space Grotesk', sans-serif; color: #cbd5e1; animation-delay: 0.3s;">
-        Authentication is required to access this resource. Please sign in with your credentials.
+        You are sending requests too quickly. Please slow down and try again after a moment.
       </p>
-
+      
       <!-- Action button -->
-      <button id="retry-button" onclick="window.location.href='/login'" class="group relative px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 active:scale-95 fade-in" style="font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; box-shadow: 0 10px 40px -10px rgba(239, 68, 68, 0.5); animation-delay: 0.4s;">
+      <button id="retry-button" onclick="window.location.reload()" class="group relative px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105 active:scale-95 fade-in" style="font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; box-shadow: 0 10px 40px -10px rgba(239, 68, 68, 0.5); animation-delay: 0.4s;">
         <span class="relative z-10 flex items-center gap-3">
-          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Sign In
+          Wait & Retry
         </span>
       </button>
-
-      <!-- Authentication info -->
+      
+      <!-- Rate limit info -->
       <div class="mt-10 flex flex-col gap-2" style="color: #64748b;">
         <div class="fade-in" style="animation-delay: 0.5s;">
-          <span style="font-family: 'Space Grotesk', sans-serif; font-size: 13px;">🔐 Your credentials are required to proceed</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-size: 13px;">🚦 Rate limit exceeded - please wait before retrying</span>
         </div>
         <div class="fade-in" style="animation-delay: 0.6s;">
-          <span style="font-family: 'Space Grotesk', sans-serif; font-size: 13px;">🔑 Create an account if you don't have one</span>
+          <span style="font-family: 'Space Grotesk', sans-serif; font-size: 13px;">⏳ Limits reset in a few minutes</span>
         </div>
       </div>
     </div>
@@ -208,10 +259,10 @@
 
   <script>
     const defaultConfig = {
-      error_title: '401',
-      error_subtitle: 'Unauthorized',
-      error_message: 'Authentication is required to access this resource. Please sign in with your credentials.',
-      button_text: 'Sign In',
+      error_title: '429',
+      error_subtitle: 'Too Many Requests',
+      error_message: 'You are sending requests too quickly. Please slow down and try again after a moment.',
+      button_text: 'Wait & Retry',
       background_color: '#0f172a',
       text_color: '#e2e8f0',
       accent_color: '#ef4444',
@@ -254,7 +305,7 @@
 
       const fontFamily = config.font_family || defaultConfig.font_family;
       const fontSize = config.font_size || defaultConfig.font_size;
-
+      
       if (subtitle) subtitle.style.fontFamily = `'${fontFamily}', sans-serif`;
       if (message) {
         message.style.fontFamily = `'${fontFamily}', sans-serif`;
@@ -327,5 +378,5 @@
       onConfigChange(defaultConfig);
     }
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cfb4c7394c29a10',t:'MTc3MTM5NDM2OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cfb5338356d9a10',t:'MTc3MTM5NDY0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

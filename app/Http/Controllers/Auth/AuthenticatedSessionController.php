@@ -22,10 +22,30 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
+     * /login = karyawan only | / = user only (non-karyawan)
      */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
+        $loginType = $request->input('login_type', 'user');
+        $user = Auth::user();
+
+        if ($loginType === 'karyawan') {
+            if (!$user->hasRole('karyawan')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->with('error', 'Silahkan Hubungi IT Support!!!');
+            }
+        } else {
+            if ($user->hasRole('karyawan')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('loginuser')->with('error', 'Silahkan Hubungi IT Support!!!');
+            }
+        }
 
         $request->session()->regenerate();
 

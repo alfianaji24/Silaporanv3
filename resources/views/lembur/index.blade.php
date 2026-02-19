@@ -30,6 +30,7 @@
                                 </div>
                             </div>
                             <div class="row">
+                                @if ($cabang->count() > 1)
                                 <div class="col">
                                     <div class="form-group">
                                         <select name="kode_cabang" id="kode_cabang" class="form-select">
@@ -43,6 +44,7 @@
                                         </select>
                                     </div>
                                 </div>
+                                @endif
                                 <div class="col">
                                     <div class="form-group">
                                         <select name="kode_dept" id="kode_dept" class="form-select">

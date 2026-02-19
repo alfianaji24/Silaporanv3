@@ -307,8 +307,10 @@
                     <div class="row">
                         <x-input-with-icon label="Tanggal" icon="ti ti-calendar" name="tanggal" datepicker="flatpickr-date"
                             value="{{ Request('tanggal') }}" />
+                        @if ($cabang->count() > 1)
                         <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
                             selected="{{ Request('kode_cabang') }}" />
+                        @endif
                         <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                             selected="{{ Request('kode_dept') }}" upperCase="true" />
                     </div>

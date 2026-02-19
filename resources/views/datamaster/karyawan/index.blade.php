@@ -36,10 +36,12 @@
                                         <option value="0" {{ Request('status_aktif') === '0' ? 'selected' : '' }}>Non Aktif</option>
                                     </select>
                                 </div>
+                                @if ($cabang->count() > 1)
                                 <div class="col-lg-2 col-sm-12 col-md-12">
                                     <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
                                         selected="{{ Request('kode_cabang') }}" hideLabel />
                                 </div>
+                                @endif
                                 <div class="col-lg-2 col-sm-12 col-md-12">
                                     <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                         selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />

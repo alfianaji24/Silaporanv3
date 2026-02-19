@@ -680,7 +680,11 @@ class KaryawanController extends Controller
     public function getkaryawan(Request $request)
     {
         $kode_cabang = $request->kode_cabang;
-        $karyawan = Karyawan::where('kode_cabang', $kode_cabang)->get();
+        $query = Karyawan::where('status_aktif_karyawan', 1);
+        if (!empty($kode_cabang)) {
+            $query->where('kode_cabang', $kode_cabang);
+        }
+        $karyawan = $query->orderBy('nama_karyawan')->get();
         return response()->json($karyawan);
     }
 

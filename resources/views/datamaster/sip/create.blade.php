@@ -20,6 +20,7 @@
             @enderror
         </div>
 
+        @if ($cabangs->count() > 1)
         <div class="form-group mb-1">
             <label class="form-label">Cabang</label>
             <div class="input-group input-group-merge">
@@ -36,6 +37,9 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
+        @else
+            <input type="hidden" name="kode_cabang" id="kode_cabang" value="{{ $cabangs->first()?->kode_cabang ?? old('kode_cabang') }}">
+        @endif
 
         <div class="form-group mb-1">
             <label class="form-label">Departemen</label>
@@ -117,7 +121,9 @@
                 errors.push('Tanggal Akhir harus lebih besar atau sama dengan Tanggal Awal');
             }
             if (!nik) errors.push('Karyawan harus dipilih');
+            @if ($cabangs->count() > 1)
             if (!kode_cabang) errors.push('Cabang harus dipilih');
+            @endif
             if (!kode_dept) errors.push('Departemen harus dipilih');
 
             if (errors.length > 0) {

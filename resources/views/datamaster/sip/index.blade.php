@@ -27,6 +27,7 @@
                                         <input type="text" class="form-control" name="nama_karyawan" value="{{ request('nama_karyawan') }}" placeholder="Cari Nama Karyawan...">
                                     </div>
                                 </div>
+                                @if ($cabangs->count() > 1)
                                 <div class="col-lg-3 col-sm-6">
                                     <select class="form-select" name="kode_cabang">
                                         <option value="">Semua Cabang</option>
@@ -38,6 +39,7 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @endif
                                 <div class="col-lg-3 col-sm-6">
                                     <select class="form-select" name="kode_dept">
                                         <option value="">Semua Departemen</option>

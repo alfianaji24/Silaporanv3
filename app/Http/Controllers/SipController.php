@@ -203,7 +203,8 @@ class SipController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        $karyawanQuery = Karyawan::select('nik', 'nama_karyawan', 'kode_dept', 'kode_cabang');
+        $karyawanQuery = Karyawan::select('nik', 'nama_karyawan', 'kode_dept', 'kode_cabang')
+            ->where('status_aktif_karyawan', 1);
 
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();

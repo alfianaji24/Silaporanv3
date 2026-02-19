@@ -345,7 +345,8 @@ class LaporanController extends Controller
             ->where('bulan', $request->bulan)
             ->where('tahun', $request->tahun);
 
-        $q_presensi = Karyawan::query();
+        $q_presensi = Karyawan::query()
+            ->where('karyawan.status_aktif_karyawan', 1);
         $q_presensi->select(
             'karyawan.nik',
             'karyawan.nik_show',
@@ -692,9 +693,10 @@ class LaporanController extends Controller
             $presensi_list = $presensi_list_raw->groupBy('nik');
             $denda_list = Denda::all()->toArray();
 
-            // Ambil semua karyawan yang sesuai filter
+            // Ambil semua karyawan yang sesuai filter (hanya karyawan aktif)
             $karyawan_query = Karyawan::query()
-                ->select('karyawan.nik', 'karyawan.kode_dept', 'karyawan.kode_cabang');
+                ->select('karyawan.nik', 'karyawan.kode_dept', 'karyawan.kode_cabang')
+                ->where('karyawan.status_aktif_karyawan', 1);
 
             if (!empty($request->kode_cabang)) {
                 $karyawan_query->where('karyawan.kode_cabang', $request->kode_cabang);

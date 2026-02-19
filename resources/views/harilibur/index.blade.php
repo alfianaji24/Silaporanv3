@@ -28,7 +28,7 @@
                                 </div>
                             </div>
 
-                            @if ($user->hasRole(['super admin', 'gm administrasi']))
+                            @if ($user->hasRole(['super admin', 'gm administrasi']) && $cabang->count() > 1)
                                 <div class="form-group">
                                     <select name="kode_cabang_search" id="kode_cabang_search" class="form-select select2Kodecabangsearch">
                                         <option value="">Semua Cabang</option>

@@ -88,6 +88,7 @@
                 <div class="forms-wrap">
                     <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="login_type" value="user">
                         <div class="logo">
                             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
                                 <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Company Logo" style="height: auto; width: 80px; margin-bottom: 20px;" />
@@ -146,29 +147,28 @@
 
                         </div>
                     </form>
-
                 </div>
-
                 <div class="carousel">
                     <div class="images-wrapper">
                         <img src="./img/image1.png" class="image img-1 show" alt="" />
                         <img src="./img/image2.png" class="image img-2" alt="" />
                         <img src="./img/image3.png" class="image img-3" alt="" />
+                        {{-- Tambah gambar: <img src="./img/image4.png" class="image img-4" alt="" /> --}}
                     </div>
-
                     <div class="text-slider">
                         <div class="text-wrap">
                             <div class="text-group">
-                                <h2>Presensi Mudah, Kerja Lancar!</h2>
-                                <h2>Absen Cepat, Produktivitas Meningkat!</h2>
-                                <h2>Hadir Tanpa Ribet, Kinerja Lebih Hebat!</h2>
+                                <h2>Absen Sat-Set, Kerja Jadi Nyaman!</h2>
+                                <h2>Disiplin Tanpa Beban, Prestasi Tanpa Batas.</h2>
+                                <h2>Kelola Kehadiranmu, Tingkatkan Kualitas Kerjamu.</h2>
+                                {{-- Tambah kalimat: <h2>Teks kalimat ke-4 disini.</h2> --}}
                             </div>
                         </div>
-
                         <div class="bullets">
-                            <span class="active" data-value="1"></span>
+                            <span data-value="1"></span>
                             <span data-value="2"></span>
                             <span data-value="3"></span>
+                            {{-- Tambah slide: <span data-value="4"></span> --}}
                         </div>
                     </div>
                 </div>
@@ -176,8 +176,10 @@
         </div>
     </main>
 
+    <!-- SweetAlert -->
+    <script src="{{ asset('assets/external/js/sweetalert2@11.js') }}"></script>
     <!-- Javascript file -->
-    <script src="{{ asset('assets/login/script/app.js') }}"></script>
+    <script src="{{ asset('assets/login/scripts/app.js') }}"></script>
 
     <!-- Service Worker Registration -->
     <script>
@@ -193,6 +195,19 @@
             });
         }
     </script>
+
+    <!-- SweetAlert untuk error login -->
+    @if (session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: "Akses Ditolak",
+                text: "{{ session('error') }}",
+                icon: "error"
+            });
+        });
+    </script>
+    @endif
 
     <!-- PWA Install Prompt - Only on Login Page -->
     @include('components.pwa-install-prompt')
