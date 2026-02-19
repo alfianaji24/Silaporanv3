@@ -36,14 +36,14 @@ class AuthenticatedSessionController extends Controller
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                return redirect()->route('login')->with('error', 'Silahkan Hubungi IT Support!!!');
+                return redirect()->route('login')->with('error', 'Mohon dapat menggunakan login administrator');
             }
         } else {
             if ($user->hasRole('karyawan')) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
-                return redirect()->route('loginuser')->with('error', 'Silahkan Hubungi IT Support!!!');
+                return redirect()->route('loginuser')->with('error', 'Anda Tidak Memiliki Akses Untuk Login, Silahkan Hubungi IT Support!!!');
             }
         }
 

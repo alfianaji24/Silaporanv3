@@ -129,7 +129,7 @@
                     Ingat saya
                 </label>
                 @if (Route::has('register'))
-                <div>Lupa Kata Sandi? <a href="#" id="linkDaftar">Lupa Kata Sandi?</a>
+                <a href="#" id="lupakatasandi" class="forgot-link">Lupa Kata Sandi?</a>
                 @endif
             </div>
 
@@ -175,6 +175,15 @@
                 title: "Daftar Akun?",
                 text: "Silahkan Hubungi IT Support!!!",
                 icon: "info"
+            });
+        });
+
+        document.getElementById('lupakatasandi')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: "Lupa Passsword",
+                text: "Untuk saat ini fitur belum tersedia, silahkan hubungi IT Support!!!",
+                icon: "error"
             });
         });
 
