@@ -128,7 +128,7 @@
                     <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} />
                     Ingat saya
                 </label>
-                <a href="{{ route('lupa-sandi') }}" class="forgot-link">Lupa Kata Sandi?</a>
+                <a href="#" class="forgot-link">Lupa Kata Sandi?</a>
             </div>
 
             <!-- <div style="text-align: center;">
