@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Auth Routes (Public - tidak perlu token)
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
+    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('api.auth.logout');
+    Route::get('/validate', [AuthController::class, 'validateToken'])->middleware('auth:sanctum')->name('api.auth.validate');
+    Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum')->name('api.auth.profile');
+});
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
