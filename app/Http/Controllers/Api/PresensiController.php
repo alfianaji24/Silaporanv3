@@ -421,7 +421,7 @@ class PresensiController extends Controller
  * @return \Illuminate\Http\JsonResponse
  */
 
-function history(Request $request, $userId) {
+public function history(Request $request, $userId) {
     // Contoh: asumsikan userId adalah NIK
     $records = Presensi::where('nik', $userId)
         ->orderBy('tanggal', 'desc')
