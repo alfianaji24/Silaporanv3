@@ -69,7 +69,6 @@
              </div>
              <a href="{{ route('profile.editprofile') }}" class="btn btn-sm rounded-2 shadow-sm"
                  style="background: {{ $general_setting->theme_color_1 }}; border: none; color: #fff; padding: 6px 12px;" data-bs-toggle="tooltip" title="Edit Profile">
-                 <i class="ti ti-settings" style="font-size: 16px;"></i>
              </a>
              <i class="ti ti-settings" style="font-size: 16px;"></i>
          </div>
