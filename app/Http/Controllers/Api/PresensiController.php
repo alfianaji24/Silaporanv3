@@ -412,22 +412,21 @@ class PresensiController extends Controller
     //             ->header('Connection', 'close');
     //     }
     // }
-}
 
-/**
- * API: Get attendance history for a user
- * @param Request $request
- * @param string $userId
- * @return \Illuminate\Http\JsonResponse
- */
-
-public function history(Request $request, $userId) {
-    // Contoh: asumsikan userId adalah NIK
-    $records = Presensi::where('nik', $userId)
-        ->orderBy('tanggal', 'desc')
-        ->get();
-    return response()->json([
-        'success' => true,
-        'data' => $records
-    ]);
+    /**
+     * API: Get attendance history for a user
+     * @param Request $request
+     * @param string $userId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function history(Request $request, $userId) {
+        // Contoh: asumsikan userId adalah NIK
+        $records = Presensi::where('nik', $userId)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $records
+        ]);
+    }
 }
