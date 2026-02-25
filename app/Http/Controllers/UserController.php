@@ -17,7 +17,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $userType = $request->user_type ?? 'biasa';
-        
+
         $users = User::with(['roles', 'cabangs', 'departemens'])
             ->when($request->name, function ($query, $name) {
                 return $query->where('name', 'like', '%' . $name . '%');
@@ -26,6 +26,9 @@ class UserController extends Controller
                 return $query->whereHas('roles', function ($subQuery) use ($role_id) {
                     $subQuery->where('role_id', $role_id);
                 });
+            })
+            ->when($request->has('fakegps_banned') && $request->fakegps_banned == '1', function ($query) {
+                return $query->where('is_fakegps_banned', true);
             })
             ->leftjoin('users_karyawan', 'users.id', '=', 'users_karyawan.id_user')
             ->when($userType == 'karyawan', function ($query) {
@@ -38,7 +41,7 @@ class UserController extends Controller
             ->select('users.*', 'users_karyawan.nik')
             ->distinct()
             ->paginate(10);
-        
+
         $users->appends($request->all());
 
         $roles = Role::orderBy('name')->get();
@@ -63,7 +66,7 @@ class UserController extends Controller
         $departemens = Departemen::orderBy('kode_dept')->get();
         $userCabangs = $user->cabangs->pluck('kode_cabang')->toArray();
         $userDepartemens = $user->departemens->pluck('kode_dept')->toArray();
-        
+
         return view('settings.users.edit', compact('user', 'roles', 'cabangs', 'departemens', 'userCabangs', 'userDepartemens'));
     }
 
@@ -164,7 +167,7 @@ class UserController extends Controller
 
             // Jika role adalah super admin, berikan akses ke semua cabang dan departemen
             $roleName = isset($request->role) ? strtolower($request->role) : strtolower($user->roles->pluck('name')->first() ?? '');
-            
+
             // Validasi untuk role selain super admin dan karyawan
             if ($roleName !== 'super admin' && $roleName !== 'karyawan') {
                 $request->validate([
@@ -179,7 +182,7 @@ class UserController extends Controller
                     'departemens.min' => 'Minimal 1 departemen harus dipilih',
                 ]);
             }
-            
+
             if ($roleName === 'super admin') {
                 $allCabangs = Cabang::pluck('kode_cabang')->toArray();
                 $allDepartemens = Departemen::pluck('kode_dept')->toArray();

@@ -6,9 +6,9 @@
              <span class="app-brand-logo rounded-circle demo d-flex align-items-center justify-content-center"
                  style="background: var(--theme-color-2); width: 46px; height: 46px !important; overflow: hidden;">
                  @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
-                     <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" class="w-100 h-100" style="object-fit: cover;">
+                 <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" class="w-100 h-100" style="object-fit: cover;">
                  @else
-                    <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" class="w-100 h-100" style="object-fit: cover;">
+                 <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" class="w-100 h-100" style="object-fit: cover;">
                  @endif
              </span>
              <span class="app-brand-text demo menu-text fw-bold d-flex flex-column ms-2" style="letter-spacing: 1px; color: #fff;">
@@ -27,24 +27,24 @@
      </div>
 
      @php
-         $authUser = auth()->user();
-         $fullName = $authUser->name ?? 'Pengguna';
-         $userName = explode(' ', $fullName)[0]; // Ambil nama depan saja
-         $userEmail = $authUser->email ?? '-';
-         $userPhoto = null;
-         $userRoleText = $authUser->getRoleNames()->first() ?? 'User';
+     $authUser = auth()->user();
+     $fullName = $authUser->name ?? 'Pengguna';
+     $userName = explode(' ', $fullName)[0]; // Ambil nama depan saja
+     $userEmail = $authUser->email ?? '-';
+     $userPhoto = null;
+     $userRoleText = $authUser->getRoleNames()->first() ?? 'User';
 
-         $userKaryawan = \App\Models\Userkaryawan::where('id_user', $authUser->id)->first();
-         if ($userKaryawan) {
-             $sidebarKaryawan = \App\Models\Karyawan::where('nik', $userKaryawan->nik)->first();
-             if (
-                 $sidebarKaryawan &&
-                 $sidebarKaryawan->foto &&
-                 \Illuminate\Support\Facades\Storage::disk('public')->exists('/karyawan/' . $sidebarKaryawan->foto)
-             ) {
-                 $userPhoto = getfotoKaryawan($sidebarKaryawan->foto);
-             }
-         }
+     $userKaryawan = \App\Models\Userkaryawan::where('id_user', $authUser->id)->first();
+     if ($userKaryawan) {
+     $sidebarKaryawan = \App\Models\Karyawan::where('nik', $userKaryawan->nik)->first();
+     if (
+     $sidebarKaryawan &&
+     $sidebarKaryawan->foto &&
+     \Illuminate\Support\Facades\Storage::disk('public')->exists('/karyawan/' . $sidebarKaryawan->foto)
+     ) {
+     $userPhoto = getfotoKaryawan($sidebarKaryawan->foto);
+     }
+     }
      @endphp
 
      <div class="px-3 pb-3 py-3">
@@ -52,14 +52,14 @@
              style="background: var(--theme-color-2); border: 1px solid rgba(0,0,0,0.05);">
              <div class="flex-shrink-0 position-relative">
                  @if ($userPhoto)
-                     <div class="rounded-circle border border-3 shadow"
-                         style="width: 48px; height: 48px; background-image: url('{{ $userPhoto }}'); background-size: cover; background-position: center; border-color: rgba(0,0,0,0.08) !important;">
-                     </div>
+                 <div class="rounded-circle border border-3 shadow"
+                     style="width: 48px; height: 48px; background-image: url('{{ $userPhoto }}'); background-size: cover; background-position: center; border-color: rgba(0,0,0,0.08) !important;">
+                 </div>
                  @else
-                     <div class="rounded-circle d-flex align-items-center justify-content-center shadow"
-                         style="width: 48px; height: 48px; font-size: 22px; background: #fff; color: var(--theme-color-2) !important;">
-                         <i class="ti ti-user"></i>
-                     </div>
+                 <div class="rounded-circle d-flex align-items-center justify-content-center shadow"
+                     style="width: 48px; height: 48px; font-size: 22px; background: #fff; color: var(--theme-color-2) !important;">
+                     <i class="ti ti-user"></i>
+                 </div>
                  @endif
              </div>
              <div class="flex-grow-1 ms-3">
@@ -71,6 +71,7 @@
                  style="background: {{ $general_setting->theme_color_1 }}; border: none; color: #fff; padding: 6px 12px;" data-bs-toggle="tooltip" title="Edit Profile">
                  <i class="ti ti-settings" style="font-size: 16px;"></i>
              </a>
+             <i class="ti ti-settings" style="font-size: 16px;"></i>
          </div>
      </div>
 
@@ -85,137 +86,143 @@
              </a>
          </li>
          @can('trackingpresensi.index')
-             <li class="menu-item {{ request()->is(['trackingpresensi', 'trackingpresensi/*']) ? 'active' : '' }}">
-                 <a href="{{ route('trackingpresensi.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-map-pin"></i>
-                     <div>Tracking Presensi</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['trackingpresensi', 'trackingpresensi/*']) ? 'active' : '' }}">
+             <a href="{{ route('trackingpresensi.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-map-pin"></i>
+                 <div>Tracking Presensi</div>
+             </a>
+         </li>
          @endcan
          @can('aktivitaskaryawan.index')
-             <li class="menu-item {{ request()->is(['aktivitaskaryawan', 'aktivitaskaryawan/*']) ? 'active' : '' }}">
-                 <a href="{{ route('aktivitaskaryawan.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-activity"></i>
-                     <div>Aktivitas Karyawan</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['aktivitaskaryawan', 'aktivitaskaryawan/*']) ? 'active' : '' }}">
+             <a href="{{ route('aktivitaskaryawan.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-activity"></i>
+                 <div>Aktivitas Karyawan</div>
+             </a>
+         </li>
          @endcan
          @can('kunjungan.index')
-             <li class="menu-item {{ request()->is(['kunjungan', 'kunjungan/*']) ? 'active' : '' }}">
-                 <a href="{{ route('kunjungan.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-map-pin"></i>
-                     <div>Kunjungan</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['kunjungan', 'kunjungan/*']) ? 'active' : '' }}">
+             <a href="{{ route('kunjungan.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-map-pin"></i>
+                 <div>Kunjungan</div>
+             </a>
+         </li>
          @endcan
          @can('pelanggaran.index')
-             <li class="menu-item {{ request()->is(['pelanggaran', 'pelanggaran/*']) ? 'active' : '' }}">
-                 <a href="{{ route('pelanggaran.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-alert-triangle"></i>
-                     <div>Pelanggaran</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['pelanggaran', 'pelanggaran/*']) ? 'active' : '' }}">
+             <a href="{{ route('pelanggaran.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-alert-triangle"></i>
+                 <div>Pelanggaran</div>
+             </a>
+         </li>
          @endcan
-        @can('pengumuman.index')
-            <li class="menu-item {{ request()->is(['pengumuman', 'pengumuman/*']) ? 'active' : '' }}">
-                <a href="{{ route('pengumuman.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-bell"></i>
-                    <div>Pengumuman</div>
-                </a>
-            </li>
-        @endcan
+         <li class="menu-item {{ request()->is(['fakegps-users', 'fakegps-users/*']) ? 'active' : '' }}">
+             <a href="{{ route('fakegps-users.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-ban"></i>
+                 <div>User FakeGPS</div>
+             </a>
+         </li>
+         @can('pengumuman.index')
+         <li class="menu-item {{ request()->is(['pengumuman', 'pengumuman/*']) ? 'active' : '' }}">
+             <a href="{{ route('pengumuman.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-bell"></i>
+                 <div>Pengumuman</div>
+             </a>
+         </li>
+         @endcan
 
          @can('kunjungan.index')
-             <li class="menu-item {{ request()->is(['tracking-kunjungan', 'tracking-kunjungan/*']) ? 'active' : '' }}">
-                 <a href="{{ route('tracking-kunjungan.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-map-2"></i>
-                     <div>Tracking Kunjungan</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['tracking-kunjungan', 'tracking-kunjungan/*']) ? 'active' : '' }}">
+             <a href="{{ route('tracking-kunjungan.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-map-2"></i>
+                 <div>Tracking Kunjungan</div>
+             </a>
+         </li>
          @endcan
          @can('kontrak.index')
-             <li class="menu-item {{ request()->is(['kontrak', 'kontrak/*']) ? 'active' : '' }}">
-                 <a href="{{ route('kontrak.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-file-certificate"></i>
-                     <div>Kontrak</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['kontrak', 'kontrak/*']) ? 'active' : '' }}">
+             <a href="{{ route('kontrak.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-file-certificate"></i>
+                 <div>Kontrak</div>
+             </a>
+         </li>
          @endcan
          @can('sip.index')
-             <li class="menu-item {{ request()->is(['sip', 'sip/*']) ? 'active' : '' }}">
-                 <a href="{{ route('sip.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-certificate"></i>
-                     <div>Surat Izin Praktik (SIP)</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['sip', 'sip/*']) ? 'active' : '' }}">
+             <a href="{{ route('sip.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-certificate"></i>
+                 <div>Surat Izin Praktik (SIP)</div>
+             </a>
+         </li>
          @endcan
 
          @if (auth()->user()->hasAnyPermission(['karyawan.index', 'departemen.index', 'cabang.index', 'cuti.index', 'jabatan.index', 'grup.index']))
-             <li
-                 class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'departemen/*', 'cabang', 'cuti', 'jabatan', 'grup', 'grup/*']) ? 'open' : '' }}">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-database"></i>
-                     <div>Data Master</div>
+         <li
+             class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'departemen/*', 'cabang', 'cuti', 'jabatan', 'grup', 'grup/*']) ? 'open' : '' }}">
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-database"></i>
+                 <div>Data Master</div>
 
-                 </a>
-                 <ul class="menu-sub">
-                     @can('karyawan.index')
-                         <li class="menu-item {{ request()->is(['karyawan', 'karyawan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('karyawan.index') }}" class="menu-link">
-                                 <div>Karyawan</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('departemen.index')
-                         <li class="menu-item {{ request()->is(['departemen', 'departemen/*']) ? 'active' : '' }}">
-                             <a href="{{ route('departemen.index') }}" class="menu-link">
-                                 <div>Departemen</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('grup.index')
-                         <li class="menu-item {{ request()->is(['grup', 'grup/*']) ? 'active' : '' }}">
-                             <a href="{{ route('grup.index') }}" class="menu-link">
-                                 <div>Grup</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('jabatan.index')
-                         <li class="menu-item {{ request()->is(['jabatan', 'jabatan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('jabatan.index') }}" class="menu-link">
-                                 <div>Jabatan</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('cabang.index')
-                         <li class="menu-item {{ request()->is(['cabang', 'cabang/*']) ? 'active' : '' }}">
-                             <a href="{{ route('cabang.index') }}" class="menu-link">
-                                 <div>Cabang</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('cuti.index')
-                         <li class="menu-item {{ request()->is(['cuti', 'cuti/*']) ? 'active' : '' }}">
-                             <a href="{{ route('cuti.index') }}" class="menu-link">
-                                 <div>Cuti</div>
-                             </a>
-                         </li>
-                     @endcan
+             </a>
+             <ul class="menu-sub">
+                 @can('karyawan.index')
+                 <li class="menu-item {{ request()->is(['karyawan', 'karyawan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('karyawan.index') }}" class="menu-link">
+                         <div>Karyawan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('departemen.index')
+                 <li class="menu-item {{ request()->is(['departemen', 'departemen/*']) ? 'active' : '' }}">
+                     <a href="{{ route('departemen.index') }}" class="menu-link">
+                         <div>Departemen</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('grup.index')
+                 <li class="menu-item {{ request()->is(['grup', 'grup/*']) ? 'active' : '' }}">
+                     <a href="{{ route('grup.index') }}" class="menu-link">
+                         <div>Grup</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('jabatan.index')
+                 <li class="menu-item {{ request()->is(['jabatan', 'jabatan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('jabatan.index') }}" class="menu-link">
+                         <div>Jabatan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('cabang.index')
+                 <li class="menu-item {{ request()->is(['cabang', 'cabang/*']) ? 'active' : '' }}">
+                     <a href="{{ route('cabang.index') }}" class="menu-link">
+                         <div>Cabang</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('cuti.index')
+                 <li class="menu-item {{ request()->is(['cuti', 'cuti/*']) ? 'active' : '' }}">
+                     <a href="{{ route('cuti.index') }}" class="menu-link">
+                         <div>Cuti</div>
+                     </a>
+                 </li>
+                 @endcan
 
 
-                 </ul>
-             </li>
+             </ul>
+         </li>
          @endif
          @if (auth()->user()->hasAnyPermission([
-                     'gajipokok.index',
-                     'jenistunjangan.index',
-                     'tunjangan.index',
-                     'bpjskesehatan.index',
-                     'bpjstenagakerja.index',
-                     'penyesuaiangaji.index',
-                 ]))
-             <li
-                 class="menu-item {{ request()->is([
+         'gajipokok.index',
+         'jenistunjangan.index',
+         'tunjangan.index',
+         'bpjskesehatan.index',
+         'bpjstenagakerja.index',
+         'penyesuaiangaji.index',
+         ]))
+         <li
+             class="menu-item {{ request()->is([
                      'gajipokok',
                      'jenistunjangan',
                      'tunjangan',
@@ -228,302 +235,302 @@
                  ])
                      ? 'open'
                      : '' }}">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-moneybag"></i>
-                     <div>Payroll</div>
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-moneybag"></i>
+                 <div>Payroll</div>
 
-                 </a>
-                 <ul class="menu-sub">
-                     @can('jenistunjangan.index')
-                         <li class="menu-item {{ request()->is(['jenistunjangan', 'jenistunjangan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('jenistunjangan.index') }}" class="menu-link">
-                                 <div>Jenis Tunjangan</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('gajipokok.index')
-                         <li class="menu-item {{ request()->is(['gajipokok', 'gajipokok/*']) ? 'active' : '' }}">
-                             <a href="{{ route('gajipokok.index') }}" class="menu-link">
-                                 <div>Gaji Pokok</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('tunjangan.index')
-                         <li class="menu-item {{ request()->is(['tunjangan', 'tunjangan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('tunjangan.index') }}" class="menu-link">
-                                 <div>Tunjangan</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('bpjskesehatan.index')
-                         <li class="menu-item {{ request()->is(['bpjskesehatan', 'bpjskesehatan/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bpjskesehatan.index') }}" class="menu-link">
-                                 <div>BPJS Kesehatan</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('bpjstenagakerja.index')
-                         <li class="menu-item {{ request()->is(['bpjstenagakerja', 'bpjstenagakerja/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bpjstenagakerja.index') }}" class="menu-link">
-                                 <div>BPJS Tenaga Kerja</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('penyesuaiangaji.index')
-                         <li class="menu-item {{ request()->is(['penyesuaiangaji', 'penyesuaiangaji/*']) ? 'active' : '' }}">
-                             <a href="{{ route('penyesuaiangaji.index') }}" class="menu-link">
-                                 <div>Penyesuaian Gaji</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('slipgaji.index')
-                         <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
-                             <a href="{{ route('slipgaji.index') }}" class="menu-link">
-                                 <div>Slip Gaji</div>
-                             </a>
-                         </li>
-                     @endcan
-                 </ul>
-             </li>
+             </a>
+             <ul class="menu-sub">
+                 @can('jenistunjangan.index')
+                 <li class="menu-item {{ request()->is(['jenistunjangan', 'jenistunjangan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('jenistunjangan.index') }}" class="menu-link">
+                         <div>Jenis Tunjangan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('gajipokok.index')
+                 <li class="menu-item {{ request()->is(['gajipokok', 'gajipokok/*']) ? 'active' : '' }}">
+                     <a href="{{ route('gajipokok.index') }}" class="menu-link">
+                         <div>Gaji Pokok</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('tunjangan.index')
+                 <li class="menu-item {{ request()->is(['tunjangan', 'tunjangan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('tunjangan.index') }}" class="menu-link">
+                         <div>Tunjangan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('bpjskesehatan.index')
+                 <li class="menu-item {{ request()->is(['bpjskesehatan', 'bpjskesehatan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('bpjskesehatan.index') }}" class="menu-link">
+                         <div>BPJS Kesehatan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('bpjstenagakerja.index')
+                 <li class="menu-item {{ request()->is(['bpjstenagakerja', 'bpjstenagakerja/*']) ? 'active' : '' }}">
+                     <a href="{{ route('bpjstenagakerja.index') }}" class="menu-link">
+                         <div>BPJS Tenaga Kerja</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('penyesuaiangaji.index')
+                 <li class="menu-item {{ request()->is(['penyesuaiangaji', 'penyesuaiangaji/*']) ? 'active' : '' }}">
+                     <a href="{{ route('penyesuaiangaji.index') }}" class="menu-link">
+                         <div>Penyesuaian Gaji</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('slipgaji.index')
+                 <li class="menu-item {{ request()->is(['slipgaji', 'slipgaji/*']) ? 'active' : '' }}">
+                     <a href="{{ route('slipgaji.index') }}" class="menu-link">
+                         <div>Slip Gaji</div>
+                     </a>
+                 </li>
+                 @endcan
+             </ul>
+         </li>
          @endif
          @if (auth()->user()->hasAnyPermission(['presensi.index']))
-             <li class="menu-item {{ request()->is(['presensi', 'presensi/*']) ? 'active' : '' }}">
-                 <a href="{{ route('presensi.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-device-desktop"></i>
-                     <div>Monitoring Presensi</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['presensi', 'presensi/*']) ? 'active' : '' }}">
+             <a href="{{ route('presensi.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-device-desktop"></i>
+                 <div>Monitoring Presensi</div>
+             </a>
+         </li>
          @endif
 
          @if (auth()->user()->hasAnyPermission(['izinabsen.index', 'izinsakit.index', 'izincuti.index', 'izindinas.index']))
-             <li class="menu-item {{ request()->is(['izinabsen', 'izinabsen/*', 'izinsakit', 'izincuti', 'izindinas']) ? 'active' : '' }}">
-                 <a href="{{ route('izinabsen.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-folder-check"></i>
-                     <div>Pengajuan Absen</div>
-                     @if (!empty($notifikasi_ajuan_absen))
-                         <div class="badge bg-danger rounded-pill ms-auto">{{ $notifikasi_ajuan_absen }}</div>
-                     @endif
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['izinabsen', 'izinabsen/*', 'izinsakit', 'izincuti', 'izindinas']) ? 'active' : '' }}">
+             <a href="{{ route('izinabsen.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-folder-check"></i>
+                 <div>Pengajuan Absen</div>
+                 @if (!empty($notifikasi_ajuan_absen))
+                 <div class="badge bg-danger rounded-pill ms-auto">{{ $notifikasi_ajuan_absen }}</div>
+                 @endif
+             </a>
+         </li>
          @endif
 
          @can('ajuanjadwal.index')
-             <li class="menu-item {{ request()->is(['ajuanjadwal', 'ajuanjadwal/*']) ? 'active' : '' }}">
-                 <a href="{{ route('ajuanjadwal.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-calendar-stats"></i>
-                     <div>Ajuan Jadwal</div>
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['ajuanjadwal', 'ajuanjadwal/*']) ? 'active' : '' }}">
+             <a href="{{ route('ajuanjadwal.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-calendar-stats"></i>
+                 <div>Ajuan Jadwal</div>
+             </a>
+         </li>
          @endcan
 
          @if (auth()->user()->hasAnyPermission(['kpi.period.index', 'kpi.indicator.index', 'kpi.employee.index']))
-             <li class="menu-item {{ request()->is(['kpi', 'kpi/*']) ? 'open' : '' }}">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-chart-bar"></i>
-                     <div>Manajemen KPI</div>
-                 </a>
-                 <ul class="menu-sub">
-                     @can('kpi.period.index')
-                         <li class="menu-item {{ request()->is(['kpi/periods', 'kpi/periods/*']) ? 'active' : '' }}">
-                             <a href="{{ route('kpi.periods.index') }}" class="menu-link">
-                                 <div>Periode Penilaian</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @can('kpi.indicator.index')
-                        <li class="menu-item {{ request()->is(['kpi/indicators', 'kpi/indicators/*']) ? 'active' : '' }}">
-                            <a href="{{ route('kpi.indicators.index') }}" class="menu-link">
-                                <div>Indikator KPI</div>
-                            </a>
-                        </li>
+         <li class="menu-item {{ request()->is(['kpi', 'kpi/*']) ? 'open' : '' }}">
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-chart-bar"></i>
+                 <div>Manajemen KPI</div>
+             </a>
+             <ul class="menu-sub">
+                 @can('kpi.period.index')
+                 <li class="menu-item {{ request()->is(['kpi/periods', 'kpi/periods/*']) ? 'active' : '' }}">
+                     <a href="{{ route('kpi.periods.index') }}" class="menu-link">
+                         <div>Periode Penilaian</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('kpi.indicator.index')
+                 <li class="menu-item {{ request()->is(['kpi/indicators', 'kpi/indicators/*']) ? 'active' : '' }}">
+                     <a href="{{ route('kpi.indicators.index') }}" class="menu-link">
+                         <div>Indikator KPI</div>
+                     </a>
+                 </li>
 
-                    @endcan
-                     @can('kpi.employee.index')
-                         <li class="menu-item {{ request()->is(['kpi/transactions', 'kpi/transactions/*']) ? 'active' : '' }}">
-                             <a href="{{ route('kpi.transactions.index') }}" class="menu-link">
-                                 <div>Input Penilaian</div>
-                             </a>
-                         </li>
-                     @endcan
-                 </ul>
-             </li>
+                 @endcan
+                 @can('kpi.employee.index')
+                 <li class="menu-item {{ request()->is(['kpi/transactions', 'kpi/transactions/*']) ? 'active' : '' }}">
+                     <a href="{{ route('kpi.transactions.index') }}" class="menu-link">
+                         <div>Input Penilaian</div>
+                     </a>
+                 </li>
+                 @endcan
+             </ul>
+         </li>
          @endif
          @if (auth()->user()->hasAnyPermission(['lembur.index']))
-             <li class="menu-item {{ request()->is(['lembur', 'lembur/*']) ? 'active' : '' }}">
-                 <a href="{{ route('lembur.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-clock"></i>
-                     <div>Lembur</div>
-                     @if (!empty($notifikasi_lembur))
-                         <div class="badge bg-danger rounded-pill ms-auto">{{ $notifikasi_lembur }}</div>
-                     @endif
-                 </a>
-             </li>
+         <li class="menu-item {{ request()->is(['lembur', 'lembur/*']) ? 'active' : '' }}">
+             <a href="{{ route('lembur.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-clock"></i>
+                 <div>Lembur</div>
+                 @if (!empty($notifikasi_lembur))
+                 <div class="badge bg-danger rounded-pill ms-auto">{{ $notifikasi_lembur }}</div>
+                 @endif
+             </a>
+         </li>
          @endif
-        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
-                'generalsetting.index',
-                'denda.index',
-                'harilibur.index',
-                'jamkerjabydept.index',
-                'jamkerja.index',
-                'approvalfeature.index',
-            ]))
-            <li
-                class="menu-item {{ request()->is(['harilibur', 'harilibur/*', 'jamkerjabydept', 'jamkerjabydept/*', 'generalsetting', 'denda', 'jamkerja', 'jamkerja/*','approvalfeature','approvalfeature/*']) ? 'open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle">
-                    <i class="menu-icon tf-icons ti ti-settings"></i>
-                    <div>Konfigurasi</div>
-                </a>
-                <ul class="menu-sub">
-                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('generalsetting.index'))
-                    <li
-                        class="menu-item {{ request()->is(['generalsetting', 'generalsetting/*']) ? 'active' : '' }}">
-                        <a href="{{ route('generalsetting.index') }}" class="menu-link">
-                            <div>General Setting</div>
-                        </a>
-                    </li>
-                    @endif
-                    @if ($general_setting->denda)
-                        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('denda.index'))
-                        <li
-                            class="menu-item {{ request()->is(['denda', 'denda/*']) ? 'active' : '' }}">
-                            <a href="{{ route('denda.index') }}" class="menu-link">
-                                <div>Denda</div>
-                            </a>
-                        </li>
-                        @endif
-                    @endif
+         @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
+         'generalsetting.index',
+         'denda.index',
+         'harilibur.index',
+         'jamkerjabydept.index',
+         'jamkerja.index',
+         'approvalfeature.index',
+         ]))
+         <li
+             class="menu-item {{ request()->is(['harilibur', 'harilibur/*', 'jamkerjabydept', 'jamkerjabydept/*', 'generalsetting', 'denda', 'jamkerja', 'jamkerja/*','approvalfeature','approvalfeature/*']) ? 'open' : '' }}">
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-settings"></i>
+                 <div>Konfigurasi</div>
+             </a>
+             <ul class="menu-sub">
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('generalsetting.index'))
+                 <li
+                     class="menu-item {{ request()->is(['generalsetting', 'generalsetting/*']) ? 'active' : '' }}">
+                     <a href="{{ route('generalsetting.index') }}" class="menu-link">
+                         <div>General Setting</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if ($general_setting->denda)
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('denda.index'))
+                 <li
+                     class="menu-item {{ request()->is(['denda', 'denda/*']) ? 'active' : '' }}">
+                     <a href="{{ route('denda.index') }}" class="menu-link">
+                         <div>Denda</div>
+                     </a>
+                 </li>
+                 @endif
+                 @endif
 
-                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('harilibur.index'))
-                    <li
-                        class="menu-item {{ request()->is(['harilibur', 'harilibur/*']) ? 'active' : '' }}">
-                        <a href="{{ route('harilibur.index') }}" class="menu-link">
-                            <div>Hari Libur</div>
-                        </a>
-                    </li>
-                    @endif
-                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerjabydept.index'))
-                    <li
-                        class="menu-item {{ request()->is(['jamkerjabydept', 'jamkerjabydept/*']) ? 'active' : '' }}">
-                        <a href="{{ route('jamkerjabydept.index') }}" class="menu-link">
-                            <div>Jam Kerja Departemen</div>
-                        </a>
-                    </li>
-                    @endif
-                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerja.index'))
-                    <li
-                        class="menu-item {{ request()->is(['jamkerja', 'jamkerja/*']) ? 'active' : '' }}">
-                        <a href="{{ route('jamkerja.index') }}" class="menu-link">
-                            <div>Jam Kerja</div>
-                        </a>
-                    </li>
-                    @endif
-                    @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('approvalfeature.index'))
-                    <li
-                        class="menu-item {{ request()->is(['approvalfeature', 'approvalfeature/*']) ? 'active' : '' }}">
-                        <a href="{{ route('approvalfeature.index') }}" class="menu-link">
-                            <div>Approval Features</div>
-                        </a>
-                    </li>
-                    @endif
-                </ul>
-            </li>
-        @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('harilibur.index'))
+                 <li
+                     class="menu-item {{ request()->is(['harilibur', 'harilibur/*']) ? 'active' : '' }}">
+                     <a href="{{ route('harilibur.index') }}" class="menu-link">
+                         <div>Hari Libur</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerjabydept.index'))
+                 <li
+                     class="menu-item {{ request()->is(['jamkerjabydept', 'jamkerjabydept/*']) ? 'active' : '' }}">
+                     <a href="{{ route('jamkerjabydept.index') }}" class="menu-link">
+                         <div>Jam Kerja Departemen</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('jamkerja.index'))
+                 <li
+                     class="menu-item {{ request()->is(['jamkerja', 'jamkerja/*']) ? 'active' : '' }}">
+                     <a href="{{ route('jamkerja.index') }}" class="menu-link">
+                         <div>Jam Kerja</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('approvalfeature.index'))
+                 <li
+                     class="menu-item {{ request()->is(['approvalfeature', 'approvalfeature/*']) ? 'active' : '' }}">
+                     <a href="{{ route('approvalfeature.index') }}" class="menu-link">
+                         <div>Approval Features</div>
+                     </a>
+                 </li>
+                 @endif
+             </ul>
+         </li>
+         @endif
          @if (auth()->user()->hasAnyPermission(['laporan.presensi', 'laporan.cuti']))
-             <li class="menu-item {{ request()->is(['laporan', 'laporan/*']) ? 'open' : '' }} ">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
-                     <div>Laporan</div>
-                 </a>
-                 <ul class="menu-sub">
-                    @can('laporan.presensi')
-                     <li class="menu-item {{ request()->is(['laporan/presensi']) ? 'active' : '' }}">
-                         <a href="{{ route('laporan.presensi') }}" class="menu-link">
-                             <div>Presensi & Gaji</div>
-                         </a>
-                     </li>
-                     @endcan
-                     @can('laporan.cuti')
-                          <li class="menu-item {{ request()->is(['laporan/cuti']) ? 'active' : '' }}">
-                              <a href="{{ route('laporan.cuti') }}" class="menu-link">
-                                  <div>Laporan Cuti</div>
-                              </a>
-                          </li>
-                      @endcan
-                 </ul>
-             </li>
+         <li class="menu-item {{ request()->is(['laporan', 'laporan/*']) ? 'open' : '' }} ">
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
+                 <div>Laporan</div>
+             </a>
+             <ul class="menu-sub">
+                 @can('laporan.presensi')
+                 <li class="menu-item {{ request()->is(['laporan/presensi']) ? 'active' : '' }}">
+                     <a href="{{ route('laporan.presensi') }}" class="menu-link">
+                         <div>Presensi & Gaji</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('laporan.cuti')
+                 <li class="menu-item {{ request()->is(['laporan/cuti']) ? 'active' : '' }}">
+                     <a href="{{ route('laporan.cuti') }}" class="menu-link">
+                         <div>Laporan Cuti</div>
+                     </a>
+                 </li>
+                 @endcan
+             </ul>
+         </li>
          @endif
-        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
-                'users.index',
-                'roles.index',
-                'permissions.index',
-                'permissiongroups.index',
-                'bersihkanfoto.index',
-                'resetdata.index',
-            ]))
-             <li
-                 class="menu-item {{ request()->is(['roles', 'roles/*', 'permissiongroups', 'permissiongroups/*', 'permissions', 'permissions/*', 'users', 'users/*', 'bersihkanfoto', 'bersihkanfoto/*', 'resetdata', 'resetdata/*']) ? 'open' : '' }} ">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
-                     <div>Utilities</div>
-                 </a>
-                 <ul class="menu-sub">
-                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('users.index'))
-                     <li
-                         class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
-                         <a href="{{ route('users.index') }}" class="menu-link">
-                             <div>User</div>
-                         </a>
-                     </li>
-                     @endif
-                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('roles.index'))
-                     <li
-                         class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
-                         <a href="{{ route('roles.index') }}" class="menu-link">
-                             <div>Role</div>
-                         </a>
-                     </li>
-                     @endif
-                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissions.index'))
-                     <li
-                         class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}"">
-                         <a href="{{ route('permissions.index') }}" class="menu-link">
-                             <div>Permission</div>
-                         </a>
-                     </li>
-                     @endif
-                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissiongroups.index'))
-                     <li
-                         class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
-                         <a href="{{ route('permissiongroups.index') }}" class="menu-link">
-                             <div>Group Permission</div>
-                         </a>
-                     </li>
-                     @endif
-                     @can('bersihkanfoto.index')
-                         <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
-                                 <div>Bersihkan Foto</div>
-                             </a>
-                         </li>
-                     @endcan
-                     @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('resetdata.index'))
-                     <li
-                         class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
-                         <a href="{{ route('resetdata.index') }}" class="menu-link">
-                             <div>Reset Data</div>
-                         </a>
-                     </li>
-                     @endif
-                 </ul>
-             </li>
+         @if (auth()->user()->hasRole(['super admin']) || auth()->user()->hasAnyPermission([
+         'users.index',
+         'roles.index',
+         'permissions.index',
+         'permissiongroups.index',
+         'bersihkanfoto.index',
+         'resetdata.index',
+         ]))
+         <li
+             class="menu-item {{ request()->is(['roles', 'roles/*', 'permissiongroups', 'permissiongroups/*', 'permissions', 'permissions/*', 'users', 'users/*', 'bersihkanfoto', 'bersihkanfoto/*', 'resetdata', 'resetdata/*']) ? 'open' : '' }} ">
+             <a href="javascript:void(0);" class="menu-link menu-toggle">
+                 <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
+                 <div>Utilities</div>
+             </a>
+             <ul class="menu-sub">
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('users.index'))
+                 <li
+                     class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
+                     <a href="{{ route('users.index') }}" class="menu-link">
+                         <div>User</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('roles.index'))
+                 <li
+                     class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
+                     <a href="{{ route('roles.index') }}" class="menu-link">
+                         <div>Role</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissions.index'))
+                 <li
+                     class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}"">
+                         <a href=" {{ route('permissions.index') }}" class="menu-link">
+                     <div>Permission</div>
+                     </a>
+                 </li>
+                 @endif
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('permissiongroups.index'))
+                 <li
+                     class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
+                     <a href="{{ route('permissiongroups.index') }}" class="menu-link">
+                         <div>Group Permission</div>
+                     </a>
+                 </li>
+                 @endif
+                 @can('bersihkanfoto.index')
+                 <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
+                     <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
+                         <div>Bersihkan Foto</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('resetdata.index'))
+                 <li
+                     class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
+                     <a href="{{ route('resetdata.index') }}" class="menu-link">
+                         <div>Reset Data</div>
+                     </a>
+                 </li>
+                 @endif
+             </ul>
+         </li>
          @endif
-        @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('wagateway.index'))
-             <li class="menu-item {{ request()->is(['wagateway', 'wagateway/*']) ? 'active' : '' }}">
-                 <a href="{{ route('wagateway.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-brand-whatsapp"></i>
-                     <div>WA Gateway</div>
-                 </a>
-             </li>
+         @if (auth()->user()->hasRole(['super admin']) || auth()->user()->can('wagateway.index'))
+         <li class="menu-item {{ request()->is(['wagateway', 'wagateway/*']) ? 'active' : '' }}">
+             <a href="{{ route('wagateway.index') }}" class="menu-link">
+                 <i class="menu-icon tf-icons ti ti-brand-whatsapp"></i>
+                 <div>WA Gateway</div>
+             </a>
+         </li>
          @endif
      </ul>
  </aside>

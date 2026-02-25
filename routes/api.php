@@ -15,12 +15,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 // Auth Routes (Public - tidak perlu token)
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('api.auth.login');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum')->name('api.auth.logout');
     Route::get('/validate', [AuthController::class, 'validateToken'])->middleware('auth:sanctum')->name('api.auth.validate');
     Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum')->name('api.auth.profile');
+});
+
+// Admin: Unban user dari banned fakegps
+Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+    Route::post('/unban-fakegps', [\App\Http\Controllers\Api\AdminController::class, 'unbanFakeGpsUser']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -63,3 +69,6 @@ Route::prefix('update')->group(function () {
     // Route dengan parameter di akhir (agar tidak conflict)
     Route::get('/{version}', [App\Http\Controllers\Api\UpdateController::class, 'show']);
 });
+
+// Endpoint histori presensi karyawan
+Route::get('/attendance/history/{userId}', [App\Http\Controllers\Api\PresensiController::class, 'history']);

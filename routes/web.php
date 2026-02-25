@@ -1,3 +1,4 @@
+use App\Http\Controllers\UserFakeGpsController;
 <?php
 
 use App\Http\Controllers\BpjskesehatanController;
@@ -52,6 +53,7 @@ use App\Http\Controllers\AktivitasKaryawanController;
 use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
+use App\Http\Controllers\UserFakeGpsController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -87,6 +89,9 @@ Route::controller(FacerecognitionpresensiController::class)->group(function () {
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+
+    // Page khusus user fakegps banned
+    Route::get('/fakegps-users', [UserFakeGpsController::class, 'index'])->name('fakegps-users.index');
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -684,23 +689,23 @@ Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admi
     });
 
     Route::get('/kpi/myscore', [KpiEmployeeController::class, 'myScore'])->name('kpi.transactions.myscore');
-    });
-    // Ajuan Jadwal Routes
-    Route::group(['middleware' => ['permission:ajuanjadwal.index']], function () {
-        Route::get('/ajuanjadwal', [App\Http\Controllers\AjuanJadwalController::class, 'index'])->name('ajuanjadwal.index');
-    });
+});
+// Ajuan Jadwal Routes
+Route::group(['middleware' => ['permission:ajuanjadwal.index']], function () {
+    Route::get('/ajuanjadwal', [App\Http\Controllers\AjuanJadwalController::class, 'index'])->name('ajuanjadwal.index');
+});
 
-    Route::group(['middleware' => ['permission:ajuanjadwal.create']], function () {
-        Route::get('/ajuanjadwal/create', [App\Http\Controllers\AjuanJadwalController::class, 'create'])->name('ajuanjadwal.create');
-        Route::post('/ajuanjadwal/store', [App\Http\Controllers\AjuanJadwalController::class, 'store'])->name('ajuanjadwal.store');
-        Route::delete('/ajuanjadwal/{id}/delete', [App\Http\Controllers\AjuanJadwalController::class, 'destroy'])->name('ajuanjadwal.delete');
-    });
+Route::group(['middleware' => ['permission:ajuanjadwal.create']], function () {
+    Route::get('/ajuanjadwal/create', [App\Http\Controllers\AjuanJadwalController::class, 'create'])->name('ajuanjadwal.create');
+    Route::post('/ajuanjadwal/store', [App\Http\Controllers\AjuanJadwalController::class, 'store'])->name('ajuanjadwal.store');
+    Route::delete('/ajuanjadwal/{id}/delete', [App\Http\Controllers\AjuanJadwalController::class, 'destroy'])->name('ajuanjadwal.delete');
+});
 
-    Route::group(['middleware' => ['permission:ajuanjadwal.approve']], function () {
-        Route::post('/ajuanjadwal/{id}/approve', [App\Http\Controllers\AjuanJadwalController::class, 'approve'])->name('ajuanjadwal.approve');
-        Route::post('/ajuanjadwal/{id}/reject', [App\Http\Controllers\AjuanJadwalController::class, 'reject'])->name('ajuanjadwal.reject');
-        Route::post('/ajuanjadwal/{id}/cancelapprove', [App\Http\Controllers\AjuanJadwalController::class, 'cancelapprove'])->name('ajuanjadwal.cancelapprove');
-    });
+Route::group(['middleware' => ['permission:ajuanjadwal.approve']], function () {
+    Route::post('/ajuanjadwal/{id}/approve', [App\Http\Controllers\AjuanJadwalController::class, 'approve'])->name('ajuanjadwal.approve');
+    Route::post('/ajuanjadwal/{id}/reject', [App\Http\Controllers\AjuanJadwalController::class, 'reject'])->name('ajuanjadwal.reject');
+    Route::post('/ajuanjadwal/{id}/cancelapprove', [App\Http\Controllers\AjuanJadwalController::class, 'cancelapprove'])->name('ajuanjadwal.cancelapprove');
+});
 // Route::get('/storage/{path}', function ($path) {
 //     return response()->file(storage_path('app/public/' . $path));
 // })->where('path', '.*');
