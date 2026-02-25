@@ -1,4 +1,3 @@
-use App\Http\Controllers\UserFakeGpsController;
 <?php
 
 use App\Http\Controllers\BpjskesehatanController;
