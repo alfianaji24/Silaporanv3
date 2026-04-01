@@ -269,13 +269,15 @@ class IzindinasController extends Controller
         $kode_izin_dinas = Crypt::decrypt($kode_izin_dinas);
         $izindinas = Izindinas::where('kode_izin_dinas', $kode_izin_dinas)
             ->join('karyawan', 'presensi_izindinas.nik', '=', 'karyawan.nik')
-            ->select('presensi_izindinas.*', 'karyawan.kode_dept', 'karyawan.kode_cabang')
+            ->select('presensi_izindinas.*', 'karyawan.kode_dept', 'karyawan.kode_cabang', 'karyawan.kode_jabatan')
             ->first();
         
         // Cek akses jika bukan super admin
         if (!$user->isSuperAdmin()) {
-            $userCabangs = $user->getCabangCodes();
-            $userDepartemens = $user->getDepartemenCodes();
+            // Untuk delegasi, gunakan cabang/dept admin
+            $accessUser = $user->getApprovalAdmin() ?? $user;
+            $userCabangs = $accessUser->getCabangCodes();
+            $userDepartemens = $accessUser->getDepartemenCodes();
             
             if (!in_array($izindinas->kode_cabang, $userCabangs) || !in_array($izindinas->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke izin dinas ini.');
@@ -283,36 +285,34 @@ class IzindinasController extends Controller
         }
         
         $kode_dept = $izindinas->kode_dept;
+        $kode_jabatan = $izindinas->kode_jabatan;
+        $kode_cabang = $izindinas->kode_cabang;
         $currentStep = $izindinas->approval_step;
         $userRole = $user->getRoleNames()->first();
+        $approvalUserId = $approvalService->getApprovalUserId($user);
+        $approvalAdmin = $approvalUserId != $user->id ? User::find($approvalUserId) : $user;
 
          // Check Authorization using Service
-        if (!$approvalService->canApprove('IZIN', $currentStep, $userRole, $kode_dept)) {
+        if (!$approvalService->canApprove('IZIN', $currentStep, $userRole, $kode_dept, $kode_jabatan, $user, $kode_cabang)) {
              return Redirect::back()->with(messageError('Anda tidak memiliki wewenang untuk menyetujui tahap ini.'));
         }
         
         DB::beginTransaction();
         try {
             if (isset($request->approve)) {
-                 // 1. Record Approval
+                 // 1. Record Approval (atas nama admin jika delegasi)
                 Approval::create([
                     'approvable_type' => Izindinas::class,
                     'approvable_id' => $kode_izin_dinas,
-                    'user_id' => $user->id,
+                    'user_id' => $approvalUserId,
                     'level' => $currentStep,
                     'status' => 'approved',
-                    'keterangan' => 'Approved by ' . $user->name,
+                    'keterangan' => 'Approved by ' . $approvalAdmin->name,
                 ]);
 
                 // 2. Check for Next Level rule
                 $nextLevel = $currentStep + 1;
-                $nextRule = ApprovalLayer::where('feature', 'IZIN')
-                    ->where('level', $nextLevel)
-                    ->where(function ($q) use ($kode_dept) {
-                        $q->where('kode_dept', $kode_dept)
-                          ->orWhereNull('kode_dept');
-                    })
-                    ->first();
+                $nextRule = $approvalService->getLayer('IZIN', $nextLevel, $kode_dept, $kode_jabatan, $kode_cabang);
                 
                  if ($nextRule && !$user->hasRole('super admin')) {
                     // Update to next step
@@ -329,10 +329,10 @@ class IzindinasController extends Controller
                 Approval::create([
                     'approvable_type' => Izindinas::class,
                     'approvable_id' => $kode_izin_dinas,
-                    'user_id' => $user->id,
+                    'user_id' => $approvalUserId,
                     'level' => $currentStep,
                     'status' => 'rejected',
-                    'keterangan' => 'Rejected by ' . $user->name,
+                    'keterangan' => 'Rejected by ' . $approvalAdmin->name,
                 ]);
 
                 Izindinas::where('kode_izin_dinas', $kode_izin_dinas)->update([

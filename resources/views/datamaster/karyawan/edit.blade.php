@@ -78,6 +78,7 @@
     </div>
     <x-input-file name="foto" label="Foto" />
 
+    <x-input-with-icon-label icon="ti ti-id" label="RFID UID" name="rfid_uid" value="{{ $karyawan->rfid_uid }}" />
     <x-input-with-icon icon="ti ti-fingerprint" label="PIN Finger Print" name="pin" value="{{ $karyawan->pin }}" />
     <div class="form-group">
         <button class="btn btn-primary w-100" type="submit">

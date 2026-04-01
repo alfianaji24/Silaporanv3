@@ -45,6 +45,9 @@
             <li class="nav-item" role="presentation">
                 <a href="{{ route('ajuanjadwal.index') }}" class="nav-link {{ request()->is(['ajuanjadwal']) ? 'active' : '' }}">
                     <i class="tf-icons ti ti-calendar-stats ti-md me-1"></i> Ajuan Jadwal
+                    @if (!empty($notifikasi_ajuan_jadwal))
+                        <span class="badge bg-danger rounded-pill ms-2">{{ $notifikasi_ajuan_jadwal }}</span>
+                    @endif
                 </a>
             </li>
         @endcan

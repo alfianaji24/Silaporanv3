@@ -16,5 +16,7 @@ class ApprovalLayer extends Model
         'level',
         'role_name',
         'kode_dept',
+        'kode_jabatan',
+        'kode_cabang',
     ];
 }

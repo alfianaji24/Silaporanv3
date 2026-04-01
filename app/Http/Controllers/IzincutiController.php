@@ -184,6 +184,27 @@ class IzincutiController extends Controller
             $kode_izin_cuti  = buatkode($last_kode_izin_cuti, "IC"  . date('ym', strtotime($request->dari)), 4);
 
 
+            $jmlhari = hitungHari($request->dari, $request->sampai);
+            $cuti = Cuti::where('kode_cuti', $request->kode_cuti)->first();
+            $jml_hari_max = $cuti->jumlah_hari;
+
+            if ($request->kode_cuti == "C01") {
+                $tahun_cuti = date('Y', strtotime($request->dari));
+                $cek_cuti_dipakai = Approveizincuti::join('presensi', 'presensi_izincuti_approve.id_presensi', '=', 'presensi.id')
+                    ->where('presensi.nik', $nik)
+                    ->whereRaw("YEAR(presensi.tanggal) = $tahun_cuti")
+                    ->count();
+                $sisa_cuti = $jml_hari_max - $cek_cuti_dipakai;
+
+                if ($jmlhari > $sisa_cuti) {
+                    return Redirect::back()->with(messageError('Sisa Cuti Tahunan Anda Adalah ' . $sisa_cuti . ' Hari. Pengajuan ' . $jmlhari . ' Hari Melebihi Batas!'));
+                }
+            } else {
+                if ($jmlhari > $jml_hari_max) {
+                    return Redirect::back()->with(messageError('Maksimal Pengambilan Cuti ' . $cuti->jenis_cuti . ' Adalah ' . $jml_hari_max . ' Hari Per Pengajuan!'));
+                }
+            }
+
             $dataizincuti = [
                 'kode_izin_cuti' => $kode_izin_cuti,
                 'nik' => $nik,
@@ -196,7 +217,6 @@ class IzincutiController extends Controller
                 'approval_step' => 1,
                 'id_user' => $user->id,
             ];
-
 
             Izincuti::create($dataizincuti);
             DB::commit();
@@ -322,16 +342,20 @@ class IzincutiController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+        $approvalService = app(ApprovalService::class);
         
         $kode_izin_cuti = Crypt::decrypt($kode_izin_cuti);
         $izincuti = Izincuti::where('kode_izin_cuti', $kode_izin_cuti)
             ->join('karyawan', 'presensi_izincuti.nik', '=', 'karyawan.nik')
+            ->select('presensi_izincuti.*', 'karyawan.kode_dept', 'karyawan.kode_cabang', 'karyawan.kode_jabatan')
             ->first();
         
         // Cek akses jika bukan super admin
         if (!$user->isSuperAdmin()) {
-            $userCabangs = $user->getCabangCodes();
-            $userDepartemens = $user->getDepartemenCodes();
+            // Untuk delegasi, gunakan cabang/dept admin
+            $accessUser = $user->getApprovalAdmin() ?? $user;
+            $userCabangs = $accessUser->getCabangCodes();
+            $userDepartemens = $accessUser->getDepartemenCodes();
             
             if (!in_array($izincuti->kode_cabang, $userCabangs) || !in_array($izincuti->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke izin cuti ini.');
@@ -341,61 +365,107 @@ class IzincutiController extends Controller
         $sampai = $izincuti->sampai;
         $nik = $izincuti->nik;
         $kode_dept = $izincuti->kode_dept;
+        $kode_jabatan = $izincuti->kode_jabatan;
+        $kode_cabang = $izincuti->kode_cabang;
+        $currentStep = $izincuti->approval_step;
+        $userRole = $user->getRoleNames()->first();
+        $approvalUserId = $approvalService->getApprovalUserId($user);
+        $approvalAdmin = $approvalUserId != $user->id ? User::find($approvalUserId) : $user;
         $error = '';
+
+        // Check Authorization using Service
+        if (!$approvalService->canApprove('IZIN', $currentStep, $userRole, $kode_dept, $kode_jabatan, $user, $kode_cabang)) {
+             if (!$user->isSuperAdmin()) {
+                 return Redirect::back()->with(messageError('Anda tidak memiliki wewenang untuk approval tahap ke-' . $currentStep));
+             }
+        }
+
         DB::beginTransaction();
         try {
             if (isset($request->approve)) {
-                // echo 'test';
-                Izincuti::where('kode_izin_cuti', $kode_izin_cuti)->update([
-                    'status' => 1
+                 // 1. Record Approval (atas nama admin jika delegasi)
+                Approval::create([
+                    'approvable_type' => Izincuti::class,
+                    'approvable_id' => $kode_izin_cuti,
+                    'user_id' => $approvalUserId,
+                    'level' => $currentStep,
+                    'status' => 'approved',
+                    'keterangan' => 'Approved by ' . $approvalAdmin->name,
                 ]);
 
-                while (strtotime($dari) <= strtotime($sampai)) {
+                // 2. Check for Next Level rule
+                $nextLevel = $currentStep + 1;
+                $nextRule = $approvalService->getLayer('IZIN', $nextLevel, $kode_dept, $kode_jabatan, $kode_cabang);
+                
+                 if ($nextRule && !$user->hasRole('super admin')) {
+                    // Update to next step
+                    Izincuti::where('kode_izin_cuti', $kode_izin_cuti)->update(['approval_step' => $nextLevel]);
+                     DB::commit();
+                    return Redirect::back()->with(messageSuccess('Berhasil disetujui (Tahap ' . $currentStep . '). Menunggu approval tahap selanjutnya.'));
+                } else {
+                    // Final Approval
+                    Izincuti::where('kode_izin_cuti', $kode_izin_cuti)->update([
+                        'status' => 1
+                    ]);
 
-                    //Cek Jadwal Pada Setiap tanggal
-                    $namahari = getnamaHari(date('D', strtotime($dari)));
-
-                    $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                        ->where('nik', $izincuti->nik)
-                        ->where('tanggal', $dari)
-                        ->first();
-                    if ($jamkerja == null) {
-
-                        $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                            ->where('nik', $izincuti->nik)->where('hari', $namahari)
+                    while (strtotime($dari) <= strtotime($sampai)) {
+    
+                        //Cek Jadwal Pada Setiap tanggal
+                        $namahari = getnamaHari(date('D', strtotime($dari)));
+    
+                        $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                            ->where('nik', $izincuti->nik)
+                            ->where('tanggal', $dari)
                             ->first();
+                        if ($jamkerja == null) {
+    
+                            $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                                ->where('nik', $izincuti->nik)->where('hari', $namahari)
+                                ->first();
+                        }
+    
+                        if ($jamkerja == null) {
+                            $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+                                ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                                ->where('kode_dept', $kode_dept)
+                                ->where('kode_cabang', $izincuti->kode_cabang)
+                                ->where('hari', $namahari)->first();
+                        }
+    
+                        if ($jamkerja == null) {
+                            $error .= 'Jam Kerja pada Tanggal ' . $dari . ' Belum Di Set! <br>';
+                        } else {
+                            // dd($request->all());
+                            // dd(isset($request->approve));
+                            $presensi = Presensi::create([
+                                'nik' => $nik,
+                                'tanggal' => $dari,
+                                'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
+                                'status' => 'c',
+                            ]);
+    
+                            Approveizincuti::create([
+                                'id_presensi' => $presensi->id,
+                                'kode_izin_cuti' => $kode_izin_cuti,
+                            ]);
+                        }
+    
+    
+                        $dari = date('Y-m-d', strtotime($dari . ' +1 day'));
                     }
-
-                    if ($jamkerja == null) {
-                        $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
-                            ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                            ->where('kode_dept', $kode_dept)
-                            ->where('kode_cabang', $izincuti->kode_cabang)
-                            ->where('hari', $namahari)->first();
-                    }
-
-                    if ($jamkerja == null) {
-                        $error .= 'Jam Kerja pada Tanggal ' . $dari . ' Belum Di Set! <br>';
-                    } else {
-                        // dd($request->all());
-                        // dd(isset($request->approve));
-                        $presensi = Presensi::create([
-                            'nik' => $nik,
-                            'tanggal' => $dari,
-                            'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
-                            'status' => 'c',
-                        ]);
-
-                        Approveizincuti::create([
-                            'id_presensi' => $presensi->id,
-                            'kode_izin_cuti' => $kode_izin_cuti,
-                        ]);
-                    }
-
-
-                    $dari = date('Y-m-d', strtotime($dari . ' +1 day'));
                 }
+
             } else {
+                 // REJECTION Logic
+                Approval::create([
+                    'approvable_type' => Izincuti::class,
+                    'approvable_id' => $kode_izin_cuti,
+                    'user_id' => $approvalUserId,
+                    'level' => $currentStep,
+                    'status' => 'rejected',
+                    'keterangan' => 'Rejected by ' . $approvalAdmin->name,
+                ]);
+
                 Izincuti::where('kode_izin_cuti', $kode_izin_cuti)->update([
                     'status' => 2
                 ]);

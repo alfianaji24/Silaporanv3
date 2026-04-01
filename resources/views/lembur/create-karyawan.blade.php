@@ -1,452 +1,233 @@
-@extends('layouts.mobile.app')
-@section('content')
+@extends('layouts.mobile.modern')
+
+@section('title', 'Ajukan Lembur')
+
+@section('header_left')
+    <a href="{{ route('lembur.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-white active:scale-95 transition-all">
+        <ion-icon name="chevron-back-outline" class="text-lg"></ion-icon>
+    </a>
+@endsection
+
+@push('mystyle')
     <style>
-        /* Tambahkan style untuk header dan content */
-        #header-section {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+        body {
+            background: #e6fcf5 !important;
         }
 
-        #content-section {
-            margin-top: 70px;
-            padding-top: 5px;
+        .form-container {
+            padding: 10px 5px;
+        }
+
+        .form-label-group {
             position: relative;
-            z-index: 1;
-        }
-
-        /* Custom Flatpickr Styling */
-        .flatpickr-date {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding-right: 45px !important;
-        }
-
-        .flatpickr-date:focus {
-            border-color: #32745e !important;
-            box-shadow: 0 0 0 3px rgba(50, 116, 94, 0.1) !important;
-        }
-
-        .flatpickr-date::after {
-            content: '';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2332745e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-
-        .flatpickr-date:hover::after,
-        .flatpickr-date:focus::after {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        /* Flatpickr Calendar Container */
-        .flatpickr-calendar {
-            border-radius: 16px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-            border: none !important;
+            margin-bottom: 12px;
+            background: transparent !important;
+            border: 1px solid #32745e;
+            border-radius: 12px;
             overflow: hidden;
-            animation: slideDown 0.3s ease-out;
-            max-width: 100%;
-            box-sizing: border-box !important;
+            transition: all 0.2s ease;
         }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .form-label-group .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            font-size: 24px;
+            color: #32745e;
+            z-index: 10;
+            pointer-events: none;
         }
 
-        /* Flatpickr Header */
-        .flatpickr-months {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            padding: 15px 0 !important;
-            border-radius: 16px 16px 0 0;
+        .form-label-group input,
+        .form-label-group textarea {
+            width: 100% !important;
+            height: 54px;
+            padding: 22px 15px 5px 52px !important;
+            font-size: 16px;
+            font-weight: 500;
+            color: #2a6350;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            display: block !important;
         }
 
-        .flatpickr-month {
-            color: white !important;
+        .form-label-group textarea {
+            height: 120px !important;
+            padding-top: 30px !important;
+            resize: none;
         }
 
-        .flatpickr-current-month {
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 16px !important;
+        .form-label-group label {
+            position: absolute;
+            top: 15px;
+            left: 52px;
+            font-size: 16px;
+            color: #32745e;
+            opacity: 0.8;
+            pointer-events: none;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 0;
+            z-index: 5;
         }
 
-        .flatpickr-prev-month,
-        .flatpickr-next-month {
-            color: white !important;
-            fill: white !important;
-            padding: 8px !important;
-            border-radius: 8px !important;
-            transition: all 0.2s ease !important;
+        .form-label-group input:focus ~ label,
+        .form-label-group input:not(:placeholder-shown) ~ label,
+        .form-label-group textarea:focus ~ label,
+        .form-label-group textarea:not(:placeholder-shown) ~ label {
+            top: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #32745e;
         }
 
-        .flatpickr-prev-month:hover,
-        .flatpickr-next-month:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: scale(1.1);
+        .btn-submit-modern {
+            width: 100%;
+            height: 54px;
+            background: #32745e;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 5px;
+            transition: all 0.3s;
         }
 
-        /* Flatpickr Weekdays */
-        .flatpickr-weekdays {
-            background: rgba(50, 116, 94, 0.1) !important;
-            padding: 10px 0 !important;
-        }
-
-        .flatpickr-weekday {
-            color: #32745e !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
-        }
-
-        /* Flatpickr Days */
-        .flatpickr-days {
-            padding: 10px !important;
-        }
-
-        .flatpickr-day {
-            border-radius: 10px !important;
-            border: 2px solid transparent !important;
-            transition: all 0.2s ease !important;
-            font-weight: 500 !important;
-        }
-
-        .flatpickr-day:hover {
-            background: rgba(50, 116, 94, 0.1) !important;
-            border-color: #32745e !important;
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(50, 116, 94, 0.2) !important;
-        }
-
-        .flatpickr-day.selected {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            border-color: #32745e !important;
-            color: white !important;
-            font-weight: 600 !important;
-            box-shadow: 0 4px 12px rgba(50, 116, 94, 0.4) !important;
-        }
-
-        .flatpickr-day.today {
-            border-color: #32745e !important;
-            background: rgba(50, 116, 94, 0.1) !important;
-            color: #32745e !important;
-            font-weight: 700 !important;
-        }
-
-        .flatpickr-day.today.selected {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            color: white !important;
-        }
-
-        .flatpickr-day.flatpickr-disabled {
-            color: #ccc !important;
-            opacity: 0.5 !important;
-        }
-
-        /* Flatpickr Time Input */
-        .flatpickr-time {
-            border-top: 1px solid #e0e0e0 !important;
-            padding: 15px !important;
-        }
-
-        .flatpickr-time input {
-            border-radius: 8px !important;
-            border: 2px solid #e0e0e0 !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-time input:hover {
-            border-color: #32745e !important;
-        }
-
-        .flatpickr-time .flatpickr-time-separator {
-            color: #32745e !important;
-        }
-
-        /* Mobile Responsive - Enhanced */
-        @media (max-width: 576px) {
-            .flatpickr-calendar {
-                width: calc(100vw - 32px) !important;
-                max-width: calc(100vw - 32px) !important;
-                min-width: calc(100vw - 32px) !important;
-                left: 16px !important;
-                right: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-calendar .flatpickr-innerContainer {
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-calendar .flatpickr-days {
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-day {
-                height: 38px !important;
-                line-height: 38px !important;
-                font-size: 14px !important;
-            }
-
-            .flatpickr-weekday {
-                font-size: 12px !important;
-                padding: 8px 0 !important;
-            }
-
-            .flatpickr-months {
-                padding: 12px 0 !important;
-            }
-
-            .flatpickr-current-month {
-                font-size: 14px !important;
-            }
-
-            .flatpickr-prev-month,
-            .flatpickr-next-month {
-                padding: 6px !important;
-            }
-
-            .flatpickr-days {
-                padding: 8px !important;
-            }
-        }
-
-        /* Extra Small Mobile */
-        @media (max-width: 375px) {
-            .flatpickr-calendar {
-                width: calc(100vw - 24px) !important;
-                max-width: calc(100vw - 24px) !important;
-                min-width: calc(100vw - 24px) !important;
-                left: 12px !important;
-                right: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-day {
-                height: 35px !important;
-                line-height: 35px !important;
-                font-size: 13px !important;
-            }
-
-            .flatpickr-weekday {
-                font-size: 11px !important;
-            }
+        .btn-submit-modern:active {
+            transform: scale(0.97);
+            background: #2a6350;
         }
     </style>
-    <div id="header-section">
-        <div class="appHeader bg-primary text-light">
-            <div class="left">
-                <a href="{{ route('dashboard.index') }}" class="headerButton goBack">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </a>
-            </div>
-            <div class="pageTitle">Ajukan Lembur</div>
-            <div class="right"></div>
-        </div>
-    </div>
-    <div id="content-section">
-        <div class="row" style="margin-top: 30px">
-            <div class="col pl-3 pr-3">
-                <form action="{{ route('lembur.store') }}" method="POST" id="formLembur" autocomplete="off">
-                    @csrf
+@endpush
 
-                    <input type="text" class="feedback-input dari flatpickr-date" name="dari" placeholder="Dari" id="datePicker" />
-                    <input type="text" class="feedback-input sampai flatpickr-date" name="sampai" placeholder="Sampai" id="datePicker2" />
-                    <textarea placeholder="Keterangan" class="feedback-input keterangan" name="keterangan" style="height: 100px"></textarea>
-                    <button class="btn btn-primary w-100" id="btnSimpan"><i class="ti ti-send me-1"></i>Buat Lembur</button>
-                </form>
+@section('content')
+    <div class="fade-up form-container">
+        <form action="{{ route('lembur.store') }}" method="POST" id="formLembur" autocomplete="off">
+            @csrf
+
+            <div class="form-label-group">
+                <ion-icon name="time-outline" class="input-icon"></ion-icon>
+                <input type="text" name="dari" id="dari" placeholder=" " required readonly>
+                <label for="dari">Dari Waktu</label>
             </div>
-        </div>
+
+            <div class="form-label-group">
+                <ion-icon name="time-outline" class="input-icon"></ion-icon>
+                <input type="text" name="sampai" id="sampai" placeholder=" " required readonly>
+                <label for="sampai">Sampai Waktu</label>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="calculator-outline" class="input-icon"></ion-icon>
+                <input type="text" name="jml_jam" id="jml_jam" placeholder=" " readonly>
+                <label for="jml_jam">Jumlah Jam</label>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="document-text-outline" class="input-icon"></ion-icon>
+                <textarea name="keterangan" id="keterangan" placeholder=" " required></textarea>
+                <label for="keterangan">Keterangan</label>
+            </div>
+
+            <button type="submit" class="btn-submit-modern" id="btnSimpan">
+                <ion-icon name="paper-plane-outline"></ion-icon>
+                <span>Ajukan Lembur</span>
+            </button>
+        </form>
     </div>
 @endsection
+
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.5.0/air-datepicker.min.js"></script>
     <script>
-        // Define Indonesian locale for flatpickr
-        const indonesianLocale = {
-            firstDayOfWeek: 1,
-            weekdays: {
-                shorthand: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-                longhand: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-            },
-            months: {
-                shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-                longhand: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-            }
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            const localeIndo = {
+                days: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+                daysShort: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                daysMin: ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'],
+                months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+                monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                today: 'Hari ini',
+                clear: 'Hapus',
+                dateFormat: 'yyyy-MM-dd',
+                timeFormat: 'HH:mm',
+                firstDay: 1
+            };
 
-        // Initialize flatpickr for datetime inputs with enhanced styling and mobile optimization
-        const datePicker1 = flatpickr('#datePicker', {
-            dateFormat: 'Y-m-d H:i',
-            allowInput: false,
-            enableTime: true,
-            time_24hr: true,
-            monthSelectorType: 'static',
-            animate: true,
-            locale: indonesianLocale,
-            clickOpens: true,
-            disableMobile: false,
-            onOpen: function(selectedDates, dateStr, instance) {
-                instance.calendarContainer.style.animation = 'slideDown 0.3s ease-out';
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.position = 'fixed';
-                    instance.calendarContainer.style.left = padding + 'px';
-                    instance.calendarContainer.style.right = 'auto';
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.margin = '0';
-                    instance.calendarContainer.style.padding = '0';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
+            function hitungJam(startDate, endDate) {
+                if (startDate && endDate) {
+                    var start = new Date(startDate);
+                    var end = new Date(endDate);
+
+                    // Tambahkan 1 detik agar penghitungan inklusif (opsional, disesuaikan dengan logic lama)
+                    var timeDifference = end - start + 1000;
+                    var hourDifference = timeDifference / (1000 * 3600);
+                    return hourDifference > 0 ? hourDifference.toFixed(2) : 0;
                 }
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
+                return 0;
+            }
+
+            const dpDari = new AirDatepicker('#dari', {
+                locale: localeIndo,
+                autoClose: false,
+                isMobile: true,
+                timepicker: true,
+                buttons: ['today', 'clear'],
+                onSelect: ({date, formattedDate}) => {
+                    let sampai = document.getElementById('sampai').value;
+                    let jmljam = hitungJam(formattedDate, sampai);
+                    document.getElementById('jml_jam').value = jmljam;
                 }
-            }
-        });
+            });
 
-        const datePicker2 = flatpickr('#datePicker2', {
-            dateFormat: 'Y-m-d H:i',
-            allowInput: false,
-            enableTime: true,
-            time_24hr: true,
-            monthSelectorType: 'static',
-            animate: true,
-            locale: indonesianLocale,
-            clickOpens: true,
-            disableMobile: false,
-            onOpen: function(selectedDates, dateStr, instance) {
-                instance.calendarContainer.style.animation = 'slideDown 0.3s ease-out';
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.position = 'fixed';
-                    instance.calendarContainer.style.left = padding + 'px';
-                    instance.calendarContainer.style.right = 'auto';
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.margin = '0';
-                    instance.calendarContainer.style.padding = '0';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
+            const dpSampai = new AirDatepicker('#sampai', {
+                locale: localeIndo,
+                autoClose: false,
+                isMobile: true,
+                timepicker: true,
+                buttons: ['today', 'clear'],
+                onSelect: ({date, formattedDate}) => {
+                    let dari = document.getElementById('dari').value;
+                    let jmljam = hitungJam(dari, formattedDate);
+                    document.getElementById('jml_jam').value = jmljam;
                 }
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
+            });
+
+            const form = document.getElementById('formLembur');
+            form.addEventListener('submit', function(e) {
+                let dari = document.getElementById('dari').value;
+                let sampai = document.getElementById('sampai').value;
+                let keterangan = document.getElementById('keterangan').value;
+
+                if (!dari || !sampai) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Periode Lembur Harus Diisi !', icon: "warning" });
+                    return;
                 }
-            }
+
+                if (new Date(sampai) < new Date(dari)) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Waktu Selesai tidak boleh kurang dari Waktu Mulai !', icon: "warning" });
+                    return;
+                }
+
+                if (!keterangan.trim()) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Keterangan Harus Diisi !', icon: "warning" });
+                    return;
+                }
+
+                const btn = document.getElementById('btnSimpan');
+                btn.disabled = true;
+                btn.innerHTML = `<ion-icon name="sync-outline" class="animate-spin"></ion-icon><span>Memproses...</span>`;
+            });
         });
-
-        // Handle window resize for responsive calendar
-        $(window).on('resize', function() {
-            if (window.innerWidth <= 576) {
-                const padding = window.innerWidth <= 375 ? 12 : 16;
-                const calendarWidth = window.innerWidth - (padding * 2);
-                $('.flatpickr-calendar').css({
-                    'width': calendarWidth + 'px',
-                    'max-width': calendarWidth + 'px',
-                    'min-width': calendarWidth + 'px',
-                    'left': padding + 'px',
-                    'right': 'auto',
-                    'margin': '0',
-                    'padding': '0',
-                    'box-sizing': 'border-box'
-                });
-            }
-        });
-
-
-        $("#formLembur").submit(function(e) {
-            let dari = $('.dari').val();
-            let sampai = $('.sampai').val();
-            let kode_cuti = $('.kode_cuti').val();
-            let jml_hari = $('.jml_hari').val();
-            let keterangan = $('.keterangan').val();
-
-            if (dari == "" && sampai == "") {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Periode Izin Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.dari').focus();
-                    }
-                });
-                return false;
-            } else if (sampai < dari) {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Periode Izin Harus Sesuai !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        form.find("#sampai").focus();
-                    }
-                });
-                return false;
-            } else if (keterangan == '') {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Keterangan Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.keterangan').focus();
-                    }
-                });
-                return false;
-            }
-        });
-
-        function buttonDisabled() {
-            $("#btnSimpan").prop('disabled', true);
-            $("#btnSimpan").html(`
-                <div class="spinner-border spinner-border-sm text-white mr-2" role="status">
-                </div>
-                Sedang Mengirim..`);
-        }
     </script>
 @endpush
+

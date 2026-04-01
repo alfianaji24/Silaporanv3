@@ -12,9 +12,14 @@ use Illuminate\Support\Facades\Crypt;
 
 class PengumumanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pengumuman = Pengumuman::orderBy('created_at', 'desc')->paginate(10);
+        $query = Pengumuman::query();
+        if (!empty($request->judul)) {
+            $query->where('judul', 'like', '%' . $request->judul . '%');
+        }
+        $pengumuman = $query->orderBy('created_at', 'desc')->paginate(10);
+        $pengumuman->appends(request()->all());
         
         /** @var \App\Models\User $user */
         $user = auth()->user();

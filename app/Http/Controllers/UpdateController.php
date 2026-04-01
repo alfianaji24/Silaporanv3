@@ -256,6 +256,23 @@ class UpdateController extends Controller
     public function updateNow(Request $request, $version)
     {
         try {
+            // Cek apakah versi yang akan diupdate sama dengan versi saat ini
+            $currentVersion = $this->updateService->getCurrentVersion();
+            if (version_compare($currentVersion, $version, '>=')) {
+                $message = 'Aplikasi sudah menggunakan versi terbaru (v' . $currentVersion . ')';
+                
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'already_updated' => true,
+                        'message' => $message,
+                        'current_version' => $currentVersion,
+                    ]);
+                }
+                
+                return redirect()->route('update.index')->with('info', $message);
+            }
+
             // Cek apakah update ada di database lokal
             $update = Update::where('version', $version)->first();
 

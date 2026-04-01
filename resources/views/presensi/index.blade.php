@@ -16,18 +16,16 @@
                         <form action="{{ route('presensi.index') }}">
                             <div class="row">
                                 <div class="col-lg-3 col-md-12 col-sm-12">
-                                    <x-input-with-icon label="" value="{{ request('tanggal', $tanggal) }}" name="tanggal" icon="ti ti-calendar"
+                                    <x-input-with-icon label="" value="{{ Request('tanggal') }}" name="tanggal" icon="ti ti-calendar"
                                         datepicker="flatpickr-date" placeholder="Tanggal" />
                                 </div>
-                                @if ($cabang->count() > 1)
-                                    <div class="col-lg-3 col-md-12 col-sm-12">
-                                        <div class="form-group mb-3">
-                                            <x-select label="" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
-                                                selected="{{ Request('kode_cabang') }}" upperCase="true" select2="select2Kodecabangsearch"
-                                                placeholder="Cabang" />
-                                        </div>
+                                <div class="col-lg-3 col-md-12 col-sm-12">
+                                    <div class="form-group mb-3">
+                                        <x-select label="" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
+                                            selected="{{ Request('kode_cabang') }}" upperCase="true" select2="select2Kodecabangsearch"
+                                            placeholder="Cabang" />
                                     </div>
-                                @endif
+                                </div>
                                 <div class="col-lg-5 col-md-12 col-sm-12">
                                     <x-input-with-icon label="" value="{{ Request('nama_karyawan') }}" name="nama_karyawan" icon="ti ti-search"
                                         placeholder="Cari Nama Karyawan" />
@@ -99,8 +97,8 @@
                                                     </span>
                                                     <span class="fw-bold text-dark">{{ $d->nama_karyawan }}</span>
                                                     <span class="text-muted" style="font-size: 0.85rem;"><i class="ti ti-id me-1"></i>{{ $d->nik_show ?? $d->nik }}</span>
-                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-building me-1"></i>{{ $d->nama_dept }}</span>
-                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-map-pin me-1"></i>{{ $d->nama_cabang }}</span>
+                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-building me-1"></i>{{ $d->kode_dept }}</span>
+                                                    <span class="badge bg-label-secondary rounded-pill"><i class="ti ti-map-pin me-1"></i>{{ $d->kode_cabang }}</span>
                                                 </div>
                                                 
                                                 <div class="d-flex align-items-center gap-2">
@@ -127,6 +125,16 @@
                                                         @else
                                                             <a href="#" class="btn btn-sm btn-icon btn-outline-success koreksiPresensi" nik="{{ Crypt::encrypt($d->nik) }}"
                                                                 tanggal="{{ $tanggal_presensi }}" title="Koreksi"><i class="ti ti-edit"></i></a>
+
+                                                            @if(!empty($d->id))
+                                                            <form action="{{ route('presensi.delete', $d->id) }}" method="POST"
+                                                                style="display:inline-block;" class="delete-form">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn btn-sm btn-icon btn-outline-danger delete-confirm"
+                                                                    title="Hapus"><i class="ti ti-trash"></i></button>
+                                                            </form>
+                                                            @endif
                                                         @endif
     
                                                         <a href="#" class="btn btn-sm btn-icon btn-outline-primary btngetDatamesin" pin="{{ $d->pin }}"
@@ -153,9 +161,7 @@
                                                                 <span class="d-block text-primary small fw-bold">{{ $d->nama_jam_kerja }}</span>
                                                                 {{ date('H:i', strtotime($d->jam_masuk)) }} - {{ date('H:i', strtotime($d->jam_pulang)) }}
                                                             @else
-                                                                <span class="badge bg-warning text-dark" title="Karyawan belum memiliki jadwal kerja. Silakan hubungi HRD untuk mengatur jadwal.">
-                                                                    <i class="ti ti-alert-triangle me-1"></i> Tidak Ada Jadwal
-                                                                </span>
+                                                                -
                                                             @endif
                                                         </span>
                                                     </div>
@@ -269,7 +275,7 @@
         </div>
     </div>
 </div>
-<x-modal-form id="modal" size="modal-lg" show="loadmodal" title="" />
+<x-modal-form id="modal" size="modal-xl" show="loadmodal" title="" />
 @endsection
 @push('myscript')
 <script>
@@ -344,6 +350,23 @@
                     $("#loadmodal").html(respond);
                 }
             });
+        });
+        $(".delete-confirm").click(function(e) {
+            var form = $(this).closest('form');
+            e.preventDefault();
+            Swal.fire({
+                title: 'Apakah Anda Yakin Data Ini Akan Dihapus ?',
+                text: "Jika Dihapus Maka Data Akan Hilang ",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus Saja!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            })
         });
     });
 </script>

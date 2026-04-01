@@ -31,10 +31,6 @@ class TemplateKaryawanExport implements FromCollection, WithHeadings, WithTitle
             'kode_jabatan',
             'tanggal_masuk',
             'status_karyawan',
-            'kode_jadwal',
-            'pin',
-            'tanggal_nonaktif',
-            'tanggal_off_gaji',
             'status_aktif_karyawan'
         ];
     }

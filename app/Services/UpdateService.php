@@ -208,16 +208,23 @@ class UpdateService
 
             $zipPath = $updateDir . '/update_' . $update->version . '.zip';
 
-            // Download file
-            $this->addProgressLog($updateLog, 'Mengunduh file update...', 20);
-            $response = Http::timeout(300)->get($update->file_url);
+            // Download file - disable time limit for large files
+            set_time_limit(0);
+            ini_set('memory_limit', '512M');
             
-            if (!$response->successful()) {
-                throw new \Exception('Gagal mengunduh file update');
+            $this->addProgressLog($updateLog, 'Mengunduh file update (mohon tunggu)...', 20);
+            
+            // Use simple streaming download with sink
+            $response = Http::timeout(600)->withOptions([
+                'sink' => $zipPath,
+            ])->get($update->file_url);
+            
+            // Check if file was downloaded successfully
+            if (!File::exists($zipPath) || File::size($zipPath) == 0) {
+                throw new \Exception('Gagal mengunduh file update - file kosong atau tidak tersimpan');
             }
-
-            $this->addProgressLog($updateLog, 'Menyimpan file ke disk...', 60);
-            File::put($zipPath, $response->body());
+            
+            $this->addProgressLog($updateLog, 'File berhasil diunduh ke disk...', 60);
             
             $fileSize = filesize($zipPath);
             $fileSizeMB = round($fileSize / 1024 / 1024, 2);

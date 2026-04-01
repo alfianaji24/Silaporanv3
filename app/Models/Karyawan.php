@@ -12,6 +12,7 @@ class Karyawan extends Model
     protected $table = "karyawan";
     protected $primaryKey = "nik";
     public $incrementing = false;
+    protected $keyType = 'string';
     protected $guarded = [];
     protected $casts = [
         'kode_cabang_array' => 'array',
@@ -149,9 +150,24 @@ class Karyawan extends Model
     //     return $this->hasMany(GrupDetail::class, 'nik', 'nik');
     // }
 
-    // // Relasi ke Grup melalui GrupDetail
+    // Relasi ke Grup melalui GrupDetail
     // public function grup()
     // {
     //     return $this->hasManyThrough(Grup::class, GrupDetail::class, 'nik', 'kode_grup', 'nik', 'kode_grup');
     // }
+
+    public function jabatan()
+    {
+        return $this->belongsTo(Jabatan::class, 'kode_jabatan', 'kode_jabatan');
+    }
+
+    public function departemen()
+    {
+        return $this->belongsTo(Departemen::class, 'kode_dept', 'kode_dept');
+    }
+
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class, 'kode_cabang', 'kode_cabang');
+    }
 }

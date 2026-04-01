@@ -57,18 +57,22 @@ class UserController extends Controller
     }
 
     public function edit($id)
-    {
-        $id = Crypt::decrypt($id);
-        $user = User::with(['roles', 'cabangs', 'departemens'])->where('id', $id)->first();
+{
+    $id = Crypt::decrypt($id);
+    $user = User::with(['roles', 'cabangs', 'departemens'])->where('id', $id)->first();
 
-        $roles = Role::orderBy('name')->where('name', '!=', 'karyawan')->get();
-        $cabangs = Cabang::orderBy('kode_cabang')->get();
-        $departemens = Departemen::orderBy('kode_dept')->get();
-        $userCabangs = $user->cabangs->pluck('kode_cabang')->toArray();
-        $userDepartemens = $user->departemens->pluck('kode_dept')->toArray();
+    $roles = Role::orderBy('name')->where('name', '!=', 'karyawan')->get();
+    $cabangs = Cabang::orderBy('kode_cabang')->get();
+    $departemens = Departemen::orderBy('kode_dept')->get();
+    $userCabangs = $user->cabangs->pluck('kode_cabang')->toArray();
+    $userDepartemens = $user->departemens->pluck('kode_dept')->toArray();
 
-        return view('settings.users.edit', compact('user', 'roles', 'cabangs', 'departemens', 'userCabangs', 'userDepartemens'));
-    }
+    // Approval delegation - get all non-karyawan users as potential admin
+    $adminUsers = User::role(Role::where('name', '!=', 'karyawan')->pluck('name')->toArray())->orderBy('name')->get();
+    $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
+
+    return view('settings.users.edit', compact('user', 'roles', 'cabangs', 'departemens', 'userCabangs', 'userDepartemens', 'adminUsers', 'userkaryawan'));
+}
 
     public function store(Request $request)
     {
@@ -204,6 +208,14 @@ class UserController extends Controller
                     // Jika tidak ada departemen yang dipilih, hapus semua akses
                     $user->departemens()->sync([]);
                 }
+            }
+
+            // Update approval_admin_id for karyawan
+            $userkaryawan = Userkaryawan::where('id_user', $id)->first();
+            if ($userkaryawan) {
+                Userkaryawan::where('id_user', $id)->update([
+                    'approval_admin_id' => $request->approval_admin_id ?: null,
+                ]);
             }
 
             return Redirect::back()->with(['success' => 'Data Berhasil Disimpan']);

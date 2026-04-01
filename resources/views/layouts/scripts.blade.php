@@ -41,6 +41,7 @@
  <script src="{{ asset('assets/vendor/libs/select2/select2.js') }}"></script>
  <script src="{{ asset('assets/js/jquery.mask.min.js') }}"></script>
  <script src="{{ asset('assets/vendor/js/freeze-table.js') }}"></script>
+ <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
  <script src="{{ asset('assets/js/ui-popover.js') }}"></script>
  <script>
      $(function() {

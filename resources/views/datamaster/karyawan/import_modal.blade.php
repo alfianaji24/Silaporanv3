@@ -54,7 +54,12 @@
                                 </tr>
                                 <tr>
                                     <td>kode_status_kawin</td>
-                                    <td>Wajib diisi, harus sesuai dengan kode status kawin yang ada</td>
+                                    <td>
+                                        Wajib diisi. Kode status kawin yang tersedia: <br>
+                                        @foreach ($status_kawin as $sk)
+                                            <span class="badge bg-label-info">{{ $sk->kode_status_kawin }}</span> = {{ $sk->status_kawin }} <br>
+                                        @endforeach
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>pendidikan_terakhir</td>

@@ -97,7 +97,7 @@
                                 <select name="bulan" id="bulan" class="form-select">
                                     <option value="">Bulan</option>
                                     @foreach ($list_bulan as $d)
-                                        <option {{ $d['kode_bulan'] == date('m') ? 'selected' : '' }} value="{{ $d['kode_bulan'] }}">
+                                        <option {{ $d['kode_bulan'] == date('n') ? 'selected' : '' }} value="{{ $d['kode_bulan'] }}">
                                             {{ $d['nama_bulan'] }}</option>
                                     @endforeach
                                 </select>
@@ -132,6 +132,28 @@
                                         </span>
                                     </div>
                                 @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode Seleksi dan Tombol Aksi -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" id="btn-mode-seleksi" class="btn btn-outline-primary btn-sm">
+                                        <i class="ti ti-cursor-text me-1"></i>Mode Seleksi Tanggal
+                                    </button>
+                                    <span id="count-selected" class="badge bg-info" style="display: none;">0 tanggal terpilih</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" id="btn-apply-jam-kerja" class="btn btn-success btn-sm" style="display: none;">
+                                        <i class="ti ti-check me-1"></i>Terapkan Jam Kerja ke Tanggal Terpilih
+                                    </button>
+                                    <button type="button" id="btn-clear-selection" class="btn btn-outline-secondary btn-sm" style="display: none;">
+                                        <i class="ti ti-x me-1"></i>Bersihkan Seleksi
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -232,6 +254,21 @@
     .calendar-day.selected {
         background-color: #3b82f6;
         color: white;
+    }
+
+    .calendar-day.selection-mode {
+        cursor: crosshair;
+    }
+
+    .calendar-day.selection-active {
+        background-color: #bfdbfe !important;
+        border-color: #3b82f6 !important;
+        border-width: 2px !important;
+    }
+
+    #count-selected {
+        font-size: 13px;
+        padding: 6px 12px;
     }
 
     .calendar-day.has-jam-kerja {
@@ -348,6 +385,10 @@
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
         let jamKerjaData = [];
+        let selectionMode = false;
+        let selectedDates = new Set();
+        let isSelecting = false;
+        let selectionStartDate = null;
 
         // Initialize calendar
         initializeCalendar();
@@ -359,7 +400,7 @@
             const currentMonth = currentDate.getMonth() + 1;
             const currentYear = currentDate.getFullYear();
 
-            $("#bulan").val(currentMonth.toString().padStart(2, '0'));
+            $("#bulan").val(currentMonth);
             $("#tahun").val(currentYear);
 
             loadJamKerjaData();
@@ -373,7 +414,7 @@
                 const currentMonth = currentDate.getMonth() + 1;
                 const currentYear = currentDate.getFullYear();
 
-                $("#bulan").val(currentMonth.toString().padStart(2, '0'));
+                $("#bulan").val(currentMonth);
                 $("#tahun").val(currentYear);
 
                 loadJamKerjaData();
@@ -384,6 +425,7 @@
             renderCalendar();
             loadJamKerjaData();
             setupDragAndDrop();
+            setupSelectionModeHandlers();
         }
 
         function renderCalendar() {
@@ -445,9 +487,12 @@
                 });
 
                 const hasJamKerja = jamKerjaForDay.length > 0;
+                const isSelected = selectedDates.has(dateString);
+                const selectionClass = selectionMode ? 'selection-mode' : '';
+                const selectedClass = isSelected ? 'selection-active' : '';
 
                 calendarHTML += `
-                    <div class="calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${hasJamKerja ? 'has-jam-kerja' : ''}"
+                    <div class="calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${hasJamKerja ? 'has-jam-kerja' : ''} ${selectionClass} ${selectedClass}"
                          data-date="${dateString}">
                         <div class="day-number">${dayNumber}</div>
                         ${jamKerjaHTML}
@@ -475,6 +520,7 @@
             $('.jam-kerja-template').draggable({
                 helper: 'clone',
                 cursor: 'grabbing',
+                disabled: selectionMode, // Disable drag in selection mode
                 start: function(e, ui) {
                     $(this).addClass('dragging');
                 },
@@ -484,43 +530,45 @@
             });
 
             // Make calendar days droppable
-            $('.calendar-day').droppable({
-                accept: '.jam-kerja-template',
-                hoverClass: 'drag-over',
-                drop: function(e, ui) {
-                    const draggedTemplate = ui.draggable;
-                    const targetDate = $(this).data('date');
-                    const kodeJamKerja = draggedTemplate.data('kode');
-                    const namaJamKerja = draggedTemplate.data('nama');
-                    const jamKerja = draggedTemplate.data('jam');
+            if (!selectionMode) {
+                $('.calendar-day').droppable({
+                    accept: '.jam-kerja-template',
+                    hoverClass: 'drag-over',
+                    drop: function(e, ui) {
+                        const draggedTemplate = ui.draggable;
+                        const targetDate = $(this).data('date');
+                        const kodeJamKerja = draggedTemplate.data('kode');
+                        const namaJamKerja = draggedTemplate.data('nama');
+                        const jamKerja = draggedTemplate.data('jam');
 
-                    // Check if any jam kerja already exists for this date
-                    const existing = jamKerjaData.find(jk => {
-                        const jkDate = jk.tanggal ? jk.tanggal.split(' ')[0] : '';
-                        return jkDate === targetDate;
-                    });
-
-                    if (existing) {
-                        Swal.fire({
-                            title: "Peringatan!",
-                            text: "Tanggal ini sudah memiliki jam kerja. Hapus jam kerja yang ada terlebih dahulu atau pilih tanggal lain.",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonText: "Ganti Jam Kerja",
-                            cancelButtonText: "Batal"
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Replace existing jam kerja
-                                replaceJamKerja(targetDate, kodeJamKerja, namaJamKerja, jamKerja);
-                            }
+                        // Check if any jam kerja already exists for this date
+                        const existing = jamKerjaData.find(jk => {
+                            const jkDate = jk.tanggal ? jk.tanggal.split(' ')[0] : '';
+                            return jkDate === targetDate;
                         });
-                        return;
-                    }
 
-                    // Add jam kerja
-                    addJamKerja(targetDate, kodeJamKerja, namaJamKerja, jamKerja);
-                }
-            });
+                        if (existing) {
+                            Swal.fire({
+                                title: "Peringatan!",
+                                text: "Tanggal ini sudah memiliki jam kerja. Ganti jam kerja yang ada?",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonText: "Ganti Jam Kerja",
+                                cancelButtonText: "Batal"
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Replace existing jam kerja
+                                    replaceJamKerja(targetDate, kodeJamKerja, namaJamKerja, jamKerja);
+                                }
+                            });
+                            return;
+                        }
+
+                        // Add jam kerja
+                        addJamKerja(targetDate, kodeJamKerja, namaJamKerja, jamKerja);
+                    }
+                });
+            }
         }
 
         function setupClickToAdd() {
@@ -618,6 +666,11 @@
                         renderCalendar();
                         setupDragAndDrop();
 
+                        // Update table if exists
+                        if (typeof loadjamkerjabydate === 'function') {
+                            loadjamkerjabydate();
+                        }
+
                         Swal.fire({
                             title: "Berhasil!",
                             text: "Jam kerja berhasil ditambahkan!",
@@ -693,6 +746,11 @@
                                         renderCalendar();
                                         setupDragAndDrop();
 
+                                        // Update table if exists
+                                        if (typeof loadjamkerjabydate === 'function') {
+                                            loadjamkerjabydate();
+                                        }
+
                                         Swal.fire({
                                             title: "Berhasil!",
                                             text: "Jam kerja berhasil diganti!",
@@ -734,23 +792,20 @@
         }
 
         function deleteJamKerja(tanggal, kodeJamKerja) {
-            console.log('Deleting jam kerja:', {
-                tanggal,
-                kodeJamKerja
-            });
-
             Swal.fire({
-                title: "Konfirmasi",
-                text: "Apakah Anda yakin ingin menghapus jam kerja ini?",
+                title: "Apakah Anda Yakin ?",
+                text: "Data Jam Kerja Tanggal " + tanggal + " Akan Dihapus !",
                 icon: "warning",
                 showCancelButton: true,
-                confirmButtonText: "Ya, Hapus!",
-                cancelButtonText: "Batal"
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, Hapus !",
+                cancelButtonText: "Batal",
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        type: 'POST',
                         url: "{{ route('karyawan.deletejamkerjabydate') }}",
+                        type: "POST",
                         data: {
                             _token: "{{ csrf_token() }}",
                             nik: "{{ $karyawan->nik }}",
@@ -758,41 +813,41 @@
                             kode_jam_kerja: kodeJamKerja
                         },
                         success: function(response) {
-                            console.log('Delete response:', response);
-
                             if (response.success) {
-                                // Remove from local data
+                                // Update local data
                                 jamKerjaData = jamKerjaData.filter(jk => {
                                     const jkDate = jk.tanggal ? jk.tanggal.split(' ')[0] : '';
-                                    return !(jkDate === tanggal && jk.kode_jam_kerja === kodeJamKerja);
+                                    return jkDate !== tanggal;
                                 });
 
                                 // Re-render calendar
                                 renderCalendar();
                                 setupDragAndDrop();
 
+                                // Update table if exists
+                                if (typeof loadjamkerjabydate === 'function') {
+                                    loadjamkerjabydate();
+                                }
+
                                 Swal.fire({
-                                    title: "Berhasil!",
-                                    text: response.message || "Jam kerja berhasil dihapus!",
-                                    icon: "success"
+                                    title: "Berhasil !",
+                                    text: response.message,
+                                    icon: "success",
+                                    timer: 1500,
+                                    showConfirmButton: false
                                 });
                             } else {
                                 Swal.fire({
-                                    title: "Error!",
-                                    text: response.message || "Gagal menghapus jam kerja!",
-                                    icon: "error"
+                                    title: "Oops!",
+                                    text: response.message,
+                                    icon: "warning"
                                 });
                             }
                         },
-                        error: function(xhr, status, error) {
-                            console.log('Delete error:', {
-                                xhr,
-                                status,
-                                error
-                            });
+                        error: function(xhr) {
                             Swal.fire({
-                                title: "Error!",
-                                text: "Gagal menghapus jam kerja! " + error,
+                                title: "Oops!",
+                                text: xhr.responseJSON ? xhr.responseJSON.message : "Gagal menghapus data",
                                 icon: "error"
                             });
                         }
@@ -800,6 +855,212 @@
                 }
             });
         }
+
+        // --- NEW SELECTION MODE LOGIC ---
+        function setupSelectionModeHandlers() {
+            $('#btn-mode-seleksi').off('click').on('click', function() {
+                selectionMode = !selectionMode;
+                selectedDates.clear();
+                updateSelectionUI();
+
+                if (selectionMode) {
+                    $(this).html('<i class="ti ti-cursor-off me-1"></i>Keluar Mode Seleksi').removeClass('btn-outline-primary')
+                        .addClass('btn-primary');
+                } else {
+                    $(this).html('<i class="ti ti-cursor-text me-1"></i>Mode Seleksi Tanggal').removeClass('btn-primary')
+                        .addClass('btn-outline-primary');
+                }
+
+                renderCalendar();
+                setupDragAndDrop();
+            });
+
+            $(document).off('click', '.calendar-day').on('click', '.calendar-day', function(e) {
+                if (!selectionMode) return;
+                if ($(e.target).closest('.jam-kerja-badge').length) return;
+
+                const date = $(this).data('date');
+                const isOtherMonth = $(this).hasClass('other-month');
+                if (isOtherMonth) return;
+
+                if (e.shiftKey && selectionStartDate) {
+                    selectDateRange(selectionStartDate, date);
+                } else if (e.ctrlKey || e.metaKey) {
+                    toggleDateSelection(date);
+                } else {
+                    selectionStartDate = date;
+                    selectedDates.clear();
+                    selectedDates.add(date);
+                    updateSelectionUI();
+                    renderCalendar();
+                    setupDragAndDrop();
+                }
+            });
+
+            $(document).off('mousedown', '.calendar-day').on('mousedown', '.calendar-day', function(e) {
+                if (!selectionMode) return;
+                if ($(e.target).closest('.jam-kerja-badge').length) return;
+
+                const date = $(this).data('date');
+                if ($(this).hasClass('other-month')) return;
+
+                isSelecting = true;
+                selectionStartDate = date;
+                selectedDates.clear();
+                selectedDates.add(date);
+                updateSelectionUI();
+                renderCalendar();
+                setupDragAndDrop();
+            });
+
+            $(document).off('mouseenter', '.calendar-day').on('mouseenter', '.calendar-day', function(e) {
+                if (!selectionMode || !isSelecting) return;
+                const date = $(this).data('date');
+                if ($(this).hasClass('other-month')) return;
+
+                selectDateRange(selectionStartDate, date);
+            });
+
+            $(document).on('mouseup', function() {
+                isSelecting = false;
+            });
+
+            $('#btn-apply-jam-kerja').off('click').on('click', function() {
+                if (selectedDates.size === 0) return;
+
+                let options = '';
+                @foreach ($jamkerja as $d)
+                    options += `<option value="{{ $d->kode_jam_kerja }}">{{ $d->nama_jam_kerja }} ({{ $d->jam_masuk }} - {{ $d->jam_pulang }})</option>`;
+                @endforeach
+
+                Swal.fire({
+                    title: 'Pilih Jam Kerja',
+                    html: `
+                        <select id="jamKerjaSelectBatch" class="form-select">
+                            <option value="">-- Pilih Jam Kerja --</option>
+                            ${options}
+                        </select>
+                        <p class="mt-2 text-muted">Akan diterapkan ke ${selectedDates.size} tanggal</p>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Terapkan',
+                    cancelButtonText: 'Batal',
+                    preConfirm: () => {
+                        const kodeJamKerja = document.getElementById('jamKerjaSelectBatch').value;
+                        if (!kodeJamKerja) {
+                            Swal.showValidationMessage('Pilih jam kerja');
+                            return false;
+                        }
+                        return kodeJamKerja;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        applyJamKerjaToSelectedDates(result.value);
+                    }
+                });
+            });
+
+            $('#btn-clear-selection').off('click').on('click', function() {
+                selectedDates.clear();
+                updateSelectionUI();
+                renderCalendar();
+                setupDragAndDrop();
+            });
+        }
+
+        function toggleDateSelection(date) {
+            if (selectedDates.has(date)) {
+                selectedDates.delete(date);
+            } else {
+                selectedDates.add(date);
+            }
+            updateSelectionUI();
+            renderCalendar();
+            setupDragAndDrop();
+        }
+
+        function selectDateRange(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            let d1 = start, d2 = end;
+            if (d1 > d2) { d1 = end; d2 = start; }
+
+            selectedDates.clear();
+            let curr = new Date(d1);
+            while (curr <= d2) {
+                const dateStr = curr.getFullYear() + '-' +
+                    String(curr.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(curr.getDate()).padStart(2, '0');
+                selectedDates.add(dateStr);
+                curr.setDate(curr.getDate() + 1);
+            }
+            updateSelectionUI();
+            renderCalendar();
+            setupDragAndDrop();
+        }
+
+        function updateSelectionUI() {
+            const count = selectedDates.size;
+            if (count > 0) {
+                $('#count-selected').text(`${count} tanggal terpilih`).show();
+                $('#btn-apply-jam-kerja').show();
+                $('#btn-clear-selection').show();
+            } else {
+                $('#count-selected').hide();
+                $('#btn-apply-jam-kerja').hide();
+                $('#btn-clear-selection').hide();
+            }
+        }
+
+        function applyJamKerjaToSelectedDates(kodeJamKerja) {
+            const datesArray = Array.from(selectedDates);
+            let completed = 0;
+            let successCount = 0;
+
+            Swal.fire({
+                title: 'Memproses...',
+                html: `Menerapkan jam kerja ke ${datesArray.length} tanggal...`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            datesArray.forEach(date => {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('karyawan.storejamkerjabydate') }}",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        nik: "{{ $karyawan->nik }}",
+                        tanggal: date,
+                        kode_jam_kerja: kodeJamKerja
+                    },
+                    success: function() {
+                        successCount++;
+                    },
+                    complete: function() {
+                        completed++;
+                        if (completed === datesArray.length) {
+                            Swal.fire({
+                                title: 'Selesai!',
+                                text: `Jam kerja berhasil diterapkan ke ${successCount} tanggal`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            selectedDates.clear();
+                            updateSelectionUI();
+                            loadJamKerjaData();
+
+                            // Update table if exists
+                            if (typeof loadjamkerjabydate === 'function') {
+                                loadjamkerjabydate();
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        // --- END NEW SELECTION MODE LOGIC ---
 
         function loadJamKerjaData() {
             const bulan = $("#bulan").val() || (currentMonth + 1).toString().padStart(2, '0');
@@ -1072,6 +1333,8 @@
                                 showConfirmButton: true,
                                 didClose: (e) => {
                                     loadjamkerjabydate();
+                                    // Update calendar
+                                    loadJamKerjaData();
                                 },
                             });
 

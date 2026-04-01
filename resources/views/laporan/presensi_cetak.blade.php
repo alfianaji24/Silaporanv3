@@ -128,8 +128,8 @@
         .datatable3 thead tr:nth-child(3) th {
             top: 80px;
         }
-        
-        
+
+
         /* Sticky Column Styles (Screen Only) */
         @media screen {
             .sticky-col {
@@ -140,7 +140,7 @@
                 box-shadow: inset 0 0 0 1px #333; /* Simulate border */
                 border: none !important; /* Remove actual border to prevent double lines */
             }
-            
+
             .datatable3 th.sticky-col {
                 z-index: 30; /* Intersection (Header + Sticky Col) must be highest */
                 background-color: #024a75;
@@ -214,6 +214,9 @@
                         @if (!empty($request_params['nik']))
                             <input type="hidden" name="nik" value="{{ $request_params['nik'] }}">
                         @endif
+                        @if (!empty($request_params['jenis_upah']))
+                            <input type="hidden" name="jenis_upah" value="{{ $request_params['jenis_upah'] }}">
+                        @endif
                         <button type="submit" class="btn btn-warning" id="btnKunciLaporan" style="padding: 8px 16px; font-size: 14px;">
                             <i class="ti ti-lock"></i> Kunci Laporan
                         </button>
@@ -232,6 +235,9 @@
                         @endif
                         @if (!empty($request_params['nik']))
                             <input type="hidden" name="nik" value="{{ $request_params['nik'] }}">
+                        @endif
+                        @if (!empty($request_params['jenis_upah']))
+                            <input type="hidden" name="jenis_upah" value="{{ $request_params['jenis_upah'] }}">
                         @endif
                         <button type="submit" class="btn btn-secondary" id="btnBatalkanKunciLaporan"
                             style="padding: 8px 16px; font-size: 14px; background-color: #6c757d; border-color: #6c757d; color: #fff;">
@@ -469,7 +475,7 @@
                                             $potongan_tidak_absen_masuk_atau_pulang == 0
                                                 ? $pulangcepat + $potongan_jam_terlambat
                                                 : $potongan_tidak_absen_masuk_atau_pulang;
-                                        
+
                                         $status_potongan_harian = isset($d[$tanggal_presensi]['status_potongan']) ? $d[$tanggal_presensi]['status_potongan'] : $generalsetting->status_potongan_jam;
                                         if ($status_potongan_harian == 0) {
                                             $potongan_jam = 0;
@@ -532,7 +538,7 @@
                                             $d[$tanggal_presensi]['keterangan_izin_absen'] .
                                             '</p>' .
                                             $pjl_izin;
-                                        
+
                                         if ($generalsetting->status_potongan_jam == 0) {
                                             $potongan_jam = 0;
                                         }
@@ -592,16 +598,16 @@
 
                                         $ket_denda_alpa =
                                             $denda != 0 ? '<p><span style="color:red">Denda : ' . formatAngka($denda) . '</span></p>' : '';
-                                        
+
                                         $status_potongan_harian_alpa = isset($d[$tanggal_presensi]['status_potongan']) ? $d[$tanggal_presensi]['status_potongan'] : $generalsetting->status_potongan_jam;
-                                        
+
                                         $pjl_alpa = $status_potongan_harian_alpa == 1 ? '<span>PJ : ' . formatAngkaDesimal($potongan_jam) . ' Jam</span>' : '';
 
                                         $ket =
                                             '<h4 style="font-weight: bold; margin-bottom:10px">Alpa</h4>' .
                                             $pjl_alpa .
                                             $ket_denda_alpa;
-                                        
+
                                         if ($status_potongan_harian_alpa == 0) {
                                             $potongan_jam = 0;
                                         }
@@ -609,8 +615,9 @@
                                 @endif
                             @else
                                 @php
-                                    $bgcolor = 'red';
-                                    $textcolor = 'white';
+                                    $is_future = strtotime($tanggal_presensi) > strtotime(date('Y-m-d'));
+                                    $bgcolor = $is_future ? '' : 'red';
+                                    $textcolor = $is_future ? '' : 'white';
                                     $ket = '';
                                     $potongan_jam = 0;
 
@@ -644,19 +651,21 @@
 
                                         if ($totalJamJadwal !== null) {
                                             // Ada jadwal tapi tidak ada presensi sama sekali → Alpa & potong full jam kerja
-                                            $jml_alfa++;
-                                            $potongan_jam = $totalJamJadwal;
+                                            if (!$is_future) {
+                                                $jml_alfa++;
+                                                $potongan_jam = $totalJamJadwal;
 
-                                            // Untuk alpa yang belum ada di database, denda = 0
-                                            $denda = 0;
+                                                // Untuk alpa yang belum ada di database, denda = 0
+                                                $denda = 0;
 
-                                            $pjl_alpa_else = $generalsetting->status_potongan_jam == 1 ? '<span>PJ : ' . formatAngkaDesimal($potongan_jam) . ' Jam</span>' : '';
-                                            $ket =
-                                                '<h4 style="font-weight: bold; margin-bottom:10px">Alpa</h4>' .
-                                                $pjl_alpa_else;
-                                            
-                                            if ($generalsetting->status_potongan_jam == 0) {
-                                                $potongan_jam = 0;
+                                                $pjl_alpa_else = $generalsetting->status_potongan_jam == 1 ? '<span>PJ : ' . formatAngkaDesimal($potongan_jam) . ' Jam</span>' : '';
+                                                $ket =
+                                                    '<h4 style="font-weight: bold; margin-bottom:10px">Alpa</h4>' .
+                                                    $pjl_alpa_else;
+
+                                                if ($generalsetting->status_potongan_jam == 0) {
+                                                    $potongan_jam = 0;
+                                                }
                                             }
                                         }
                                     }

@@ -40,6 +40,25 @@ return [
     | Apakah akan backup database sebelum update.
     |
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Backup Before Update
+    |--------------------------------------------------------------------------
+    |
+    | Apakah akan backup database sebelum update.
+    |
+    */
     'backup_before_update' => env('UPDATE_BACKUP_BEFORE_UPDATE', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | SSL Verification
+    |--------------------------------------------------------------------------
+    |
+    | Whether to verify SSL certificate when connecting to update server.
+    | Set to false if using self-signed certificate or having SSL issues.
+    |
+    */
+    'verify_ssl' => env('UPDATE_VERIFY_SSL', true),
 ];
 

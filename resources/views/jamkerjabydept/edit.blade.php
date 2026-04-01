@@ -22,7 +22,7 @@
     <div class="row">
         <div class="col">
             <table class="table table-bordered table-striped">
-                <thead class="table-dark">
+                <thead style="background-color: var(--theme-color-1) !important; color: white !important;">
                     <tr>
                         <th>Hari</th>
                         <th>Jam Kerja</th>

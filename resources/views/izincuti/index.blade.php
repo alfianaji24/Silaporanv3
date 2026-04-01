@@ -11,10 +11,20 @@
             @include('layouts.navigation.nav_pengajuan_absen')
             <div class="tab-content">
                 <div class="tab-pane fade active show" id="navs-justified-home" role="tabpanel">
-                    @can('izincuti.create')
-                        <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
-                            Tambah Data</a>
-                    @endcan
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            @can('izincuti.create')
+                                <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
+                                    Tambah Data</a>
+                            @endcan
+                        </div>
+                        <div>
+                            @can('approvallayer.index')
+                                <a href="{{ route('approvallayer.index') }}" class="btn btn-info"><i class="fa fa-cog me-2"></i>
+                                    Konfigurasi Approval</a>
+                            @endcan
+                        </div>
+                    </div>
                     <div class="row mt-2">
                         <div class="col-12">
                             <form action="{{ route('izincuti.index') }}">
@@ -45,12 +55,10 @@
                                             </select>
                                         </div>
                                     </div>
-                                    @if ($cabang->count() > 1)
-                                        <div class="col-lg-4 col-md-6 col-sm-12">
-                                            <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
-                                                selected="{{ Request('kode_cabang') }}" upperCase="true" hideLabel />
-                                        </div>
-                                    @endif
+                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                        <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
+                                            selected="{{ Request('kode_cabang') }}" upperCase="true" hideLabel />
+                                    </div>
                                     <div class="col-lg-4 col-md-6 col-sm-12">
                                         <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                             selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />
@@ -102,7 +110,7 @@
                                                     {{ $d->kode_izin_cuti }} <span class="mx-1">•</span> {{ $d->nama_cuti }} <span class="mx-1">•</span> {{ $lama }} Hari
                                                  </div>
                                             </div>
-                                            
+
                                             <!-- Status -->
                                             <div class="col-md-2 text-center">
                                                 @if ($d->status == 0)
@@ -145,7 +153,7 @@
                                                                 }
                                                             }
                                                         @endphp
-                                                        
+
                                                         @if($canApprove)
                                                             <a href="#" class="btn btn-sm btn-outline-primary btnApprove py-1 px-2 rounded-0"
                                                                 kode_izin_cuti="{{ Crypt::encrypt($d->kode_izin_cuti) }}">

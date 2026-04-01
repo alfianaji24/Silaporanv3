@@ -8,7 +8,7 @@
 
         <x-input-with-icon label="Tanggal Kontrak" name="tanggal" icon="ti ti-calendar" datepicker="flatpickr-date"
             value="{{ old('tanggal', $kontrak->tanggal) }}" />
-        
+
         <div class="form-group mb-1">
             <select name="jenis_kontrak" id="jenis_kontrak" class="form-select">
                 <option value="" disabled>Pilih Status Kontrak</option>
@@ -28,7 +28,6 @@
         </div>
 
         <div class="form-group mb-1">
-            <label class="form-label">Karyawan <span class="text-danger">*</span></label>
             <select name="nik" id="nik" class="form-select select2" data-placeholder="Pilih Karyawan">
                 <option value="">Pilih Karyawan</option>
                 @foreach ($karyawans as $karyawan)
@@ -38,44 +37,39 @@
                     </option>
                 @endforeach
             </select>
-            <small class="text-muted">Cabang, Departemen, dan Jabatan akan mengikuti data karyawan yang dipilih</small>
             @error('nik')
-                <small class="text-danger d-block">{{ $message }}</small>
+                <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
 
-        @if ($cabangs->count() > 1)
         <div class="form-group mb-1">
-            <label class="form-label">Cabang</label>
             <div class="input-group input-group-merge">
                 <span class="input-group-text"><i class="ti ti-briefcase"></i></span>
-                <select id="kode_cabang_display" class="form-select" disabled tabindex="-1">
-                    <option value="">Pilih Karyawan terlebih dahulu</option>
+                <select name="kode_cabang" id="kode_cabang" class="form-select">
+                    <option value="">Pilih Cabang</option>
                     @foreach ($cabangs as $cabang)
-                        <option value="{{ $cabang->kode_cabang }}" @selected(old('kode_cabang', $kontrak->kode_cabang) == $cabang->kode_cabang)>{{ $cabang->nama_cabang }}</option>
+                        <option value="{{ $cabang->kode_cabang }}" @selected(old('kode_cabang', $kontrak->kode_cabang) == $cabang->kode_cabang)>
+                            {{ $cabang->nama_cabang }}
+                        </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="kode_cabang" id="kode_cabang" value="{{ old('kode_cabang', $kontrak->kode_cabang) }}">
             </div>
             @error('kode_cabang')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-        @else
-            <input type="hidden" name="kode_cabang" id="kode_cabang" value="{{ old('kode_cabang', $kontrak->kode_cabang) }}">
-        @endif
 
         <div class="form-group mb-1">
-            <label class="form-label">Departemen</label>
             <div class="input-group input-group-merge">
                 <span class="input-group-text"><i class="ti ti-layout-grid"></i></span>
-                <select id="kode_dept_display" class="form-select" disabled tabindex="-1">
-                    <option value="">Pilih Karyawan terlebih dahulu</option>
+                <select name="kode_dept" id="kode_dept" class="form-select">
+                    <option value="">Pilih Departemen</option>
                     @foreach ($departemens as $dept)
-                        <option value="{{ $dept->kode_dept }}" @selected(old('kode_dept', $kontrak->kode_dept) == $dept->kode_dept)>{{ $dept->nama_dept }}</option>
+                        <option value="{{ $dept->kode_dept }}" @selected(old('kode_dept', $kontrak->kode_dept) == $dept->kode_dept)>
+                            {{ $dept->nama_dept }}
+                        </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="kode_dept" id="kode_dept" value="{{ old('kode_dept', $kontrak->kode_dept) }}">
             </div>
             @error('kode_dept')
                 <small class="text-danger">{{ $message }}</small>
@@ -83,16 +77,16 @@
         </div>
 
         <div class="form-group mb-1">
-            <label class="form-label">Jabatan</label>
             <div class="input-group input-group-merge">
-                <span class="input-group-text"><i class="ti ti-briefcase"></i></span>
-                <select id="kode_jabatan_display" class="form-select" disabled tabindex="-1">
-                    <option value="">Pilih Karyawan terlebih dahulu</option>
+                <span class="input-group-text"><i class="ti ti-layout-grid"></i></span>
+                <select name="kode_jabatan" id="kode_jabatan" class="form-select">
+                    <option value="">Pilih Jabatan</option>
                     @foreach ($jabatans as $jabatan)
-                        <option value="{{ $jabatan->kode_jabatan }}" @selected(old('kode_jabatan', $kontrak->kode_jabatan) == $jabatan->kode_jabatan)>{{ $jabatan->nama_jabatan }}</option>
+                        <option value="{{ $jabatan->kode_jabatan }}" @selected(old('kode_jabatan', $kontrak->kode_jabatan) == $jabatan->kode_jabatan)>
+                            {{ $jabatan->nama_jabatan }}
+                        </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="kode_jabatan" id="kode_jabatan" value="{{ old('kode_jabatan', $kontrak->kode_jabatan) }}">
             </div>
             @error('kode_jabatan')
                 <small class="text-danger">{{ $message }}</small>
@@ -167,22 +161,22 @@
             $('.money').maskMoney('mask');
         }
 
-        function updateCabangDeptJabatanFromKaryawan() {
-            const option = $('#nik').find(':selected');
-            const cabang = option.attr('data-kode_cabang');
-            const dept = option.attr('data-kode_dept');
-            const jabatan = option.attr('data-kode_jabatan');
-            $('#formKontrakEdit').find('input[name="kode_cabang"]').val(cabang || '');
-            $('#formKontrakEdit').find('input[name="kode_dept"]').val(dept || '');
-            $('#formKontrakEdit').find('input[name="kode_jabatan"]').val(jabatan || '');
-            $('#formKontrakEdit').find('#kode_cabang_display').val(cabang || '');
-            $('#formKontrakEdit').find('#kode_dept_display').val(dept || '');
-            $('#formKontrakEdit').find('#kode_jabatan_display').val(jabatan || '');
-        }
-
         $('#nik').on('change', function() {
+            const option = $(this).find(':selected');
             const nik = $(this).val();
-            updateCabangDeptJabatanFromKaryawan();
+            const cabang = option.data('kode_cabang');
+            const dept = option.data('kode_dept');
+            const jabatan = option.data('kode_jabatan');
+
+            if (cabang) {
+                $("#formKontrakEdit").find('#kode_cabang').val(cabang).trigger('change');
+            }
+            if (dept) {
+                $("#formKontrakEdit").find('#kode_dept').val(dept).trigger('change');
+            }
+            if (jabatan) {
+                $("#formKontrakEdit").find('#kode_jabatan').val(jabatan).trigger('change');
+            }
 
             if (!nik) {
                 resetSummary();
@@ -256,7 +250,6 @@
 
         const preselectedNik = $('#nik').val();
         if (preselectedNik) {
-            updateCabangDeptJabatanFromKaryawan();
             $('#nik').trigger('change');
         }
 
@@ -269,7 +262,7 @@
             }
         }
         $('#jenis_kontrak').on('change', togglePeriodeKontrak);
-        
+
         // Trigger on load
         togglePeriodeKontrak();
 
@@ -280,9 +273,9 @@
             const dari = $('#dari').val();
             const sampai = $('#sampai').val();
             const nik = $('#nik').val();
-            const kode_cabang = $('#formKontrakEdit').find('input[name="kode_cabang"]').val();
-            const kode_dept = $('#formKontrakEdit').find('input[name="kode_dept"]').val();
-            const kode_jabatan = $('#formKontrakEdit').find('input[name="kode_jabatan"]').val();
+            const kode_cabang = $('#kode_cabang').val();
+            const kode_dept = $('#kode_dept').val();
+            const kode_jabatan = $('#kode_jabatan').val();
             const no_kontrak = $('input[name="no_kontrak"]').val();
             const jenis_kontrak = $('#jenis_kontrak').val();
 
@@ -297,7 +290,7 @@
             if (!tanggal) {
                 errors.push('Tanggal Kontrak harus diisi');
             }
-            
+
             if (jenis_kontrak === 'K') {
                 if (!dari) {
                     errors.push('Tanggal Mulai harus diisi');
@@ -313,7 +306,7 @@
                     }
                 }
             }
-            
+
             if (!nik) {
                 errors.push('Karyawan harus dipilih');
             }
@@ -326,7 +319,7 @@
             if (!kode_jabatan) {
                 errors.push('Jabatan harus dipilih');
             }
-            
+
             if (errors.length > 0) {
                 Swal.fire({
                     icon: 'error',

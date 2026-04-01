@@ -19,6 +19,31 @@
                         <h6 class="mb-3">Pilih Periode Tanggal Presensi</h6>
                         <form method="POST" action="{{ route('bersihkanfoto.destroy') }}" id="deleteForm">
                             @csrf
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <h6 class="form-label mb-2">Pilih Jenis Foto yang Akan Dihapus</h6>
+                                    <div class="d-flex flex-wrap gap-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_presensi" name="jenis[]" value="presensi" checked>
+                                            <label class="form-check-label user-select-none" for="check_presensi">
+                                                Foto Presensi
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_kunjungan" name="jenis[]" value="kunjungan" checked>
+                                            <label class="form-check-label user-select-none" for="check_kunjungan">
+                                                Foto Kunjungan
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="check_aktivitas" name="jenis[]" value="aktivitas" checked>
+                                            <label class="form-check-label user-select-none" for="check_aktivitas">
+                                                Foto Aktivitas Karyawan
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-4">
                                     <label for="tanggal_awal" class="form-label">Tanggal Awal</label>
@@ -96,6 +121,11 @@
             var tanggalAwal = $('#tanggal_awal').val();
             var tanggalAkhir = $('#tanggal_akhir').val();
 
+            var jenis = [];
+            $('input[name="jenis[]"]:checked').each(function() {
+                jenis.push($(this).val());
+            });
+
             if (!tanggalAwal || !tanggalAkhir) {
                 Swal.fire({
                     icon: 'warning',
@@ -106,8 +136,18 @@
                 return;
             }
 
-            $('#konfirmasiText').text('Apakah Anda yakin ingin menghapus FILE FOTO presensi dalam periode ' +
-                tanggalAwal + ' sampai ' + tanggalAkhir + '? (Data presensi tetap tersimpan) Tindakan ini tidak dapat dibatalkan!'
+            if (jenis.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan!',
+                    text: 'Silakan pilih minimal satu jenis foto yang akan dihapus',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            $('#konfirmasiText').text('Apakah Anda yakin ingin menghapus FILE FOTO tipe (' + jenis.join(', ') + ') dalam periode ' +
+                tanggalAwal + ' sampai ' + tanggalAkhir + '? (Data record tabel tetap tersimpan) Tindakan ini tidak dapat dibatalkan!'
             );
             $('#modalKonfirmasi').modal('show');
 
@@ -119,10 +159,16 @@
         function deletePhotos() {
             $('#modalKonfirmasi').modal('hide');
 
+            var jenis = [];
+            $('input[name="jenis[]"]:checked').each(function() {
+                jenis.push($(this).val());
+            });
+
             var formData = {
                 _token: '{{ csrf_token() }}',
                 tanggal_awal: $('#tanggal_awal').val(),
-                tanggal_akhir: $('#tanggal_akhir').val()
+                tanggal_akhir: $('#tanggal_akhir').val(),
+                jenis: jenis
             };
 
             $.ajax({

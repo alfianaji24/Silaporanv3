@@ -317,7 +317,8 @@
                         }
 
                         // Jika ada jadwal tapi tidak ada presensi sama sekali → potongan jam = total_jam jadwal
-                        if ($totalJamJadwal !== null) {
+                        $is_future = strtotime($tanggal_presensi) > strtotime(date('Y-m-d'));
+                        if ($totalJamJadwal !== null && !$is_future) {
                             $potongan_jam = $totalJamJadwal;
                         }
                     }
@@ -511,7 +512,8 @@
                             }
 
                             // Jika ada jadwal tapi tidak ada presensi sama sekali → potongan jam = total_jam jadwal
-                            if ($totalJamJadwal !== null) {
+                            $is_future = strtotime($tanggal_presensi) > strtotime(date('Y-m-d'));
+                            if ($totalJamJadwal !== null && !$is_future) {
                                 $potongan_jam = $totalJamJadwal;
                             }
                         }

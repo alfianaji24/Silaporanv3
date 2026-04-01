@@ -11,10 +11,20 @@
             @include('layouts.navigation.nav_pengajuan_absen')
             <div class="tab-content">
                 <div class="tab-pane fade active show" id="navs-justified-home" role="tabpanel">
-                    @can('izinabsen.create')
-                        <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
-                            Tambah Data</a>
-                    @endcan
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            @can('izinabsen.create')
+                                <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
+                                    Tambah Data</a>
+                            @endcan
+                        </div>
+                        <div>
+                            @can('approvallayer.index')
+                                <a href="{{ route('approvallayer.index') }}" class="btn btn-info"><i class="fa fa-cog me-2"></i>
+                                    Konfigurasi Approval</a>
+                            @endcan
+                        </div>
+                    </div>
                     <div class="row mt-2">
                         <div class="col-12">
                             <form action="{{ route('izinabsen.index') }}">
@@ -45,12 +55,10 @@
                                             </select>
                                         </div>
                                     </div>
-                                    @if ($cabang->count() > 1)
-                                        <div class="col-lg-4 col-md-6 col-sm-12">
-                                            <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
-                                                selected="{{ Request('kode_cabang') }}" upperCase="true" hideLabel />
-                                        </div>
-                                    @endif
+                                    <div class="col-lg-4 col-md-6 col-sm-12">
+                                        <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
+                                            selected="{{ Request('kode_cabang') }}" upperCase="true" hideLabel />
+                                    </div>
                                     <div class="col-lg-4 col-md-6 col-sm-12">
                                         <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                             selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />
@@ -98,7 +106,7 @@
                                                     {{ $d->kode_izin }} <span class="mx-1">•</span> {{ $lama }} Hari
                                                  </div>
                                             </div>
-                                            
+
                                             <!-- Status -->
                                             <div class="col-md-2 text-center">
                                                 @if ($d->status == 0)
@@ -119,7 +127,7 @@
                                                     <span class="badge bg-danger py-1 px-2" style="font-size: 11px;">Ditolak</span>
                                                 @endif
                                             </div>
-                                            
+
                                             <!-- Actions -->
                                             <div class="col-md-2 text-end">
                                                 <div class="btn-group shadow-sm" role="group">
@@ -143,7 +151,7 @@
                                                                     }
                                                                 }
                                                             @endphp
-                                                            
+
                                                             @if($canApprove)
                                                                 <a href="#" class="btn btn-sm btn-outline-primary btnApprove py-1 px-2"
                                                                     kode_izin="{{ Crypt::encrypt($d->kode_izin) }}" title="Approve">
@@ -173,7 +181,7 @@
                                                             </form>
                                                         @endif
                                                     @endcan
-                                                    
+
                                                     @can('izinabsen.edit')
                                                         @if ($d->status == 0)
                                                             <a href="#" class="btn btn-sm btn-outline-success btnEdit py-1 px-2" kode_izin="{{ Crypt::encrypt($d->kode_izin) }}" title="Edit">
@@ -181,13 +189,13 @@
                                                             </a>
                                                         @endif
                                                     @endcan
-                                                    
+
                                                     @can('izinabsen.index')
                                                         <a href="#" class="btn btn-sm btn-outline-info btnShow py-1 px-2" kode_izin="{{ Crypt::encrypt($d->kode_izin) }}" title="Detail">
                                                             <i class="ti ti-file-description"></i>
                                                         </a>
                                                     @endcan
-                                                    
+
                                                     @can('izinabsen.delete')
                                                         @if ($d->status == 0)
                                                             <form method="POST" name="deleteform" class="deleteform d-inline"

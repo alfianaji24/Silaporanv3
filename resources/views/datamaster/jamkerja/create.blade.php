@@ -34,6 +34,7 @@
         min="1" max="24" required />
     <x-input-with-icon icon="ti ti-file-text" label="Keterangan" name="keterangan" maxlength="255"
         placeholder="Contoh: Jam kerja untuk shift pagi (Opsional, maksimal 255 karakter)" />
+    <x-input-with-icon icon="ti ti-palette" label="Warna (Untuk Laporan)" name="color" type="color" placeholder="Pilih Warna" />
     <div class="form-group mb-3">
         <label for="lintashari" class="form-label" style="font-weight: 600;">
             Lintas Hari <span class="text-danger">*</span>

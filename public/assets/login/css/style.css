@@ -259,7 +259,7 @@ main.sign-up-mode .carousel {
 }
 
 .text-wrap {
-    max-height: 4.4rem;
+    max-height: 2.2rem;
     overflow: hidden;
     margin-bottom: 2.5rem;
 }
@@ -276,12 +276,6 @@ main.sign-up-mode .carousel {
     line-height: 2.2rem;
     font-weight: 600;
     font-size: 1.6rem;
-    min-height: 4.4rem;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 0.5rem;
 }
 
 .bullets {
@@ -335,7 +329,7 @@ main.sign-up-mode .carousel {
     }
 
     .heading {
-        margin: 2rem 0;
+        margin: 0 0;
     }
 
     form.sign-up-form {

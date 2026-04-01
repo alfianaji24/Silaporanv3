@@ -60,6 +60,7 @@
             <option value="T">Tetap</option>
         </select>
     </div>
+    <x-input-with-icon-label icon="ti ti-id" label="RFID UID" name="rfid_uid" />
     <x-input-file name="foto" label="Foto" />
     <div class="form-group">
         <button class="btn btn-primary w-100" type="submit">

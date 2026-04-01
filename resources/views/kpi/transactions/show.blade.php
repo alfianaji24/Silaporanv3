@@ -8,7 +8,7 @@
     <div class="col-12">
         <form action="{{ route('kpi.transactions.update', $kpi_employee->id) }}" method="POST">
             @csrf
-            
+
             <div class="row">
                 <div class="col-12">
                      <div class="card">
@@ -22,7 +22,7 @@
                                     @if(!empty($kpi_employee->karyawan->foto) && Storage::disk('public')->exists('/karyawan/' . $kpi_employee->karyawan->foto))
                                         <img src="{{ getfotoKaryawan($kpi_employee->karyawan->foto) }}" class="avatar avatar-md rounded" style="object-fit: cover;">
                                     @else
-                                        <span class="avatar avatar-md rounded d-flex justify-content-center align-items-center text-white fw-bold" 
+                                        <span class="avatar avatar-md rounded d-flex justify-content-center align-items-center text-white fw-bold"
                                               style="width: 46px; height: 46px; font-size: 20px; background-color: {{ $bgColor }};">
                                             {{ substr($kpi_employee->karyawan->nama_karyawan, 0, 1) }}
                                         </span>
@@ -133,12 +133,14 @@
                                             </td>
                                             <td>{{ $detail->indicator->satuan }}</td>
                                             <td class="text-center">
-                                                {{ $detail->target }}
-                                                @if ($detail->indicator->jenis_target == 'min')
-                                                    <span class="badge bg-danger-lt" title="Minimal (Semakin Kecil Baik)">MIN</span>
-                                                @else
-                                                    <span class="badge bg-success-lt" title="Maksimal (Semakin Besar Baik)">MAX</span>
-                                                @endif
+                                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                                    {{ $detail->target }}
+                                                    @if ($detail->indicator->jenis_target == 'min')
+                                                        <i class="ti ti-arrow-down text-danger" title="Minimal (Semakin Kecil Baik)"></i>
+                                                    @else
+                                                        <i class="ti ti-arrow-up text-success" title="Maksimal (Semakin Besar Baik)"></i>
+                                                    @endif
+                                                </div>
                                             </td>
                                             <td class="text-center">{{ $detail->bobot }}</td>
                                             <td>
@@ -155,7 +157,7 @@
                                 </tbody>
                             </table>
                         </div>
-                            
+
                             @if($kpi_employee->status != 'approved')
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary w-100">

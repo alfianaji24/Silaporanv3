@@ -3,100 +3,130 @@
 
 @section('content')
 @section('navigasi')
-    <span>Grup</span>
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            Grup
+            <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+                Manajemen data grup dan unit kerja.
+            </div>
+        </div>
+        <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard.index') }}">
+                        <i class="ti ti-home-2 ti-xs"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0);">
+                        <i class="ti ti-database ti-xs me-1"></i> Data Master
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="ti ti-users ti-xs me-1"></i> Grup
+                </li>
+            </ol>
+        </nav>
+    </div>
 @endsection
 
 <div class="row">
-    <div class="col-lg-6 col-sm-12 col-xs-12">
-        <div class="card">
-            <div class="card-header">
-                @can('grup.create')
-                    <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i> Tambah
-                        Grup</a>
-                @endcan
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <form action="{{ route('grup.index') }}">
-                            <div class="row">
-                                {{-- <div class="col-lg-4 col-sm-12 col-md-12">
-                           <x-input-with-icon label="Cari Nama Grup" value="{{ Request('nama_grup') }}"
-                              name="nama_grup" icon="ti ti-search" />
-                        </div>
-                        <div class="col-lg-2 col-sm-12 col-md-12">
-                           <button class="btn btn-primary"><i
-                                 class="ti ti-icons ti-search me-1"></i>Cari</button>
-                        </div> --}}
-                            </div>
-
-                        </form>
-                    </div>
+    <div class="col-lg-6 col-md-12 col-sm-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            @can('grup.create')
+                <a href="#" class="btn btn-primary" id="btnCreate">
+                    <i class="ti ti-plus me-1"></i> Tambah Grup
+                </a>
+            @endcan
+        </div>
+        <form action="{{ route('grup.index') }}">
+            <div class="row g-2 mb-3">
+                <div class="col-lg-10 col-md-9 col-sm-12">
+                    <x-input-with-icon label="Cari Grup" value="{{ Request('nama_grup') }}" name="nama_grup"
+                        icon="ti ti-search" hideLabel />
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-responsive mb-2">
-                            <table class="table  table-hover table-bordered table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Kode Grup</th>
-                                        <th>Nama Grup</th>
-                                        <th>#</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($grup as $g)
-                                        <tr>
-                                            <td>{{ $g->kode_grup }}</td>
-                                            <td>{{ $g->nama_grup }}</td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    @can('grup.edit')
-                                                        <div>
-                                                            <a href="#" class="me-2 btnEdit" kode_grup="{{ Crypt::encrypt($g->kode_grup) }}">
-                                                                <i class="ti ti-edit text-success"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
+                <div class="col-lg-2 col-md-3 col-sm-12">
+                    <button class="btn btn-primary w-100"><i class="ti ti-search me-1"></i> Cari</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
-                                                    @can('grup.detail')
-                                                        <div>
-                                                            <a href="#" class="me-2 btnDetail" kode_grup="{{ Crypt::encrypt($g->kode_grup) }}">
-                                                                <i class="ti ti-user-plus text-primary"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
+<div class="row">
+    <div class="col-lg-6 col-md-12 col-sm-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-layout-grid me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Data Grup</h6>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: var(--theme-color-1) !important; color: white !important;">
+                            <tr>
+                                <th class="text-white py-3" style="width: 60px;">NO.</th>
+                                <th class="text-white py-3">KODE</th>
+                                <th class="text-white py-3">NAMA GRUP</th>
+                                <th class="text-white py-3 text-center" style="width: 150px;">#</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($grup as $g)
+                                <tr>
+                                    <td class="py-2">{{ $loop->iteration }}</td>
+                                    <td class="fw-bold py-2">{{ $g->kode_grup }}</td>
+                                    <td class="py-2">{{ $g->nama_grup }}</td>
+                                    <td class="py-2 text-center">
+                                        <div class="d-inline-flex border rounded overflow-hidden shadow-xs">
+                                            @can('grup.edit')
+                                                <a href="#" class="btn btn-sm btnEdit px-2 py-1 border-0 rounded-0"
+                                                    kode_grup="{{ Crypt::encrypt($g->kode_grup) }}" title="Edit"
+                                                    style="background: #f8f9fa;">
+                                                    <i class="ti ti-edit fs-6 text-primary"></i>
+                                                </a>
+                                            @endcan
 
-                                                    @can('grup.setJamKerja')
-                                                        <div>
-                                                            <a href="#" class="me-2 btnSetJamKerja" kode_grup="{{ Crypt::encrypt($g->kode_grup) }}"
-                                                                title="Set Jam Kerja">
-                                                                <i class="ti ti-clock-plus text-warning"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
+                                            @can('grup.detail')
+                                                <a href="#" class="btn btn-sm btnDetail px-2 py-1 border-0 rounded-0 border-start"
+                                                    kode_grup="{{ Crypt::encrypt($g->kode_grup) }}" title="Detail"
+                                                    style="background: #f8f9fa;">
+                                                    <i class="ti ti-users fs-6 text-info"></i>
+                                                </a>
+                                            @endcan
 
-                                                    @can('grup.delete')
-                                                        <div>
-                                                            <form method="POST" name="deleteform" class="deleteform"
-                                                                action="{{ route('grup.delete', Crypt::encrypt($g->kode_grup)) }}">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <a href="#" class="delete-confirm ml-1">
-                                                                    <i class="ti ti-trash text-danger"></i>
-                                                                </a>
-                                                            </form>
-                                                        </div>
-                                                    @endcan
+                                            @can('grup.setJamKerja')
+                                                <a href="#" class="btn btn-sm btnSetJamKerja px-2 py-1 border-0 rounded-0 border-start"
+                                                    kode_grup="{{ Crypt::encrypt($g->kode_grup) }}" title="Set Jam Kerja"
+                                                    style="background: #f8f9fa;">
+                                                    <i class="ti ti-clock-plus fs-6 text-warning"></i>
+                                                </a>
+                                            @endcan
 
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                            @can('grup.delete')
+                                                <form method="POST" name="deleteform" class="deleteform m-0"
+                                                    action="{{ route('grup.delete', Crypt::encrypt($g->kode_grup)) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm delete-confirm px-2 py-1 border-0 rounded-0 border-start"
+                                                        title="Hapus" style="background: #f8f9fa;">
+                                                        <i class="ti ti-trash fs-6 text-danger"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @if($grup->isEmpty())
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -25,8 +25,5 @@ class AppServiceProvider extends ServiceProvider
         //     URL::forceScheme('https');
         // }
         Paginator::useBootstrapFive();
-        
-        $settings = \App\Models\Pengaturanumum::first();
-        \Illuminate\Support\Facades\View::share('general_setting', $settings);
     }
 }

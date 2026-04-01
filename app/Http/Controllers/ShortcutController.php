@@ -115,6 +115,168 @@ class ShortcutController extends Controller
             ->where('nik', $userkaryawan->nik)
             ->count();
 
+        // Cek akses approval delegasi
+        $data['hasApprovalAccess'] = false;
+        $data['pendingApprovalCount'] = 0;
+        if ($userkaryawan->approval_admin_id) {
+            $data['hasApprovalAccess'] = true;
+            $data['pendingApprovalCount'] = \App\Http\Controllers\KaryawanApprovalController::getPendingCount(auth()->user()->id);
+        }
         return view('shortcut.index', $data);
+    }
+
+    public function myschedule(Request $request)
+    {
+        $bulan = $request->bulan ?? date('m');
+        $tahun = $request->tahun ?? date('Y');
+        $nik = auth()->user()->id_user; // Assuming id_user matches NIK based on context
+
+        // Fallback to Userkaryawan logic if id_user is not NIK
+        $userkaryawan = Userkaryawan::where('id_user', auth()->user()->id)->first();
+        if ($userkaryawan) {
+            $nik = $userkaryawan->nik;
+        }
+
+        $karyawan = Karyawan::where('nik', $nik)->first();
+        if (!$karyawan) {
+            return redirect()->back()->with('error', 'Data karyawan tidak ditemukan.');
+        }
+
+        $periode_dari = $tahun . '-' . $bulan . '-01';
+        $periode_sampai = date('Y-m-t', strtotime($periode_dari));
+
+        // 1) Jadwal by-date per karyawan
+        $jadwal_bydate = DB::table('presensi_jamkerja_bydate')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_bydate.tanggal',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->where('presensi_jamkerja_bydate.nik', $nik)
+            ->whereBetween('presensi_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->get()
+            ->keyBy('tanggal');
+
+        // 2) Jadwal grup by-date
+        $jadwal_grup_bydate = DB::table('grup_detail')
+            ->join('grup_jamkerja_bydate', 'grup_detail.kode_grup', '=', 'grup_jamkerja_bydate.kode_grup')
+            ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'grup_jamkerja_bydate.tanggal',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->where('grup_detail.nik', $nik)
+            ->whereBetween('grup_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->get()
+            ->keyBy('tanggal');
+
+        // 3) Jadwal by-day per karyawan
+        $jadwal_byday = DB::table('presensi_jamkerja_byday')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_byday.hari',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->where('presensi_jamkerja_byday.nik', $nik)
+            ->get()
+            ->keyBy('hari');
+
+        // 4) Jadwal by-day per departemen & cabang
+        $jadwal_bydept = DB::table('presensi_jamkerja_bydept_detail')
+            ->join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_bydept_detail.hari',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->where('presensi_jamkerja_bydept.kode_dept', $karyawan->kode_dept)
+            ->where('presensi_jamkerja_bydept.kode_cabang', $karyawan->kode_cabang)
+            ->get()
+            ->keyBy('hari');
+
+        $data = [
+            'karyawan' => $karyawan,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'periode_dari' => $periode_dari,
+            'periode_sampai' => $periode_sampai,
+            'datalibur' => getdatalibur($periode_dari, $periode_sampai),
+        ];
+
+        // Process daily schedule
+        $schedule = [];
+        $start = Carbon::parse($periode_dari);
+        $end = Carbon::parse($periode_sampai);
+        
+        while ($start <= $end) {
+            $date = $start->format('Y-m-d');
+            $dayName = getHari($date);
+            $info = null;
+
+            // Priority logic
+            if (isset($jadwal_bydate[$date])) {
+                $info = $jadwal_bydate[$date];
+            } elseif (isset($jadwal_grup_bydate[$date])) {
+                $info = $jadwal_grup_bydate[$date];
+            } elseif (isset($jadwal_byday[$dayName])) {
+                $info = $jadwal_byday[$dayName];
+            } elseif (isset($jadwal_bydept[$dayName])) {
+                $info = $jadwal_bydept[$dayName];
+            }
+
+            // Check if holiday
+            foreach ($data['datalibur'] as $libur) {
+                // Check if this holiday applies to this date AND (applies to all OR matches NIK OR matches Branch)
+                if ($date == $libur['tanggal']) {
+                    if (empty($libur['nik']) && empty($libur['kode_cabang'])) {
+                        // Global holiday
+                        $info = (object)[
+                            'nama_jam_kerja' => $libur['keterangan'],
+                            'jam_masuk' => null,
+                            'jam_pulang' => null,
+                            'color' => '#ef4444'
+                        ];
+                        break;
+                    } elseif (!empty($libur['nik']) && $libur['nik'] == $nik) {
+                        // Personal holiday
+                        $info = (object)[
+                            'nama_jam_kerja' => $libur['keterangan'],
+                            'jam_masuk' => null,
+                            'jam_pulang' => null,
+                            'color' => '#ef4444'
+                        ];
+                        break;
+                    } elseif (!empty($libur['kode_cabang']) && $libur['kode_cabang'] == $karyawan->kode_cabang) {
+                        // Branch holiday
+                        $info = (object)[
+                            'nama_jam_kerja' => $libur['keterangan'],
+                            'jam_masuk' => null,
+                            'jam_pulang' => null,
+                            'color' => '#ef4444'
+                        ];
+                        break;
+                    }
+                }
+            }
+
+            $schedule[$date] = $info;
+            $start->addDay();
+        }
+
+        $data['schedule'] = $schedule;
+
+        return view('shortcut.myschedule', $data);
     }
 }

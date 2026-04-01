@@ -1,4 +1,20 @@
-@extends('layouts.mobile.app')
+@extends('layouts.mobile.modern')
+
+@section('title', 'E-Presensi')
+
+@section('header_left')
+    <a href="javascript:;" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 text-white active:scale-90 transition-transform" onclick="window.history.back()">
+        <ion-icon name="chevron-back-outline" class="text-base"></ion-icon>
+    </a>
+@endsection
+
+@push('mystyle')
+    <style>
+        /* Override modern layout main padding for camera view */
+        main { padding-left: 0 !important; padding-right: 0 !important; padding-top: calc(3.5rem + env(safe-area-inset-top)) !important; }
+    </style>
+@endpush
+
 @section('content')
     {{-- <style>
         :root {
@@ -98,22 +114,15 @@
         }
 
         /* Perbaikan untuk posisi content-section */
-        #header-section {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
         #content-section {
-            margin-top: 60px !important;
+            margin-top: 0 !important;
             padding: 0 !important;
             padding-bottom: 0 !important;
             /* Padding dihapus karena tinggi kamera sudah dihitung dengan calc() */
             position: relative;
             z-index: 1;
             overflow: visible;
+
             /* Ubah ke visible agar konten tidak terpotong */
         }
 
@@ -304,7 +313,7 @@
             background: linear-gradient(135deg, #e0f7fa 0%, #fff 100%);
             border-radius: 18px;
             box-shadow: 0 4px 24px rgba(44, 62, 80, 0.08);
-            padding: 15px 10px 15px 10px;
+            /* padding: 15px 10px 15px 10px; */
             /* Padding dikurangi agar lebih kompak dan button lebih dekat ke bottomnav */
             margin: 10px 0;
             margin-bottom: 10px;
@@ -387,27 +396,43 @@
         }
 
         .jadwalkerja-col {
-            padding: 0 0px;
+            flex: 1;
+            padding: 0 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
         }
 
-        .jadwalkerja-icon {
-            font-size: 28px;
-            color: #FFD600;
-            margin-bottom: -10px;
+        .jadwalkerja-col-shift {
+            flex: 1.4 !important;
         }
+
+
+        .jadwalkerja-icon {
+            font-size: 32px;
+            color: #FFD600;
+            margin-bottom: 2px;
+        }
+
 
         .jadwalkerja-label {
             font-size: 13px;
             color: #fff;
-            margin-bottom: -8px;
+            margin-bottom: 2px;
+            opacity: 0.9;
         }
+
 
         .jadwalkerja-value {
             font-size: 18px;
             font-weight: bold;
             color: #fff;
             letter-spacing: 1px;
+            white-space: nowrap;
         }
+
 
         /* Modern absolute tanggal & jam di kamera */
         .abs-tanggal-modern {
@@ -584,17 +609,6 @@
     <!-- Import Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <div id="header-section">
-        <div class="appHeader bg-primary text-light">
-            <div class="left">
-                <a href="javascript:;" class="headerButton goBack">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </a>
-            </div>
-            <div class="pageTitle">Silaporan</div>
-            <div class="right"></div>
-        </div>
-    </div>
     <div id="content-section">
         <!-- SKELETON LOADER -->
         <div id="skeleton-loader" class="presensi-content-modern" style="background: transparent; box-shadow: none;">
@@ -655,7 +669,8 @@
             </div>
             <div class="info-section">
                 <div class="row jadwalkerja-row">
-                    <div class="col text-center jadwalkerja-col">
+                    <div class="col text-center jadwalkerja-col jadwalkerja-col-shift">
+
                         <ion-icon name="person-outline" class="jadwalkerja-icon"></ion-icon>
                         <div class="jadwalkerja-label">Shift</div>
                         <div class="jadwalkerja-value">{{ $jam_kerja->nama_jam_kerja }}</div>
@@ -684,7 +699,7 @@
                 </button>
             </div>
         </div>
-    </div>
+
     <audio id="notifikasi_radius">
         <source src="{{ asset('assets/sound/radius.mp3') }}" type="audio/mpeg">
     </audio>
@@ -776,13 +791,78 @@
                 "{{ $lokasi_kantor->lokasi_cabang }}";
             // Variabel map global & pengecekan izin
             let map;
+            let mapCircle = null; // Circle untuk lokasi cabang
+            let mapMarker = null; // Marker user untuk update posisi
+            let geoWatchId = null; // ID watchPosition untuk cleanup
             let cameraPermissionGranted = false;
             let locationPermissionGranted = false;
             let cameraPermissionDenied = false;
             let locationPermissionDenied = false;
             let cameraPermissionAlertShown = false;
             let locationPermissionAlertShown = false;
-            // alert(lokasi_cabang);
+
+            // =========================================================
+            // PARALLEL GPS: Start geolocation IMMEDIATELY with watchPosition
+            // Phase 1: Accept cached position (up to 30s old) for instant fix
+            // Phase 2: watchPosition with high accuracy for continuous refinement
+            // This runs in parallel with camera & face recognition init.
+            // =========================================================
+            let geoPositionPromise = null;
+            let geoFirstPositionReceived = false;
+            const geoStartTime = performance.now();
+
+            if (navigator.geolocation) {
+                console.log('[GPS] Starting watchPosition early (parallel with camera)...');
+
+                geoPositionPromise = new Promise((resolve) => {
+                    // Start watchPosition with optimized options
+                    geoWatchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const elapsed = (performance.now() - geoStartTime).toFixed(0);
+                            const acc = position.coords.accuracy ? position.coords.accuracy.toFixed(0) : '?';
+                            console.log(`[GPS] Position update: accuracy=${acc}m, elapsed=${elapsed}ms`);
+
+                            // Always update lokasi with latest position
+                            lokasi = position.coords.latitude + "," + position.coords.longitude;
+
+                            // First position: resolve the promise for map init
+                            if (!geoFirstPositionReceived) {
+                                geoFirstPositionReceived = true;
+                                console.log(`[GPS] First fix in ${elapsed}ms (accuracy: ${acc}m)`);
+                                resolve({ success: true, position: position });
+                            } else {
+                                // Subsequent updates: move marker if map exists
+                                if (mapMarker) {
+                                    mapMarker.setLatLng([position.coords.latitude, position.coords.longitude]);
+                                    console.log(`[GPS] Marker updated (accuracy: ${acc}m)`);
+                                }
+                            }
+
+                            // Auto-stop watching once accuracy is good enough (< 30m)
+                            if (position.coords.accuracy && position.coords.accuracy < 30 && geoFirstPositionReceived) {
+                                console.log(`[GPS] Accuracy sufficient (${acc}m), stopping watchPosition`);
+                                if (geoWatchId !== null) {
+                                    navigator.geolocation.clearWatch(geoWatchId);
+                                    geoWatchId = null;
+                                }
+                            }
+                        },
+                        (error) => {
+                            const elapsed = (performance.now() - geoStartTime).toFixed(0);
+                            console.warn(`[GPS] Error after ${elapsed}ms:`, error.message);
+                            if (!geoFirstPositionReceived) {
+                                geoFirstPositionReceived = true;
+                                resolve({ success: false, error: error });
+                            }
+                        },
+                        {
+                            enableHighAccuracy: true,  // Use GPS on mobile for best accuracy
+                            maximumAge: 30000,         // Accept cached position up to 30s old (instant first fix)
+                            timeout: 15000             // Wait max 15s before error
+                        }
+                    );
+                });
+            }
             // Mengambil elemen HTML dengan id 'notifikasi_radius'
             let notifikasi_radius = document.getElementById('notifikasi_radius');
             // Mengambil elemen HTML dengan id 'notifikasi_mulaiabsen'
@@ -816,28 +896,10 @@
                 // ===============================================
 
 
-            // SKELETON LOADING LOGIC
-            $(window).on('load', function() {
-                // Determine layout readiness - waiting a bit for map/camera init if needed
-                setTimeout(function() {
-                    $("#skeleton-loader").fadeOut(300, function() {
-                        $(this).remove();
-                        $("#real-content").removeClass("content-hide").hide().fadeIn(300);
-                        
-                        // Re-trigger map resize if needed
-                        if(map) {
-                            map.invalidateSize();
-                        }
-                    });
-                }, 800); // Small delay to prevent flashing
-            });
+            // SKELETON LOADING LOGIC moved to App.init() for better synchronization
 
 
-            // Tampilkan Map
-            if (navigator.geolocation) {
-                // Menggunakan geolocation untuk mendapatkan lokasi saat ini
-                navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
-            }
+            // Map initialization moved to App.init() for robustness
 
             // Fungsi untuk memuat peta
 
@@ -846,65 +908,74 @@
                 locationPermissionGranted = true;
                 locationPermissionDenied = false;
                 locationPermissionAlertShown = false;
+                
+                // === ROBUSTNESS FIX: Check if map container exists ===
+                const mapContainer = document.getElementById('map');
+                if (!mapContainer) {
+                    console.error("Map container '#map' not found in DOM.");
+                    return;
+                }
+
+                // Update lokasi variable with latest position
+                lokasi = position.coords.latitude + "," + position.coords.longitude;
+
                 try {
-                    // Membuat objek map
-                    //alert(position.coords.latitude + "," + position.coords.longitude);
+                    // If map already exists, just update the marker position
+                    if (map) {
+                        if (mapMarker) {
+                            mapMarker.setLatLng([position.coords.latitude, position.coords.longitude]);
+                        }
+                        map.setView([position.coords.latitude, position.coords.longitude], 18);
+                        console.log('[GPS] Map marker updated with new position');
+                        return;
+                    }
+
+                    // Initialize Leaflet map (first time only)
                     map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 18);
-                    //alert(position.coords.latitude + "," + position.coords.longitude);
-                    // Mengambil lokasi kantor dari variabel $lokasi_kantor->lokasi_cabang
+                    
                     var lokasi_kantor = lokasi_cabang;
-                    // Mengambil lokasi saat ini
-                    lokasi = position.coords.latitude + "," + position.coords.longitude;
-                    // Memisahkan lokasi kantor menjadi latitude dan longitude
                     var lok = lokasi_kantor.split(",");
-                    // Mengambil latitude kantor
                     var lat_kantor = lok[0];
-                    // Mengambil longitude kantor
                     var long_kantor = lok[1];
-                    console.log(position.coords.latitude + "," + position.coords.longitude);
-                    // Mengambil radius dari variabel $lokasi_kantor->radius_cabang
                     var radius = "{{ $lokasi_kantor->radius_cabang }}";
 
-                    // Menambahkan lapisan peta
                     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        // Maksimum zoom
                         maxZoom: 19,
-                        // Atribusi
                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     }).addTo(map);
 
-                    // Menambahkan marker untuk lokasi saat ini
-                    var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
-                    // Menambahkan lingkaran untuk radius
+                    // Store marker reference so watchPosition can update it
+                    mapMarker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
                     var circle = L.circle([lat_kantor, long_kantor], {
-                        // Warna lingkaran
                         color: 'red',
-                        // Warna isi lingkaran
                         fillColor: '#f03',
-                        // Opasitas isi lingkaran
                         fillOpacity: 0.5,
-                        // Radius lingkaran
                         radius: radius
                     }).addTo(map);
+                    mapCircle = circle;
 
-                    // Sembunyikan indikator loading setelah peta dimuat
-                    document.getElementById('map-loading').style.display = 'none';
+                    // Sembunyikan indikator loading (with null check)
+                    const loader = document.getElementById('map-loading');
+                    if (loader) loader.style.display = 'none';
 
-                    // Pastikan peta diperbarui setelah dimuat
                     setTimeout(function() {
-                        map.invalidateSize();
+                        if (map) map.invalidateSize();
                     }, 500);
                 } catch (error) {
                     console.error("Error initializing map:", error);
-                    document.getElementById('map-loading').style.display = 'none';
+                    const loader = document.getElementById('map-loading');
+                    if (loader) loader.style.display = 'none';
                 }
             }
 
             // Fungsi yang dijalankan ketika geolocation gagal
             function errorCallback(error) {
                 console.error("Error getting geolocation:", error);
-                document.getElementById('map-loading').innerHTML =
-                    'Gagal mendapatkan lokasi. Silakan cek izin lokasi.';
+                
+                const loader = document.getElementById('map-loading');
+                if (loader) {
+                    loader.innerHTML = 'Gagal mendapatkan lokasi. Silakan cek izin lokasi.';
+                }
 
                 locationPermissionGranted = false;
                 if (!locationPermissionAlertShown && error && error.code === error.PERMISSION_DENIED) {
@@ -919,20 +990,20 @@
 
                 // Coba inisialisasi peta dengan lokasi cabang default
                 try {
+                    const mapContainer = document.getElementById('map');
+                    if (!mapContainer) return;
+
                     var lok = lokasi_cabang.split(",");
                     var lat_kantor = lok[0];
                     var long_kantor = lok[1];
 
-                    // Inisialisasi peta dengan lokasi cabang
                     map = L.map('map').setView([lat_kantor, long_kantor], 18);
 
-                    // Tambahkan tile layer
                     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         maxZoom: 19,
                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     }).addTo(map);
 
-                    // Tambahkan lingkaran radius
                     var radius = "{{ $lokasi_kantor->radius_cabang }}";
                     var circle = L.circle([lat_kantor, long_kantor], {
                         color: 'red',
@@ -940,10 +1011,11 @@
                         fillOpacity: 0.5,
                         radius: radius
                     }).addTo(map);
+                    mapCircle = circle;
 
-                    document.getElementById('map-loading').style.display = 'none';
+                    if (loader) loader.style.display = 'none';
                 } catch (mapError) {
-                    console.error("Error initializing map:", mapError);
+                    console.error("Error initializing fallback map:", mapError);
                 }
             }
 
@@ -951,20 +1023,19 @@
             // MODERN FACE RECOGNITION IMPLEMENTATION
             // =========================================================
 
-            /**
-             * Configuration Module
-             */
             const FaceConfig = {
                 isEnabled: {{ $general_setting->face_recognition }},
                 modelsUrl: '/models',
                 detection: {
-                    interval: isMobile ? 150 : 80, // Optimized interval
-                    inputSize: isMobile ? 416 : 416, // Increased for better accuracy (was 224)
-                    scoreThreshold: 0.3, // Lowered for better detection (was 0.35)
+                    // UNIVERSAL MOBILE OPTIMIZATION for all devices
+                    interval: 200, 
+                    inputSize: 224, 
+                    scoreThreshold: 0.3, 
                     minConfidence: 0.45,
-                    minStableFrames: isMobile ? 1 : 2, // Quick detection
-                    maxNoFaceFrames: isMobile ? 3 : 4,
-                    mirror: false // Disabled - use raw coordinates
+                    minStableFrames: 1, 
+                    maxNoFaceFrames: 3,
+                    mirror: false,
+                    skipBrightnessNormalization: true
                 },
                 retry: {
                     maxAttempts: 10,
@@ -1157,18 +1228,18 @@
                             
                             // === FIX: Retry mechanism for video element ===
                             let retryCount = 0;
-                            const maxRetries = 10;
+                            const maxRetries = 30; // 30 retries x 200ms = 6s total tolerance
                             
                             const findVideo = () => {
                                 const video = document.querySelector('.webcam-capture video');
                                 if(video) {
-                                    console.log('Video element found');
+                                    console.log(`Video element found after ${retryCount} retries`);
                                     UI.els.video = video;
                                     resolve(video);
                                 } else if (retryCount < maxRetries) {
                                     retryCount++;
                                     console.log(`Retrying to find video element... (${retryCount}/${maxRetries})`);
-                                    setTimeout(findVideo, 100); // Wait 100ms and retry
+                                    setTimeout(findVideo, 200); // Wait 200ms and retry
                                 } else {
                                     reject(new Error('Video element not found after retries'));
                                 }
@@ -1204,20 +1275,13 @@
                     UI.showLoading('model-loading', 'Memuat model wajah...');
                     
                     try {
+                        // FORCE TINY FACE DETECTOR ON ALL DEVICES FOR PERFORMANCE
                         const modelPath = FaceConfig.modelsUrl;
-                        if (isMobile) {
-                            await Promise.all([
-                                faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
-                                faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
-                                faceapi.nets.faceRecognitionNet.loadFromUri(modelPath)
-                            ]);
-                        } else {
-                            await Promise.all([
-                                faceapi.nets.ssdMobilenetv1.loadFromUri(modelPath),
-                                faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
-                                faceapi.nets.faceRecognitionNet.loadFromUri(modelPath)
-                            ]);
-                        }
+                        await Promise.all([
+                            faceapi.nets.tinyFaceDetector.loadFromUri(modelPath),
+                            faceapi.nets.faceLandmark68Net.loadFromUri(modelPath),
+                            faceapi.nets.faceRecognitionNet.loadFromUri(modelPath)
+                        ]);
                         this.modelsLoaded = true;
                         UI.removeLoading('model-loading');
                         console.log('Models loaded');
@@ -1235,8 +1299,34 @@
                         const nik = FaceConfig.user.nik;
                         let descriptions = [];
                         
-                        // === FIX: Always fetch from SERVER first to detect changes ===
-                        // Cache is used only as fallback if server fetch fails
+                        // === FIX: Prioritize Cache over Server fetching ===
+                        // This prevents the 2-3 seconds delay of re-processing images on every visit
+                        try {
+                            if (window.FaceModelCache && window.FaceModelCache.loadDescriptors) {
+                                const cached = await window.FaceModelCache.loadDescriptors(nik);
+                                if (cached && cached.descriptors.length > 0) {
+                                    // Verify cache is not expired (e.g. older than 24h) and has same count
+                                    if(cached.faceCount === FaceConfig.user.wajahCount) {
+                                        console.log('Using optimized fast cached descriptors');
+                                        descriptions = cached.descriptors;
+                                        
+                                        // Quick set and return
+                                        const labelName = FaceConfig.user.fullName;
+                                        const labeledDescriptors = new faceapi.LabeledFaceDescriptors(labelName, descriptions);
+                                        this.matcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+                                        
+                                        UI.removeLoading('data-loading');
+                                        console.log('Descriptors loaded instantly from cache');
+                                        return;
+                                    } else {
+                                        console.log('Cache count mismatch, will refetch from server');
+                                    }
+                                }
+                            }
+                        } catch(e) {
+                            console.warn('Cache lookup failed, falling back to server fetch', e);
+                        }
+                        
                         let serverFetchSuccess = false;
                         
                         try {
@@ -1258,9 +1348,8 @@
                                         // This helps match photos with different lighting/exposure
                                         const normalizedCanvas = ImageProcessing.normalizeBrightness(img, 128);
                                         
-                                        const options = isMobile 
-                                            ? new faceapi.TinyFaceDetectorOptions({ inputSize: 224 })
-                                            : new faceapi.SsdMobilenetv1Options({ minConfidence: 0.4 });
+                                        // FORCE TINY FACE DETECTOR FOR PRELOADING ALL SAMPLES
+                                        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224 });
 
                                         // Use normalized image for detection
                                         const detection = await faceapi.detectSingleFace(normalizedCanvas, options)
@@ -1370,21 +1459,17 @@
                         if(!isProcessing) {
                             isProcessing = true;
                             try {
-                                // === BRIGHTNESS NORMALIZATION FOR LIVE DETECTION ===
-                                // Normalize video frame brightness before detection
-                                const normalizedCanvas = ImageProcessing.normalizeBrightness(video, 128);
+                                // === BRIGHTNESS NORMALIZATION (SKIP FOR PERFORMANCE/BATTERY) ===
+                                const inputSource = video; // Bypass normalisasi
                                 
-                                const options = isMobile 
-                                    ? new faceapi.TinyFaceDetectorOptions({ 
-                                        inputSize: FaceConfig.detection.inputSize, 
-                                        scoreThreshold: FaceConfig.detection.scoreThreshold 
-                                    })
-                                    : new faceapi.SsdMobilenetv1Options({ 
-                                        minConfidence: FaceConfig.detection.minConfidence 
-                                    });
+                                // FORCE TINY FACE DETECTOR ON ALL DEVICES
+                                const options = new faceapi.TinyFaceDetectorOptions({ 
+                                    inputSize: FaceConfig.detection.inputSize, 
+                                    scoreThreshold: FaceConfig.detection.scoreThreshold 
+                                });
 
-                                // Use normalized video for detection
-                                let detection = await faceapi.detectSingleFace(normalizedCanvas, options)
+                                // Use inputSource (video or normalized canvas) for detection
+                                let detection = await faceapi.detectSingleFace(inputSource, options)
                                     .withFaceLandmarks()
                                     .withFaceDescriptor();
 
@@ -1670,22 +1755,70 @@
              */
             const App = {
                 async init() {
-                    console.log('Initializing Modern Face Recognition...');
+                    console.log('Initializing Modern App Logic...');
                     
                     try {
                         const video = await Camera.init();
+                        console.log('Camera initialized, revealing UI...');
                         
-                        if (FaceConfig.isEnabled == 1) {
-                            UI.disableButtons(); 
-                            await FaceService.loadModels();
-                            await FaceService.loadDescriptors();
-                            FaceService.startDetection(video);
-                        } else {
-                            UI.enableButtons();
-                        }
+                        // Reveal UI as soon as camera is ready
+                        // We use a small timeout to ensure the DOM has settled
+                        setTimeout(() => {
+                            $("#skeleton-loader").fadeOut(200, function() {
+                                $(this).remove();
+                                $("#real-content").removeClass("content-hide").hide().fadeIn(200, async function() {
+                                    console.log('UI Revealed, starting functional modules...');
+                                    
+                                    // 1. Start Face Recognition if enabled
+                                    if (FaceConfig.isEnabled == 1) {
+                                        UI.disableButtons(); 
+                                        // Run asynchronously so it doesn't block map loading
+                                        (async () => {
+                                            try {
+                                                await FaceService.loadModels();
+                                                await FaceService.loadDescriptors();
+                                                FaceService.startDetection(video);
+                                            } catch (faceErr) {
+                                                console.error('Face Recognition Init Failed', faceErr);
+                                                UI.showError('Sistem deteksi wajah gagal dimuat. Anda tetap bisa melakukan presensi.');
+                                                UI.enableButtons(); // Fallback
+                                            }
+                                        })();
+                                    } else {
+                                        console.log('Face Recognition is disabled, enabling buttons.');
+                                        UI.enableButtons();
+                                    }
+                                    
+                                    // 2. Start Map & Geolocation - use pre-fetched GPS position
+                                    if (geoPositionPromise) {
+                                        console.log('[GPS] Using pre-fetched geolocation for map...');
+                                        geoPositionPromise.then(result => {
+                                            if (result.success) {
+                                                successCallback(result.position);
+                                            } else {
+                                                errorCallback(result.error);
+                                            }
+                                        });
+                                    } else if (navigator.geolocation) {
+                                        // Fallback: if promise wasn't created, request normally
+                                        console.log('[GPS] Fallback: requesting geolocation now...');
+                                        navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+                                    }
+                                    
+                                    if(map) {
+                                        console.log('Invalidating map size for correct rendering');
+                                        map.invalidateSize();
+                                    }
+                                });
+                            });
+                        }, 100);
 
                     } catch (e) {
                         console.error('App Init Error', e);
+                        // Emergency reveal if initialization fails
+                        $("#skeleton-loader").remove();
+                        $("#real-content").removeClass("content-hide");
+                        UI.showError('Gagal memuat kamera. Silakan refresh halaman.');
                     }
                 }
             };
@@ -2622,7 +2755,14 @@
                     return;
                 }
 
-
+                if (!lokasi || lokasi.includes('undefined') || lokasi === '') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lokasi Belum Ditemukan',
+                        text: 'Sistem belum mendapatkan koordinat lokasi Anda. Mohon tunggu beberapa detik sampai peta muncul, atau pastikan GPS aktif.'
+                    });
+                    return false;
+                }
 
                 // alert(lokasi);
                 $("#absenmasuk").prop('disabled', true);
@@ -2727,6 +2867,16 @@
                     showPermissionWarning('location');
                     return;
                 }
+
+                if (!lokasi || lokasi.includes('undefined') || lokasi === '') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lokasi Belum Ditemukan',
+                        text: 'Sistem belum mendapatkan koordinat lokasi Anda. Mohon tunggu beberapa detik sampai peta muncul, atau pastikan GPS aktif.'
+                    });
+                    return false;
+                }
+
                 // alert(lokasi);
                 $("#absenmasuk").prop('disabled', true);
                 $("#absenpulang").prop('disabled', true);
@@ -2828,105 +2978,26 @@
                     timer: 2000
                 });
 
-                // Jika lokasi cabang berubah, reload peta
-                if (typeof map !== 'undefined' && map !== null) {
-                    map.remove(); // Hapus peta sebelumnya
-                }
-
-                // Tampilkan indikator loading
-                document.getElementById('map-loading').style.display = 'block';
-
                 try {
                     // Buat array dari string lokasi
                     var lok = lokasi_cabang.split(",");
                     var lat_kantor = lok[0];
                     var long_kantor = lok[1];
 
-                    // Inisialisasi peta baru dengan lokasi cabang yang dipilih
-
-
-                    // Jika geolocation tersedia, tambahkan marker lokasi user
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(function(position) {
-                                // Update lokasi user
-                                lokasi = position.coords.latitude + "," + position.coords.longitude;
-                                map = L.map('map').setView([position.coords.latitude, position.coords.longitude], 18);
-
-                                // Tambahkan tile layer
-                                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                    maxZoom: 19,
-                                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                                }).addTo(map);
-                                // Tambahkan marker untuk lokasi user
-                                var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
-
-                                // Tambahkan lingkaran radius
-                                var radius = "{{ $lokasi_kantor->radius_cabang }}";
-                                var circle = L.circle([lat_kantor, long_kantor], {
-                                    color: 'red',
-                                    fillColor: '#f03',
-                                    fillOpacity: 0.5,
-                                    radius: radius
-                                }).addTo(map);
-
-                                // Sembunyikan indikator loading
-                                document.getElementById('map-loading').style.display = 'none';
-                            },
-                            function(error) {
-                                // Tangani error geolocation
-                                console.error("Error getting geolocation:", error);
-
-                                // Tambahkan lingkaran radius tanpa marker user
-                                var radius = "{{ $lokasi_kantor->radius_cabang }}";
-                                var circle = L.circle([lat_kantor, long_kantor], {
-                                    color: 'red',
-                                    fillColor: '#f03',
-                                    fillOpacity: 0.5,
-                                    radius: radius
-                                }).addTo(map);
-
-                                // Sembunyikan indikator loading
-                                document.getElementById('map-loading').style.display = 'none';
-
-                                // Tampilkan pesan error
-                                document.getElementById('map-loading').innerHTML =
-                                    'Gagal mendapatkan lokasi. Silakan cek izin lokasi.';
-                                document.getElementById('map-loading').style.display = 'block';
-                                setTimeout(function() {
-                                    document.getElementById('map-loading').style.display =
-                                        'none';
-                                }, 3000);
-                            });
-                    } else {
-                        // Jika geolocation tidak didukung
-                        // Tambahkan lingkaran radius tanpa marker user
-                        var radius = "{{ $lokasi_kantor->radius_cabang }}";
-                        var circle = L.circle([lat_kantor, long_kantor], {
-                            color: 'red',
-                            fillColor: '#f03',
-                            fillOpacity: 0.5,
-                            radius: radius
-                        }).addTo(map);
-
-                        // Sembunyikan indikator loading
-                        document.getElementById('map-loading').style.display = 'none';
-
-                        // Tampilkan pesan error
-                        document.getElementById('map-loading').innerHTML =
-                            'Geolokasi tidak didukung oleh perangkat ini.';
-                        document.getElementById('map-loading').style.display = 'block';
-                        setTimeout(function() {
-                            document.getElementById('map-loading').style.display = 'none';
-                        }, 3000);
+                    // Jika map dan circle sudah ada, cukup update posisi circlenya
+                    if (map && mapCircle) {
+                        mapCircle.setLatLng([lat_kantor, long_kantor]);
+                        
+                        // Sesuaikan view map agar marker user dan lokasi kantor terlihat
+                        if (mapMarker) {
+                            var group = new L.featureGroup([mapMarker, mapCircle]);
+                            map.fitBounds(group.getBounds(), { padding: [30, 30] });
+                        } else {
+                            map.setView([lat_kantor, long_kantor], 18);
+                        }
                     }
                 } catch (error) {
-                    console.error("Error initializing map:", error);
-                    document.getElementById('map-loading').innerHTML =
-                        'Gagal memuat peta. Silakan coba lagi.';
-                    document.getElementById('map-loading').style.display = 'block';
-                    setTimeout(function() {
-                        document.getElementById('map-loading').style.display = 'none';
-                    }, 3000);
+                    console.error("Error updating map circle:", error);
                 }
             });
         });
