@@ -88,12 +88,6 @@
                  <div>Dashboard</div>
              </a>
          </li>
-        <li class="menu-item {{ request()->is(['fakegps-users', 'fakegps-users/*']) ? 'active' : '' }}">
-            <a href="{{ route('fakegps-users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-ban"></i>
-                <div>User FakeGPS</div>
-            </a>
-        </li>
          @if (auth()->user()->hasAnyPermission([
                      'karyawan.index',
                      'departemen.index',

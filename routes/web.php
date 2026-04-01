@@ -54,7 +54,6 @@ use App\Http\Controllers\AktivitasKaryawanController;
 use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
-use App\Http\Controllers\UserFakeGpsController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -93,8 +92,6 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
 
 Route::middleware('auth')->group(function () {
 
-    // Page khusus user fakegps banned
-    Route::get('/fakegps-users', [UserFakeGpsController::class, 'index'])->name('fakegps-users.index');
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

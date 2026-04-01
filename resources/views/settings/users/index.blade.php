@@ -61,14 +61,6 @@
                                 <div class="col-lg-2 col-sm-12 col-md-12">
                                     <button class="btn btn-primary w-100">Cari</button>
                                 </div>
-                                <div class="col-lg-4 col-sm-12 col-md-12">
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" name="fakegps_banned" value="1" id="fakegps_banned" {{ Request('fakegps_banned') == '1' ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="fakegps_banned">
-                                            Tampilkan hanya user yang terkena banned FakeGPS
-                                        </label>
-                                    </div>
-                                </div>
                                 @else
                                 <div class="col-lg-10 col-sm-12 col-md-12">
                                     <div class="form-group">
@@ -106,9 +98,6 @@
                                                     <div class="fw-bold text-dark" style="font-size: 14px;">
                                                         {{ $d->name }}
                                                         <span class="text-muted fw-normal ms-1" style="font-size: 12px;">({{ $d->username }})</span>
-                                                        @if($d->is_fakegps_banned)
-                                                            <span class="badge bg-danger ms-2" style="font-size:10px;">FakeGPS Banned</span>
-                                                        @endif
                                                     </div>
                                                     <div class="text-muted small mb-1">
                                                         <i class="ti ti-mail me-1"></i> {{ $d->email }}

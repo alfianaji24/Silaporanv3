@@ -27,9 +27,6 @@ class UserController extends Controller
                     $subQuery->where('role_id', $role_id);
                 });
             })
-            ->when($request->has('fakegps_banned') && $request->fakegps_banned == '1', function ($query) {
-                return $query->where('is_fakegps_banned', true);
-            })
             ->leftjoin('users_karyawan', 'users.id', '=', 'users_karyawan.id_user')
             ->when($userType == 'karyawan', function ($query) {
                 // Filter hanya users yang punya relasi dengan users_karyawan

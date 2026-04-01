@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission_group;
 use App\Models\User;
-use App\FakeGPS\FakeGPSBannedIndex;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redirect;
@@ -24,9 +23,7 @@ class RoleController extends Controller
         }
         $roles = $query->paginate(10);
         $roles->appends(request()->all());
-        // Add fakegps banned users to role view
-        $fakegpsBannedUsers = FakeGPSBannedIndex::getBannedUsers();
-        return view('settings.roles.index', compact('roles', 'fakegpsBannedUsers'));
+        return view('settings.roles.index', compact('roles'));
     }
 
     /**

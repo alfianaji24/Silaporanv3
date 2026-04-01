@@ -15,11 +15,6 @@ Route::prefix('auth')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:sanctum')->name('api.auth.profile');
 });
 
-// Admin: Unban user dari banned fakegps
-Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
-    Route::post('/unban-fakegps', [\App\Http\Controllers\Api\AdminController::class, 'unbanFakeGpsUser']);
-});
-
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
