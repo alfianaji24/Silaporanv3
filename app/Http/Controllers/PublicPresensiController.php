@@ -240,7 +240,11 @@ class PublicPresensiController extends Controller
                     // Notifikasi WA (try-catch agar error WA tidak menggagalkan absen)
                     if ($generalsetting->notifikasi_wa == 1) {
                         try {
-                            $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Masuk pada " . $jam_presensi;
+                            $message = "📢 INFO ABSEN MASUK\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Selamat Bekerja!";
                             if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                 if ($karyawan->no_hp != "") {
                                     dispatch(new SendWaMessage($karyawan->no_hp, $message));
@@ -291,7 +295,11 @@ class PublicPresensiController extends Controller
                     // Notifikasi WA
                     if ($generalsetting->notifikasi_wa == 1) {
                         try {
-                            $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . " Hati Hati di Jalan";
+                            $message = "📢 INFO ABSEN PULANG\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Sampai Jumpa Besok!";
                             if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                 if ($karyawan->no_hp != "") {
                                     dispatch(new SendWaMessage($karyawan->no_hp, $message));

@@ -500,11 +500,19 @@ class PresensiController extends Controller
                             try {
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Masuk pada " . $jam_presensi . "Hati Hati di Jalan";
+                                        $message = "📢 INFO ABSEN MASUK\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Selamat Bekerja!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Masuk pada " . $jam_presensi . "Semangat Bekerja";
+                                    $message = "📢 INFO ABSEN MASUK\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Selamat Bekerja!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {
@@ -555,11 +563,19 @@ class PresensiController extends Controller
                             try {
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                                        $message = "📢 INFO ABSEN PULANG\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Sampai Jumpa Besok!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                                    $message = "📢 INFO ABSEN PULANG\n\n"
+                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "Telah Berhasil Tercatat\n"
+                                . "Sampai Jumpa Besok!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {
