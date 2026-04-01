@@ -113,6 +113,13 @@ class Karyawan extends Model
         $start_date_duabulan = $tahunduabulan . "-" . $duabulan . "-01";
         $end_date_duabulan = date("Y-m-t", strtotime($start_date_duabulan));
 
+        // Kategori 4: Jatuh tempo 6 bulan dari sekarang
+        // Perhitungan bulan +6 otomatis melompati pergantian tahun.
+        $enambulan = date("m") + 6 > 12 ? (date("m") + 6) - 12 : date("m") + 6;
+        $tahunenambulan = date("m") + 6 > 12 ? $tahunini + 1 : $tahunini;
+        $start_date_enambulan = $tahunenambulan . "-" . $enambulan . "-01";
+        $end_date_enambulan = date("Y-m-t", strtotime($start_date_enambulan));
+
         $query = Sip::query();
         $query->select('sip.no_sip', 'sip.nik', 'sip.tanggal_akhir', 'karyawan.nama_karyawan', 'nama_jabatan', 'karyawan.kode_dept', 'karyawan.kode_cabang', 'nama_cabang');
         $query->join('karyawan', 'sip.nik', '=', 'karyawan.nik');
@@ -135,6 +142,8 @@ class Karyawan extends Model
             $query->whereBetween('sip.tanggal_akhir', [$start_date_bulandepan, $end_date_bulandepan]);
         } elseif ($kategori == 3) {
             $query->whereBetween('sip.tanggal_akhir', [$start_date_duabulan, $end_date_duabulan]);
+        } elseif ($kategori == 4) {
+            $query->whereBetween('sip.tanggal_akhir', [$start_date_enambulan, $end_date_enambulan]);
         }
 
         $query->where('karyawan.status_aktif_karyawan', 1);

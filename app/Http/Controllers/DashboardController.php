@@ -132,7 +132,7 @@ class DashboardController extends Controller
                 ->where('dari', '<=', $today->toDateString())
                 ->where('sampai', '>=', $today->toDateString())
                 ->first();
-            
+
             $data['notif_sp'] = $notif_sp;
 
             // Cek Pengumuman Aktif (Ambil yang terakhir dibuat)
@@ -294,6 +294,7 @@ class DashboardController extends Controller
             $data['sip_bulanini'] = $sk->getRekapSip(1, $userCabangs, $userDepartemens);
             $data['sip_bulandepan'] = $sk->getRekapSip(2, $userCabangs, $userDepartemens);
             $data['sip_duabulan'] = $sk->getRekapSip(3, $userCabangs, $userDepartemens);
+            $data['sip_enambulan'] = $sk->getRekapSip(4, $userCabangs, $userDepartemens);
 
             return view('dashboard.dashboard', $data);
         }
