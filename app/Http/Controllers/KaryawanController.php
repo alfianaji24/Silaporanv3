@@ -89,6 +89,16 @@ class KaryawanController extends Controller
         if (!empty($request->nama_karyawan)) {
             $query->where('nama_karyawan', 'like', '%' . $request->nama_karyawan . '%');
         }
+
+        // Default: hanya tampilkan karyawan aktif jika tidak ada filter status
+        if ($request->has('status_aktif_karyawan')) {
+            if ($request->status_aktif_karyawan === '1' || $request->status_aktif_karyawan === '0') {
+                $query->where('karyawan.status_aktif_karyawan', $request->status_aktif_karyawan);
+            }
+            // Jika kosong ("Semua"), tidak filter status_aktif_karyawan sama sekali
+        } else {
+            $query->where('karyawan.status_aktif_karyawan', 1);
+        }
         $query->orderBy('nama_karyawan', 'asc');
         $karyawan = $query->paginate(15);
         $karyawan->appends($request->all());
@@ -392,7 +402,7 @@ class KaryawanController extends Controller
             ->where('nik', $nik)
             ->orderBy('tanggal_mutasi', 'desc')
             ->get();
-            
+
         $data['karyawan'] = $karyawan;
         $data['user'] = $user;
         $data['karyawan_wajah'] = $karyawan_wajah;
@@ -700,17 +710,17 @@ class KaryawanController extends Controller
     {
         $kode_cabang = $request->kode_cabang;
         $kode_dept = $request->kode_dept;
-        
+
         $query = Karyawan::query();
-        
+
         if (!empty($kode_cabang)) {
             $query->where('kode_cabang', $kode_cabang);
         }
-        
+
         if (!empty($kode_dept)) {
             $query->where('kode_dept', $kode_dept);
         }
-        
+
         $karyawan = $query->orderBy('nama_karyawan')->get();
         return response()->json($karyawan);
     }

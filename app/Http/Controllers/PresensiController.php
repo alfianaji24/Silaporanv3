@@ -36,7 +36,7 @@ class PresensiController extends Controller
 
     public function index(Request $request)
     {
-       
+
         $user = auth()->user();
 
         $tanggal = !empty($request->tanggal) ? $request->tanggal : date('Y-m-d');
@@ -70,8 +70,9 @@ class PresensiController extends Controller
             'karyawan.nik',
             'karyawan.nik_show',
             'nama_karyawan',
-            'kode_dept',
-            'kode_cabang',
+            'karyawan.kode_dept',
+            'karyawan.kode_cabang',
+            'jabatan.nama_jabatan',
             'presensi.tanggal as tanggal_presensi',
             'presensi.jam_in',
             'presensi.kode_jam_kerja',
@@ -95,25 +96,28 @@ class PresensiController extends Controller
         $query->leftjoinSub($presensi, 'presensi', function ($join) {
             $join->on('karyawan.nik', '=', 'presensi.nik');
         });
-        
+        $query->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan');
+        // Hanya tampilkan karyawan aktif
+        $query->where('karyawan.status_aktif_karyawan', 1);
+
         // Filter berdasarkan akses cabang dan departemen jika bukan super admin
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!empty($userCabangs)) {
                 $query->whereIn('karyawan.kode_cabang', $userCabangs);
             } else {
                 $query->whereRaw('1 = 0');
             }
-            
+
             if (!empty($userDepartemens)) {
                 $query->whereIn('karyawan.kode_dept', $userDepartemens);
             } else {
                 $query->whereRaw('1 = 0');
             }
         }
-        
+
         $query->orderBy('nama_karyawan');
         if (!empty($request->kode_cabang)) {
             $query->where('karyawan.kode_cabang', $request->kode_cabang);
@@ -194,7 +198,7 @@ class PresensiController extends Controller
                 $jamkerja = Jamkerja::where('kode_jam_kerja', $ajuan_jadwal->kode_jam_kerja_tujuan)->first();
             } else {
                 // Jika tidak ada ajuan, cek prioritas berikutnya
-                
+
                 //Cek Jam Kerja By Date
                 $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
                     ->where('nik', $karyawan->nik)
@@ -501,18 +505,18 @@ class PresensiController extends Controller
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
                                         $message = "📢 INFO ABSEN MASUK\n\n"
-                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
-                                . "Telah Berhasil Tercatat\n"
-                                . "Selamat Bekerja!";
+                                            . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                            . "🕒 Waktu: {$jam_presensi}\n\n"
+                                            . "Telah Berhasil Tercatat\n"
+                                            . "Selamat Bekerja!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
                                     $message = "📢 INFO ABSEN MASUK\n\n"
-                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
-                                . "Telah Berhasil Tercatat\n"
-                                . "Selamat Bekerja!";
+                                        . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                        . "🕒 Waktu: {$jam_presensi}\n\n"
+                                        . "Telah Berhasil Tercatat\n"
+                                        . "Selamat Bekerja!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {
@@ -564,18 +568,18 @@ class PresensiController extends Controller
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
                                         $message = "📢 INFO ABSEN PULANG\n\n"
-                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
-                                . "Telah Berhasil Tercatat\n"
-                                . "Sampai Jumpa Besok!";
+                                            . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                            . "🕒 Waktu: {$jam_presensi}\n\n"
+                                            . "Telah Berhasil Tercatat\n"
+                                            . "Sampai Jumpa Besok!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
                                     $message = "📢 INFO ABSEN PULANG\n\n"
-                                . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
-                                . "Telah Berhasil Tercatat\n"
-                                . "Sampai Jumpa Besok!";
+                                        . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                        . "🕒 Waktu: {$jam_presensi}\n\n"
+                                        . "Telah Berhasil Tercatat\n"
+                                        . "Sampai Jumpa Besok!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {
@@ -812,10 +816,10 @@ class PresensiController extends Controller
             ->orderBy('presensi.tanggal', 'desc')
             ->limit(30)
             ->get();
-            
+
         $data['namasettings'] = Pengaturanumum::first();
         $data['denda_list'] = Denda::orderBy('dari')->get()->toArray();
-        
+
         return view('presensi.histori', $data);
     }
 
@@ -883,7 +887,7 @@ class PresensiController extends Controller
 
         //Cek Jika Laporan Sudah Dikunci
         if ($presensi != null && $presensi->status_potongan !== null) {
-             return Redirect::back()->with(messageError('Data Presensi Sudah Dikunci'));
+            return Redirect::back()->with(messageError('Data Presensi Sudah Dikunci'));
         }
 
         if ($presensi != null && $presensi->status != 'h') {
