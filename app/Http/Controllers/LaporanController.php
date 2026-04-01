@@ -281,7 +281,8 @@ class LaporanController extends Controller
 
         $gaji_pokok = Gajipokok::select(
             'nik',
-            'jumlah'
+            'jumlah',
+            'jenis_upah'
         )
             ->whereIn('kode_gaji', function ($query) use ($periode_sampai) {
                 $query->select(DB::raw('MAX(kode_gaji)'))
@@ -345,8 +346,7 @@ class LaporanController extends Controller
             ->where('bulan', $request->bulan)
             ->where('tahun', $request->tahun);
 
-        $q_presensi = Karyawan::query()
-            ->where('karyawan.status_aktif_karyawan', 1);
+        $q_presensi = Karyawan::query();
         $q_presensi->select(
             'karyawan.nik',
             'karyawan.nik_show',
@@ -374,6 +374,7 @@ class LaporanController extends Controller
             'presensi.denda',
             'presensi.status_potongan',
             'gaji_pokok.jumlah as gaji_pokok',
+            'gaji_pokok.jenis_upah',
             'bpjs_kesehatan.jumlah as bpjs_kesehatan',
             'bpjs_tenagakerja.jumlah as bpjs_tenagakerja',
             'penambah',
@@ -418,6 +419,10 @@ class LaporanController extends Controller
             $q_presensi->where('karyawan.nik', $request->nik);
         }
 
+        if (!empty($request->jenis_upah)) {
+            $q_presensi->where('gaji_pokok.jenis_upah', $request->jenis_upah);
+        }
+
         if ($user->hasRole('karyawan')) {
             $q_presensi->where('karyawan.nik', $userkaryawan->nik);
         }
@@ -445,7 +450,8 @@ class LaporanController extends Controller
             'tahun' => $request->tahun,
             'kode_cabang' => $request->kode_cabang ?? '',
             'kode_dept' => $request->kode_dept ?? '',
-            'nik' => $request->nik ?? ''
+            'nik' => $request->nik ?? '',
+            'jenis_upah' => $request->jenis_upah ?? ''
         ];
 
 
@@ -473,6 +479,7 @@ class LaporanController extends Controller
                     'nama_dept' => $rows->first()->nama_dept,
                     'kode_cabang' => $rows->first()->kode_cabang,
                     'gaji_pokok' => $rows->first()->gaji_pokok,
+                    'jenis_upah' => $rows->first()->jenis_upah,
                     'bpjs_kesehatan' => $rows->first()->bpjs_kesehatan,
                     'bpjs_tenagakerja' => $rows->first()->bpjs_tenagakerja,
                     'penambah' => $rows->first()->penambah,
@@ -515,8 +522,10 @@ class LaporanController extends Controller
 
 
             if ($user->hasRole('karyawan')) {
-                //dd($data);
-                return view('laporan.slip_karyawan_cetak', $data);
+                $first_row = $laporan_presensi->first();
+                $jenis_upah = ($first_row && isset($first_row['jenis_upah'])) ? $first_row['jenis_upah'] : 'Bulanan';
+                $view = ($jenis_upah == 'Harian') ? 'laporan.slip_karyawan_harian_cetak' : 'laporan.slip_karyawan_cetak';
+                return view($view, $data);
             } else {
                 if ($request->format_laporan == 1) {
                     if ($request->has('exportButton')) {
@@ -525,11 +534,25 @@ class LaporanController extends Controller
                     return view('laporan.presensi_cetak', $data);
                 } else if ($request->format_laporan == 2) {
                     if ($request->has('exportButton')) {
-                        return Excel::download(new GajiExport($data), 'Rekap Gaji ' . $periode_dari . ' - ' . $periode_sampai . '.xlsx');
+                        $view = $request->jenis_upah == 'Harian' ? 'laporan.gaji_harian_excel' : 'laporan.gaji_excel';
+                        return Excel::download(new GajiExport($data, $view), 'Rekap Gaji ' . $periode_dari . ' - ' . $periode_sampai . '.xlsx');
                     }
+
+                    if ($request->jenis_upah == 'Harian') {
+                        return view('laporan.gaji_harian_cetak', $data);
+                    }
+
                     return view('laporan.gaji_cetak', $data);
                 } else if ($request->format_laporan == 3) {
-                    return view('laporan.slip_cetak', $data);
+                    $first_row = $laporan_presensi->first();
+                    $jenis_upah = $request->jenis_upah ?: (($first_row && isset($first_row['jenis_upah'])) ? $first_row['jenis_upah'] : 'Bulanan');
+                    
+                    if ($user->hasRole('karyawan')) {
+                        $view = $jenis_upah == 'Harian' ? 'laporan.slip_karyawan_harian_cetak' : 'laporan.slip_karyawan_cetak';
+                        return view($view, $data);
+                    }
+                    $view = $jenis_upah == 'Harian' ? 'laporan.slip_harian_cetak' : 'laporan.slip_cetak';
+                    return view($view, $data);
                 }
             }
         }
@@ -693,10 +716,9 @@ class LaporanController extends Controller
             $presensi_list = $presensi_list_raw->groupBy('nik');
             $denda_list = Denda::all()->toArray();
 
-            // Ambil semua karyawan yang sesuai filter (hanya karyawan aktif)
+            // Ambil semua karyawan yang sesuai filter
             $karyawan_query = Karyawan::query()
-                ->select('karyawan.nik', 'karyawan.kode_dept', 'karyawan.kode_cabang')
-                ->where('karyawan.status_aktif_karyawan', 1);
+                ->select('karyawan.nik', 'karyawan.kode_dept', 'karyawan.kode_cabang');
 
             if (!empty($request->kode_cabang)) {
                 $karyawan_query->where('karyawan.kode_cabang', $request->kode_cabang);
@@ -708,6 +730,13 @@ class LaporanController extends Controller
 
             if (!empty($request->nik)) {
                 $karyawan_query->where('karyawan.nik', $request->nik);
+            }
+
+            if (!empty($request->jenis_upah)) {
+                $karyawan_query->leftJoinSub($gaji_pokok, 'gaji_pokok', function ($join) {
+                    $join->on('karyawan.nik', '=', 'gaji_pokok.nik');
+                });
+                $karyawan_query->where('gaji_pokok.jenis_upah', $request->jenis_upah);
             }
 
             $karyawan_list = $karyawan_query->get();
@@ -885,6 +914,13 @@ class LaporanController extends Controller
                 $presensi_query->where('presensi.nik', $request->nik);
             }
 
+            if (!empty($request->jenis_upah)) {
+                $presensi_query->leftJoinSub($gaji_pokok, 'gaji_pokok', function ($join) {
+                    $join->on('presensi.nik', '=', 'gaji_pokok.nik');
+                });
+                $presensi_query->where('gaji_pokok.jenis_upah', $request->jenis_upah);
+            }
+
             // Ambil ID presensi yang akan diupdate
             $presensi_ids = $presensi_query->pluck('presensi.id')->toArray();
 
@@ -924,6 +960,13 @@ class LaporanController extends Controller
                 $alpa_query->where('presensi.nik', $request->nik);
             }
 
+            if (!empty($request->jenis_upah)) {
+                $alpa_query->leftJoinSub($gaji_pokok, 'gaji_pokok', function ($join) {
+                    $join->on('presensi.nik', '=', 'gaji_pokok.nik');
+                });
+                $alpa_query->where('gaji_pokok.jenis_upah', $request->jenis_upah);
+            }
+
             $alpa_ids = $alpa_query->pluck('presensi.id')->toArray();
             $deleted_alpa_count = 0;
             if (!empty($alpa_ids)) {
@@ -942,5 +985,165 @@ class LaporanController extends Controller
                 'message' => 'Gagal membatalkan kunci laporan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function jadwal()
+    {
+        $data['list_bulan'] = config('global.list_bulan');
+        $data['start_year'] = config('global.start_year');
+        $cabang = Cabang::orderBy('kode_cabang')->get();
+        $departemen = Departemen::orderBy('kode_dept')->get();
+        $data['cabang'] = $cabang;
+        $data['departemen'] = $departemen;
+        return view('laporan.jadwal', $data);
+    }
+
+    public function cetakjadwal(Request $request)
+    {
+        $generalsetting = Pengaturanumum::where('id', 1)->first();
+        $periode_dari = $request->dari;
+        $periode_sampai = $request->sampai;
+
+        // 1) Jadwal by-date per karyawan
+        $jadwal_bydate = DB::table('presensi_jamkerja_bydate')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_bydate.nik',
+                'presensi_jamkerja_bydate.tanggal',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->whereBetween('presensi_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->get()
+            ->groupBy('nik')
+            ->map(function ($rows) {
+                $result = [];
+                foreach ($rows as $row) {
+                    $result[$row->tanggal] = [
+                        'nama_jam_kerja' => $row->nama_jam_kerja,
+                        'jam_masuk' => $row->jam_masuk,
+                        'jam_pulang' => $row->jam_pulang,
+                        'color' => $row->color,
+                    ];
+                }
+                return $result;
+            });
+
+        // 2) Jadwal grup by-date
+        $jadwal_grup_bydate = DB::table('grup_detail')
+            ->join('grup_jamkerja_bydate', 'grup_detail.kode_grup', '=', 'grup_jamkerja_bydate.kode_grup')
+            ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'grup_detail.nik',
+                'grup_jamkerja_bydate.tanggal',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->whereBetween('grup_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->get()
+            ->groupBy('nik')
+            ->map(function ($rows) {
+                $result = [];
+                foreach ($rows as $row) {
+                    $result[$row->tanggal] = [
+                        'nama_jam_kerja' => $row->nama_jam_kerja,
+                        'jam_masuk' => $row->jam_masuk,
+                        'jam_pulang' => $row->jam_pulang,
+                        'color' => $row->color,
+                    ];
+                }
+                return $result;
+            });
+
+        // 3) Jadwal by-day per karyawan
+        $jadwal_byday = DB::table('presensi_jamkerja_byday')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_byday.nik',
+                'presensi_jamkerja_byday.hari',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->get()
+            ->groupBy('nik')
+            ->map(function ($rows) {
+                $result = [];
+                foreach ($rows as $row) {
+                    $result[$row->hari] = [
+                        'nama_jam_kerja' => $row->nama_jam_kerja,
+                        'jam_masuk' => $row->jam_masuk,
+                        'jam_pulang' => $row->jam_pulang,
+                        'color' => $row->color,
+                    ];
+                }
+                return $result;
+            });
+
+        // 4) Jadwal by-day per departemen & cabang
+        $jadwal_bydept = DB::table('presensi_jamkerja_bydept_detail')
+            ->join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+            ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->select(
+                'presensi_jamkerja_bydept.kode_dept',
+                'presensi_jamkerja_bydept.kode_cabang',
+                'presensi_jamkerja_bydept_detail.hari',
+                'presensi_jamkerja.nama_jam_kerja',
+                'presensi_jamkerja.jam_masuk',
+                'presensi_jamkerja.jam_pulang',
+                'presensi_jamkerja.color'
+            )
+            ->get()
+            ->groupBy(function ($row) {
+                return $row->kode_dept . '|' . $row->kode_cabang;
+            })
+            ->map(function ($rows) {
+                $result = [];
+                foreach ($rows as $row) {
+                    $result[$row->hari] = [
+                        'nama_jam_kerja' => $row->nama_jam_kerja,
+                        'jam_masuk' => $row->jam_masuk,
+                        'jam_pulang' => $row->jam_pulang,
+                        'color' => $row->color,
+                    ];
+                }
+                return $result;
+            });
+
+        $q_karyawan = Karyawan::query();
+        $q_karyawan->select('karyawan.nik', 'karyawan.nik_show', 'nama_karyawan', 'nama_jabatan', 'karyawan.kode_dept', 'nama_dept', 'karyawan.kode_cabang');
+        $q_karyawan->leftJoin('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan');
+        $q_karyawan->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
+
+        if (!empty($request->kode_cabang)) {
+            $q_karyawan->where('karyawan.kode_cabang', $request->kode_cabang);
+        }
+        if (!empty($request->kode_dept)) {
+            $q_karyawan->where('karyawan.kode_dept', $request->kode_dept);
+        }
+        if (!empty($request->nik)) {
+            $q_karyawan->where('karyawan.nik', $request->nik);
+        }
+
+        $q_karyawan->orderBy('karyawan.nama_karyawan');
+        $karyawan = $q_karyawan->get();
+
+        $data['periode_dari'] = $periode_dari;
+        $data['periode_sampai'] = $periode_sampai;
+        $data['jmlhari'] = hitungJumlahHari($periode_dari, $periode_sampai) + 1;
+        $data['datalibur'] = getdatalibur($periode_dari, $periode_sampai);
+        $data['generalsetting'] = $generalsetting;
+        $data['jadwal_bydate'] = $jadwal_bydate;
+        $data['jadwal_grup_bydate'] = $jadwal_grup_bydate;
+        $data['jadwal_byday'] = $jadwal_byday;
+        $data['jadwal_bydept'] = $jadwal_bydept;
+        $data['karyawan'] = $karyawan;
+
+        return view('laporan.jadwal_cetak', $data);
     }
 }

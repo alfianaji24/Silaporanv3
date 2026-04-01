@@ -3,106 +3,137 @@
 
 @section('content')
 @section('navigasi')
-    <span>Slip Gaji</span>
-@endsection
-<div class="row">
-    <div class="col-lg-5 col-sm-12 col-xs-12">
-        <div class="card">
-            <div class="card-header">
-                @can('slipgaji.create')
-                    <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i> Buat Slip Gaji</a>
-                @endcan
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            Slip Gaji
+            <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+                Manajemen penerbitan dan pengiriman slip gaji karyawan.
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <form action="{{ route('slipgaji.index') }}">
-                            <div class="row">
-                                <div class="co">
-                                    <div class="form-group mb-3">
-                                        <select name="tahun" id="tahun" class="form-select">
-                                            <option value="">Tahun</option>
-                                            @for ($t = $start_year; $t <= date('Y'); $t++)
-                                                <option {{ date('Y') == $t ? 'selected' : '' }}
-                                                    value="{{ $t }}">{{ $t }}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <div class="form-group mb-3">
-                                        <button type="submit" class="btn btn-primary w-100"><i
-                                                class="ti ti-search me-1"></i>Cari Data</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
+        </div>
+        <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard.index') }}">
+                        <i class="ti ti-home-2 ti-xs"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0);">
+                        <i class="ti ti-cash ti-xs me-1"></i> Payroll
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="ti ti-file-description ti-xs me-1"></i> Slip Gaji
+                </li>
+            </ol>
+        </nav>
+    </div>
+@endsection
+
+<div class="row">
+    <div class="col-lg-5 col-md-12 col-sm-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            @can('slipgaji.create')
+                <a href="#" class="btn btn-primary" id="btnCreate">
+                    <i class="ti ti-plus me-1"></i> Buat Slip Gaji
+                </a>
+            @endcan
+        </div>
+        <form action="{{ route('slipgaji.index') }}">
+            <div class="row g-2 mb-3">
+                <div class="col-lg-10 col-md-10 col-sm-12">
+                    <div class="form-group">
+                        <select name="tahun" id="tahun" class="form-select select2">
+                            <option value="">Pilih Tahun</option>
+                            @for ($t = $start_year; $t <= date('Y'); $t++)
+                                <option {{ date('Y') == $t ? 'selected' : '' }} value="{{ $t }}">{{ $t }}</option>
+                            @endfor
+                        </select>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-responsive mb-2">
-                            <table class="table">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Kode</th>
-                                        <th>Bulan</th>
-                                        <th>Tahun</th>
-                                        <th>Status</th>
-                                        <th>#</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($slipgaji as $d)
-                                        <tr>
-                                            <td>{{ $d->kode_slip_gaji }}</td>
-                                            <td>{{ getNamabulan($d->bulan) }}</td>
-                                            <td>{{ $d->tahun }}</td>
-                                            <td>
-                                                @if ($d->status == 0)
-                                                    <span class="badge bg-warning">Pending</span>
-                                                @else
-                                                    <span class="badge bg-success">Published</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    @can('slipgaji.edit')
-                                                        <a href="#" class="btnEdit me-1"
-                                                            kode_slip_gaji="{{ Crypt::encrypt($d->kode_slip_gaji) }}">
-                                                            <i class="ti ti-edit text-success"></i>
-                                                        </a>
-                                                    @endcan
-                                                    @can('slipgaji.delete')
-                                                        <form method="POST" name="deleteform" class="deleteform"
-                                                            action="{{ route('slipgaji.delete', Crypt::encrypt($d->kode_slip_gaji)) }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <a href="#" class="delete-confirm me-1">
-                                                                <i class="ti ti-trash text-danger"></i>
-                                                            </a>
-                                                        </form>
-                                                    @endcan
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        {{-- <div style="float: right;">
-                            {{ $badstok->links() }}
-                        </div> --}}
-                    </div>
+                <div class="col-lg-2 col-md-2 col-sm-12">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="ti ti-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5 col-md-12 col-sm-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-layout-grid me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Data Slip Gaji</h6>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: var(--theme-color-1) !important; color: white !important;">
+                            <tr>
+                                <th class="text-white py-3">KODE</th>
+                                <th class="text-white py-3">BULAN</th>
+                                <th class="text-white py-3">TAHUN</th>
+                                <th class="text-white py-3 text-center">STATUS</th>
+                                <th class="text-white py-3 text-center" style="width: 100px;">#</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($slipgaji as $d)
+                                <tr>
+                                    <td class="py-2 fw-medium text-primary">{{ $d->kode_slip_gaji }}</td>
+                                    <td class="py-2">{{ getNamabulan($d->bulan) }}</td>
+                                    <td class="py-2">{{ $d->tahun }}</td>
+                                    <td class="py-2 text-center">
+                                        @if ($d->status == 0)
+                                            <span class="badge bg-label-warning px-3 rounded-pill">Pending</span>
+                                        @else
+                                            <span class="badge bg-label-success px-3 rounded-pill">Published</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 text-center">
+                                        <div class="d-inline-flex border rounded overflow-hidden shadow-xs">
+                                            @can('slipgaji.edit')
+                                                <a href="#" class="btn btn-sm btnEdit px-2 py-1 border-0 rounded-0"
+                                                    kode_slip_gaji="{{ Crypt::encrypt($d->kode_slip_gaji) }}" title="Edit"
+                                                    style="background: #f8f9fa;">
+                                                    <i class="ti ti-edit fs-6 text-success"></i>
+                                                </a>
+                                            @endcan
+                                            @can('slipgaji.delete')
+                                                <form method="POST" name="deleteform" class="deleteform m-0"
+                                                    action="{{ route('slipgaji.delete', Crypt::encrypt($d->kode_slip_gaji)) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm delete-confirm px-2 py-1 border-0 rounded-0 border-start"
+                                                        title="Hapus" style="background: #f8f9fa;">
+                                                        <i class="ti ti-trash fs-6 text-danger"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @if($slipgaji->isEmpty())
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<x-modal-form id="modal" size="" show="loadmodal" title="" />
+<x-modal-form id="modal" show="loadmodal" />
 @endsection
+
 @push('myscript')
 <script>
     $(function() {

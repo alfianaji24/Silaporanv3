@@ -1,472 +1,432 @@
-@extends('layouts.mobile.app')
-@section('content')
+@extends('layouts.mobile.modern')
+
+@section('title', 'Tambah Aktivitas')
+
+@section('header_left')
+    <a href="{{ route('aktivitaskaryawan.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 text-white active:scale-95 transition-all">
+        <ion-icon name="chevron-back-outline" class="text-lg"></ion-icon>
+    </a>
+@endsection
+
+@push('mystyle')
     <style>
-        /* Tambahan agar kamera portrait dan rounded di semua device */
+        body {
+            background: #e6fcf5 !important;
+        }
+
+        /* Premium Camera UI (No outer card) */
         .webcam-capture {
             width: 100%;
-
-            height: 360px;
-            margin: auto 20px;
-            padding: 0;
+            height: 380px;
             border-radius: 24px;
             overflow: hidden;
-            background: #222;
+            background: #1e293b;
             position: relative;
-            box-shadow: 0 4px 24px rgba(44, 62, 80, 0.10);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 12px 30px rgba(50, 116, 94, 0.12);
+            margin-bottom: 25px;
+            border: 2px solid #ffffff;
         }
 
-        .webcam-capture video,
-        .webcam-capture canvas {
+        .webcam-capture video {
             width: 100% !important;
             height: 100% !important;
             object-fit: cover;
-            border-radius: 24px !important;
-            display: block;
+            transform: scaleX(-1); /* Mirror for front camera */
         }
 
-        canvas {
+        /* Glassmorphism Overlays */
+        .glass-overlay {
             position: absolute;
-            border-radius: 0;
-            box-shadow: none;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        #facedetection {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            height: 100%;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-        }
+        .overlay-date { top: 15px; left: 15px; }
+        .overlay-time { top: 15px; right: 15px; }
 
-        /* Perbaikan untuk posisi content-section */
-        #header-section {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        #content-section {
-            margin-top: 60px !important;
-            padding: 0 !important;
-            position: relative;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        /* Style untuk tombol scan - overlay di depan kamera */
-        .scan-buttons {
+        /* Camera Controls */
+        .camera-controls {
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            right: 0;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            z-index: 1000;
-            width: 100%;
+            gap: 12px;
+            z-index: 30;
             padding: 0 20px;
         }
 
-        .scan-button {
-            height: 45px !important;
-            border-radius: 22px;
+        .btn-camera-action {
+            height: 48px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            width: 42%;
-            border: none;
-            font-weight: 600;
+            gap: 8px;
+            font-weight: 700;
             font-size: 14px;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        .scan-button.btn-success {
-            background: #28a745 !important;
-            color: white !important;
+        .btn-capture {
+            background: #32745e;
+            color: white;
+            flex: 1;
         }
 
-        .scan-button.btn-warning {
-            background: #ffc107 !important;
-            color: #212529 !important;
+        .btn-switch {
+            background: #ffffff;
+            color: #32745e;
+            width: 50px;
+            flex-shrink: 0;
         }
 
-        .scan-button ion-icon {
-            margin-right: 5px;
-            font-size: 18px;
+        .btn-camera-action:active {
+            transform: scale(0.95);
         }
 
-        /* Style untuk image preview overlay */
-        .image-preview-overlay {
+        /* Image Preview Overlay */
+        .preview-overlay {
             position: absolute;
-            top: 50px;
-            right: 10px;
-            z-index: 500;
-            width: 100px;
-            height: 100px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            top: 60px;
+            right: 15px;
+            width: 80px;
+            height: 80px;
+            border-radius: 14px;
             border: 3px solid #fff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            z-index: 40;
+            overflow: hidden;
+            background: #eee;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .image-preview-overlay img {
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .preview-overlay img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        /* Style untuk jam digital */
-        .jam-digital-malasngoding {
-            background-color: rgba(39, 39, 39, 0.7);
-            position: absolute;
-            top: 65px;
-            right: 15px;
-            z-index: 20;
-            width: 150px;
-            border-radius: 10px;
-            padding: 5px;
-            backdrop-filter: blur(5px);
+        /* Form Styling */
+        .form-label-group {
+            position: relative;
+            margin-bottom: 15px;
+            background: #ffffff;
+            border: 1px solid #32745e;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
-        .jam-digital-malasngoding p {
-            color: #fff;
+        .form-label-group .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            font-size: 24px;
+            color: #32745e;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .form-label-group textarea {
+            width: 100% !important;
+            min-height: 120px !important;
+            padding: 30px 15px 5px 52px !important;
             font-size: 16px;
-            text-align: left;
-            margin-top: 0;
+            font-weight: 500;
+            color: #2a6350;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            display: block !important;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        .form-label-group label {
+            position: absolute;
+            top: 15px;
+            left: 52px;
+            font-size: 16px;
+            color: #32745e;
+            opacity: 0.8;
+            pointer-events: none;
+            transition: all 0.2s ease-in-out;
             margin-bottom: 0;
+            z-index: 5;
         }
 
-        /* Modern Aktivitas Content Wrapper */
-        .aktivitas-content-modern {
-            background: transparent;
+        .form-label-group textarea:focus ~ label,
+        .form-label-group textarea:not(:placeholder-shown) ~ label {
+            top: 5px;
+            left: 52px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #32745e;
+        }
+
+        /* Modern Submit Button */
+        .btn-submit-premium {
+            width: 100%;
+            height: 54px;
+            background: #32745e;
+            color: #ffffff;
+            border: none;
             border-radius: 18px;
-            padding: 18px 5px 24px 5px;
-            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(50, 116, 94, 0.25);
+            transition: all 0.3s;
+            margin-top: 10px;
         }
 
-        .aktivitas-content-modern,
-        .aktivitas-content-modern * {
-            font-family: 'Poppins', sans-serif !important;
+        .btn-submit-premium:active {
+            transform: scale(0.97);
+            background: #2a6350;
         }
 
-        /* Absolute Tanggal & Jam */
-        .abs-tanggal-modern {
-            position: absolute;
-            top: 12px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.75);
-            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.10);
-            border-radius: 10px;
-            padding: 4px 8px;
-            font-size: 14px;
+        .error-hint {
+            color: #ef4444;
+            font-size: 12px;
             font-weight: 600;
-            color: #222;
-            z-index: 10;
-            backdrop-filter: blur(4px);
-        }
-
-        .abs-jam-modern {
-            position: absolute;
-            top: 12px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.75);
-            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.10);
-            border-radius: 10px;
-            padding: 4px 8px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #222;
-            z-index: 10;
-            letter-spacing: 1px;
-            backdrop-filter: blur(4px);
-        }
-
-
-
-        /* Error Messages */
-        .error-message {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 5px;
+            padding-left: 10px;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            display: block;
         }
     </style>
+@endpush
 
-    <!-- Import Google Fonts: Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+@section('content')
+    <div class="fade-up" style="padding: 10px 5px 100px 5px;">
+        <form method="POST" action="{{ route('aktivitaskaryawan.store') }}" id="formAktivitas" enctype="multipart/form-data">
+            @csrf
 
-    <div id="header-section">
-        <div class="appHeader bg-primary text-light">
-            <div class="left">
-                <a href="{{ route('aktivitaskaryawan.index') }}" class="headerButton goBack">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </a>
-            </div>
-            <div class="pageTitle">Tambah Aktivitas</div>
-            <div class="right"></div>
-        </div>
-    </div>
+            <input type="hidden" name="image" id="image-data">
+            <input type="hidden" name="lokasi" id="lokasi">
 
-    <div id="content-section" style="padding-bottom: 200px;">
-        <div class="aktivitas-content-modern">
-            <!-- Camera Section -->
-            <div class="camera-section" style="position:relative;">
-                <div class="row" style="margin-top: 0;">
-                    <div class="col" id="facedetection" style="position:relative;">
-                        <!-- Absolute Tanggal & Jam -->
-                        <div class="abs-tanggal-modern">{{ DateToIndo(date('Y-m-d')) }}</div>
-                        <div class="abs-jam-modern"><span id="jam"></span></div>
+            <!-- Camera Section (Floating Style) -->
+            <div class="relative">
+                <div class="webcam-capture">
+                    {{-- Video Holder --}}
+                    <div id="video-holder" class="absolute inset-0 z-0"></div>
 
-                        <!-- Image Preview - Overlay di atas kamera -->
-                        <div id="imagePreview" class="image-preview-overlay" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview">
-                        </div>
+                    {{-- Overlays --}}
+                    <div class="glass-overlay overlay-date">{{ DateToIndo(date('Y-m-d')) }}</div>
+                    <div class="glass-overlay overlay-time"><span id="jam-inner" class="jam-display">00:00:00</span></div>
 
-                        <div class="webcam-capture"></div>
+                    {{-- Image Preview Overlay --}}
+                    <div id="imagePreview" class="preview-overlay">
+                        <img id="previewImg" src="" alt="Preview">
+                    </div>
 
-                        <!-- Scan Buttons - Overlay di depan kamera -->
-                        <div class="scan-buttons">
-                            <button type="button" class="btn btn-success scan-button" id="btnScan">
-                                <ion-icon name="camera-outline"></ion-icon>
-                                Ambil Foto
-                            </button>
-                            <button type="button" class="btn btn-warning scan-button" id="btnSwitch">
-                                <ion-icon name="camera-reverse-outline"></ion-icon>
-                                Ganti Kamera
-                            </button>
-                        </div>
+                    {{-- Camera Placeholder --}}
+                    <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-white/20 z-0">
+                        <ion-icon name="camera-outline" class="text-6xl mb-2"></ion-icon>
+                        <span class="text-xs font-semibold uppercase tracking-widest">Initializing...</span>
+                    </div>
+
+                    {{-- Action Buttons Overlay --}}
+                    <div class="camera-controls">
+                        <button type="button" class="btn-camera-action btn-capture" id="btnScan">
+                            <ion-icon name="camera-outline" class="text-xl"></ion-icon>
+                            <span>Ambil Foto</span>
+                        </button>
+                        <button type="button" class="btn-camera-action btn-switch" id="btnSwitch">
+                            <ion-icon name="camera-reverse-outline" class="text-xl"></ion-icon>
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Form Section -->
-        <div class="row">
-            <div class="col pl-3 pr-3">
-                <form action="{{ route('aktivitaskaryawan.store') }}" method="POST" enctype="multipart/form-data" id="formAktivitas">
-                    @csrf
-
-                    <!-- Hidden NIK field for karyawan -->
-                    @if (auth()->user()->hasRole('karyawan'))
-                        <input type="hidden" name="nik" value="{{ $karyawan->nik }}">
-                    @endif
-
-                    <!-- Hidden foto field -->
-                    <input type="hidden" name="foto" id="fotoData" value="">
-
-                    <!-- Hidden lokasi field - akan diisi otomatis dari geolocation -->
-                    <input type="hidden" name="lokasi" id="lokasiData" value="">
-
-                    <textarea placeholder="Deskripsikan aktivitas yang dilakukan..." class="feedback-input" name="aktivitas" style="height: 120px">{{ old('aktivitas') }}</textarea>
-                    @error('aktivitas')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
-
-                    <button type="submit" class="btn btn-primary w-100" style="font-size: 14px;" id="btnSimpan">
-                        <i class="ti ti-send me-1"></i>Simpan Aktivitas
-                    </button>
-                </form>
+            <!-- Dashboard Style Form -->
+            <div class="form-label-group shadow-sm">
+                <ion-icon name="document-text-outline" class="input-icon"></ion-icon>
+                <textarea name="aktivitas" id="aktivitas" placeholder=" " required>{{ old('aktivitas') }}</textarea>
+                <label for="aktivitas">Apa aktivitas harian Anda hari ini?</label>
             </div>
-        </div>
+            @error('aktivitas')
+                <span class="error-hint">{{ $message }}</span>
+            @enderror
+
+            <button type="submit" class="btn-submit-premium" id="btnSubmit">
+                <ion-icon name="cloud-upload-outline" class="text-xl"></ion-icon>
+                <span>Simpan Aktivitas</span>
+            </button>
+        </form>
     </div>
+
+    <canvas id="canvas" style="display: none;"></canvas>
+
 @endsection
 
 @push('myscript')
     <script>
-        $(function() {
+        $(document).ready(function() {
+            let video = null;
             let stream = null;
-            let currentFacingMode = 'user'; // 'user' untuk front camera, 'environment' untuk back camera
+            let currentFacingMode = 'environment';
             let capturedImage = null;
-            let currentLocation = null;
 
-            // Update jam digital
-            function updateJam() {
+            // Clock Synchronization
+            function updateClock() {
                 const now = new Date();
-                const jam = now.toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
+                const timeStr = now.toLocaleTimeString('id-ID', {
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
                 });
-                $('#jam').text(jam);
+                $('.jam-display').text(timeStr);
             }
+            setInterval(updateClock, 1000);
+            updateClock();
 
-            // Update jam setiap detik
-            setInterval(updateJam, 1000);
-            updateJam();
-
-            // Start camera
-            function startCamera() {
-                navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: currentFacingMode,
-                        width: {
-                            ideal: 640
-                        },
-                        height: {
-                            ideal: 480
-                        }
-                    }
-                }).then(function(mediaStream) {
-                    stream = mediaStream;
-                    const video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.autoplay = true;
-                    video.playsInline = true;
-                    video.style.width = '100%';
-                    video.style.height = '100%';
-                    video.style.objectFit = 'cover';
-                    video.style.borderRadius = '24px';
-
-                    $('.webcam-capture').html(video);
-                }).catch(function(err) {
-                    console.error('Error accessing camera:', err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Tidak dapat mengakses kamera. Pastikan izin kamera sudah diberikan.',
-                        confirmButtonText: 'OK'
-                    });
-                });
-            }
-
-            // Switch camera
-            function switchCamera() {
+            // Camera Engine
+            async function startCamera(facingMode) {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                 }
 
-                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-                startCamera();
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    const videoTag = document.createElement('video');
+                    videoTag.srcObject = stream;
+                    videoTag.autoplay = true;
+                    videoTag.playsInline = true;
+
+                    // Style fitting for standardized container
+                    videoTag.style.width = '100%';
+                    videoTag.style.height = '100%';
+                    videoTag.style.objectFit = 'cover';
+                    videoTag.style.transform = facingMode === 'user' ? 'scaleX(-1)' : 'none';
+
+                    $('#video-holder').html(videoTag);
+                    video = videoTag;
+                    $('#cameraPlaceholder').fadeOut();
+                    currentFacingMode = facingMode;
+                } catch (err) {
+                    console.error("Camera Access Error:", err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Gagal mengakses kamera.',
+                    });
+                }
             }
 
-            // Capture photo
-            function capturePhoto() {
-                const video = $('.webcam-capture video')[0];
-                if (!video) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Kamera belum siap. Tunggu sebentar.',
-                        confirmButtonText: 'OK'
-                    });
-                    return;
-                }
+            // Capture Logic
+            $('#btnScan').on('click', function() {
+                if (!video) return;
 
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-
+                const canvas = document.getElementById('canvas');
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
 
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                // Mirror correction for capture
+                if (currentFacingMode === 'user') {
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                }
 
-                capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+                ctx.drawImage(video, 0, 0);
+                capturedImage = canvas.toDataURL('image/jpeg', 0.82);
 
-                // Show preview
                 $('#previewImg').attr('src', capturedImage);
                 $('#imagePreview').show();
-
-                // Set hidden input
-                $('#fotoData').val(capturedImage);
+                $('#image-data').val(capturedImage);
 
                 Swal.fire({
                     icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Foto berhasil diambil.',
-                    confirmButtonText: 'OK'
+                    title: 'Tersimpan!',
+                    timer: 1500,
+                    showConfirmButton: false
                 });
+            });
+
+            // Switch Camera
+            $('#btnSwitch').on('click', function() {
+                currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                startCamera(currentFacingMode);
+            });
+
+            // Geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    $('#lokasi').val(position.coords.latitude + "," + position.coords.longitude);
+                }, function(error) {
+                    console.warn('Geolocation Error:', error.message);
+                }, { enableHighAccuracy: true });
             }
 
-            // Event listeners
-            $('#btnScan').click(capturePhoto);
-            $('#btnSwitch').click(switchCamera);
+            // Init
+            startCamera(currentFacingMode);
 
-            // Get current location
-            function getCurrentLocation() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        function(position) {
-                            currentLocation = position.coords.latitude + "," + position.coords.longitude;
-                            $('#lokasiData').val(currentLocation);
-                            console.log('Location obtained:', currentLocation);
-                        },
-                        function(error) {
-                            console.error('Error getting location:', error);
-                            Swal.fire({
-                                icon: 'warning',
-                                title: 'Peringatan',
-                                text: 'Tidak dapat mendapatkan lokasi. Aktivitas akan disimpan tanpa lokasi.',
-                                confirmButtonText: 'OK'
-                            });
-                        }, {
-                            enableHighAccuracy: true,
-                            timeout: 10000,
-                            maximumAge: 60000
-                        }
-                    );
-                } else {
-                    console.log('Geolocation is not supported by this browser.');
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Browser tidak mendukung geolocation. Aktivitas akan disimpan tanpa lokasi.',
-                        confirmButtonText: 'OK'
-                    });
-                }
-            }
-
-            // Start camera on page load
-            startCamera();
-
-            // Get location on page load
-            getCurrentLocation();
-
-            // Form validation
+            // Form Interceptor
             $('#formAktivitas').on('submit', function(e) {
-                var aktivitas = $('textarea[name="aktivitas"]').val().trim();
-
-                if (aktivitas === '') {
+                const foto = $('#image-data').val();
+                if (!foto) {
                     e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan!',
-                        text: 'Silakan isi deskripsi aktivitas terlebih dahulu',
-                        confirmButtonText: 'OK'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'Belum Ada Foto', text: 'Silakan ambil foto aktivitas Anda.' });
                     return false;
                 }
 
-                if (!capturedImage) {
+                const loc = $('#lokasi').val();
+                if (!loc) {
                     e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan!',
-                        text: 'Silakan ambil foto terlebih dahulu',
-                        confirmButtonText: 'OK'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'Lokasi Belum Terdeteksi', text: 'Tunggu sejenak agar lokasi berhasil dideteksi.' });
                     return false;
                 }
+
+                $('#btnSubmit').addClass('opacity-50').attr('disabled', 'disabled').html('<ion-icon name="sync-outline" class="animate-spin text-xl mr-2"></ion-icon><span>Menyimpan...</span>');
             });
 
             // Auto-resize textarea
-            $('textarea[name="aktivitas"]').on('input', function() {
+            $('#aktivitas').on('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
 
-            // Cleanup on page unload
+            // Cleanup
             $(window).on('beforeunload', function() {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
+                if (stream) stream.getTracks().forEach(track => track.stop());
             });
         });
     </script>
+    <style>
+        .animate-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 @endpush

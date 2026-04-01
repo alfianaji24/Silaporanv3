@@ -1,98 +1,281 @@
-@extends('layouts.mobile.app')
-@section('content')
+@extends('layouts.mobile.modern')
+
+@section('title', 'Profile')
+
+@section('header_left')
+    <a href="{{ route('dashboard.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-white active:scale-95 transition-all">
+        <ion-icon name="chevron-back-outline" class="text-lg"></ion-icon>
+    </a>
+@endsection
+
+@push('mystyle')
     <style>
-        /* Tambahkan style untuk header dan content */
-        #header-section {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+        body {
+            background: #e6fcf5 !important;
         }
 
-        #content-section {
-            margin-top: 70px;
-            padding-top: 5px;
+        .form-container {
+            padding: 10px 5px;
+        }
+
+        .form-label-group {
             position: relative;
-            z-index: 1;
+            margin-bottom: 12px;
+            background: transparent !important;
+            border: 1px solid #32745e;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
         }
 
-        .btn-primary {
-            background-color: #32745e;
-            color: white;
-            padding: 13px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
+        .form-label-group .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 11px;
+            font-size: 20px;
+            color: #32745e;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .form-label-group input,
+        .form-label-group textarea {
+            width: 100% !important;
+            height: 44px;
+            padding: 18px 14px 2px 42px !important;
+            font-size: 14px;
             font-weight: 500;
+            color: #2a6350;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            display: block !important;
         }
 
-        .btn-primary:hover {
-            background-color: #1a4a3a;
+        .form-label-group textarea {
+            height: 80px !important;
+            padding-top: 22px !important;
+            resize: none;
+        }
+
+        .form-label-group label {
+            position: absolute;
+            top: 11px;
+            left: 42px;
+            font-size: 14px;
+            color: #32745e;
+            opacity: 0.8;
+            pointer-events: none;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 0;
+            z-index: 5;
+        }
+
+        .form-label-group input:focus ~ label,
+        .form-label-group input:not(:placeholder-shown) ~ label,
+        .form-label-group textarea:focus ~ label,
+        .form-label-group textarea:not(:placeholder-shown) ~ label {
+            top: 2px;
+            left: 42px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #32745e;
+        }
+
+        /* Foto Profil */
+        .profile-photo-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-photo-box {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, #32745e, #53c69c);
+            box-shadow: 0 8px 20px rgba(50, 116, 94, 0.2);
+        }
+
+        .profile-photo-box img,
+        .profile-photo-box .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e6fcf5;
+        }
+
+        .profile-photo-box .photo-placeholder {
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Dashed Box File Upload */
+        .custom-file-upload {
+            border: 2px dashed #32745e;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            background: rgba(50, 116, 94, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90px;
+        }
+
+        .custom-file-upload:active {
+            background: rgba(50, 116, 94, 0.1);
+            transform: scale(0.98);
+        }
+
+        .custom-file-upload input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload ion-icon {
+            font-size: 32px;
+            color: #32745e;
+            margin-bottom: 5px;
+        }
+
+        .custom-file-upload span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #32745e;
+        }
+
+        .file-name {
+            font-size: 11px;
+            color: #2a6350;
+            margin-top: 4px;
+            font-weight: 500;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-submit-modern {
+            width: 100%;
+            height: 48px;
+            background: #32745e;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-submit-modern:active {
+            transform: scale(0.97);
+            background: #2a6350;
         }
     </style>
-    <div id="header-section">
-        <div class="appHeader bg-primary text-light">
-            <div class="left">
-                <a href="{{ route('dashboard.index') }}" class="headerButton goBack">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </a>
+@endpush
+
+@section('content')
+    <div class="fade-up form-container pb-24">
+        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="formProfile" autocomplete="off">
+            @csrf
+            @method('PUT')
+
+            {{-- Profile Photo --}}
+            <div class="profile-photo-wrapper">
+                <div class="profile-photo-box">
+                    @if (!empty($karyawan->foto) && Storage::disk('public')->exists('/karyawan/' . $karyawan->foto))
+                        <div class="photo-placeholder" style="background-image: url({{ getfotoKaryawan($karyawan->foto) }});"></div>
+                    @else
+                        <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" alt="Profile Photo">
+                    @endif
+                </div>
             </div>
-            <div class="pageTitle">Profile</div>
-            <div class="right"></div>
-        </div>
-    </div>
-    <div id="content-section">
-        <div class="row" style="margin-top: 70px; padding-bottom:80px">
-            <div class="col pl-3 pr-3">
-                <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="formProfile">
-                    @csrf
-                    @method('PUT')
-                    <div style="margin-bottom: 10px; text-align: center;">
 
-                        @if (!empty($karyawan->foto))
-                            @if (Storage::disk('public')->exists('/karyawan/' . $karyawan->foto))
-                                <div
-                                    style="width: 100px; height: 100px; background-size: cover; background-position: center; border-radius: 50%; background-image: url({{ getfotoKaryawan($karyawan->foto) }});
-                                    display: block; margin: auto;">
-
-                                </div>
-                            @else
-                                <div style="width: 100px; height: 100px; display: block; margin: auto;">
-                                    <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" alt="" class="rounded-circle w-100">
-                                </div>
-                            @endif
-                        @else
-                            <div style="width: 100px; height: 100px; display: block; margin: auto;">
-                                <img src="{{ asset('assets/img/avatars/No_Image_Available.jpg') }}" alt="" class="rounded-circle w-100">
-                            </div>
-                        @endif
-                    </div>
-
-                    <input type="text" class="feedback-input" name="nama_karyawan" placeholder="Nama Lengkap"
-                        value="{{ $karyawan->nama_karyawan ?? '' }}" required>
-                    <input type="text" class="feedback-input" name="no_ktp" placeholder="No. KTP" value="{{ $karyawan->no_ktp ?? '' }}" required>
-                    <input type="text" class="feedback-input" name="no_hp" placeholder="No. HP" value="{{ $karyawan->no_hp ?? '' }}" required>
-                    <textarea class="feedback-input" name="alamat" placeholder="Alamat" style="height: 100px" required>{{ $karyawan->alamat ?? '' }}</textarea>
-                    <input type="username" class="feedback-input" name="username" placeholder="Username" value="{{ $user->username }}" required>
-                    <input type="email" class="feedback-input" name="email" placeholder="Email" value="{{ $user->email }}" required>
-
-                    <div class="mb-3">
-                        <input type="file" class="feedback-input" id="foto" name="foto" accept=".jpg, .jpeg, .png">
-                    </div>
-                    <button class="btn btn-primary w-100" id="btnSimpan"><i class="ti ti-send me-1"></i>Update</button>
-                </form>
+            {{-- Nama Lengkap --}}
+            <div class="form-label-group">
+                <ion-icon name="person-outline" class="input-icon"></ion-icon>
+                <input type="text" name="nama_karyawan" id="nama_karyawan" placeholder=" " value="{{ $karyawan->nama_karyawan ?? '' }}" required>
+                <label for="nama_karyawan">Nama Lengkap</label>
             </div>
-        </div>
+
+            {{-- No. KTP --}}
+            <div class="form-label-group">
+                <ion-icon name="card-outline" class="input-icon"></ion-icon>
+                <input type="text" name="no_ktp" id="no_ktp" placeholder=" " value="{{ $karyawan->no_ktp ?? '' }}" required>
+                <label for="no_ktp">No. KTP</label>
+            </div>
+
+            {{-- No. HP --}}
+            <div class="form-label-group">
+                <ion-icon name="call-outline" class="input-icon"></ion-icon>
+                <input type="text" name="no_hp" id="no_hp" placeholder=" " value="{{ $karyawan->no_hp ?? '' }}" required>
+                <label for="no_hp">No. HP</label>
+            </div>
+
+            {{-- Alamat --}}
+            <div class="form-label-group">
+                <ion-icon name="location-outline" class="input-icon"></ion-icon>
+                <textarea name="alamat" id="alamat" placeholder=" " required>{{ $karyawan->alamat ?? '' }}</textarea>
+                <label for="alamat">Alamat</label>
+            </div>
+
+            {{-- Username --}}
+            <div class="form-label-group">
+                <ion-icon name="at-outline" class="input-icon"></ion-icon>
+                <input type="text" name="username" id="username" placeholder=" " value="{{ $user->username }}" required>
+                <label for="username">Username</label>
+            </div>
+
+            {{-- Email --}}
+            <div class="form-label-group">
+                <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+                <input type="email" name="email" id="email" placeholder=" " value="{{ $user->email }}" required>
+                <label for="email">Email</label>
+            </div>
+
+            {{-- Upload Foto --}}
+            <div class="custom-file-upload" onclick="document.getElementById('foto').click()">
+                <input type="file" name="foto" id="foto" accept=".jpg, .jpeg, .png">
+                <ion-icon name="camera-outline"></ion-icon>
+                <span>Ganti Foto Profil</span>
+                <div id="fileName" class="file-name"></div>
+            </div>
+
+            {{-- Submit Button --}}
+            <button type="submit" class="btn-submit-modern" id="btnSimpan">
+                <ion-icon name="save-outline"></ion-icon>
+                <span>Update Profile</span>
+            </button>
+        </form>
     </div>
 @endsection
 
 @push('myscript')
-    {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script>
+        // File Upload Handling
+        document.getElementById('foto').addEventListener('change', function() {
+            let file = this.files[0];
+            const fileNameDisplay = document.getElementById('fileName');
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        });
+
         $(function() {
             $("#formProfile").submit(function(e) {
                 let nama_karyawan = $('input[name="nama_karyawan"]').val();
@@ -100,84 +283,18 @@
                 let no_hp = $('input[name="no_hp"]').val();
                 let alamat = $('textarea[name="alamat"]').val();
                 let username = $('input[name="username"]').val();
-                let email = $('input[name="email"]').val();
+               let email = $('input[name="email"]').val();
 
-                if (nama_karyawan == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'Nama Lengkap Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('input[name="nama_karyawan"]').focus();
-                        }
-                    });
-                    return false;
-                } else if (no_ktp == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'No. KTP Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('input[name="no_ktp"]').focus();
-                        }
-                    });
-                    return false;
-                } else if (no_hp == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'No. HP Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('input[name="no_hp"]').focus();
-                        }
-                    });
-                    return false;
-                } else if (alamat == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'Alamat Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('textarea[name="alamat"]').focus();
-                        }
-                    });
-                    return false;
-                } else if (username == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'Username Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('input[name="username"]').focus();
-                        }
-                    });
-                    return false;
-                } else if (email == "") {
-                    Swal.fire({
-                        title: "Oops!",
-                        text: 'Email Harus Diisi !',
-                        icon: "warning",
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $('input[name="email"]').focus();
-                        }
-                    });
+                if (nama_karyawan == "" || no_ktp == "" || no_hp == "" || alamat == "" || username == "" || email == "") {
+                    e.preventDefault();
+                    Swal.fire({title: "Oops!", text: 'Semua Bidang Harus Diisi !', icon: "warning"});
                     return false;
                 }
-            });
 
-            function buttonDisabled() {
-                $("#btnSimpan").prop('disabled', true);
-                $("#btnSimpan").html(`
-                <div class="spinner-border spinner-border-sm text-white mr-2" role="status">
-                </div>
-                Sedang Mengirim..`);
-            }
+                const btn = document.getElementById('btnSimpan');
+                btn.disabled = true;
+                btn.innerHTML = `<ion-icon name="sync-outline" class="animate-spin"></ion-icon><span>Menyimpan...</span>`;
+            });
         });
     </script>
 @endpush

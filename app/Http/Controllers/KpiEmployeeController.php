@@ -198,8 +198,8 @@ class KpiEmployeeController extends Controller
          }
          
          // Refresh untuk mendapatkan skor terbaru jika ada
-         $kpi_employee->refresh();
-
+         // $kpi_employee->refresh();
+         
          return view('kpi.transactions.show', compact('kpi_employee'));
     }
 

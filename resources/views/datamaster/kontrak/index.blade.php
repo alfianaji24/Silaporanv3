@@ -30,7 +30,6 @@
                                         <input type="text" class="form-control" name="nama_karyawan" value="{{ request('nama_karyawan') }}" placeholder="Cari Nama Karyawan...">
                                     </div>
                                 </div>
-                                @if ($cabangs->count() > 1)
                                 <div class="col-lg-3 col-sm-6">
                                     <select class="form-select" name="kode_cabang">
                                         <option value="">Semua Cabang</option>
@@ -42,7 +41,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                @endif
                                 <div class="col-lg-3 col-sm-6">
                                     <select class="form-select" name="kode_dept">
                                         <option value="">Semua Departemen</option>
@@ -110,7 +108,7 @@
                                             @else
                                                 <span class="badge bg-danger py-1 px-2 mb-1" style="font-size: 11px;">Non Aktif</span>
                                             @endif
-                                            
+
                                             <div class="mt-1">
                                                 @php
                                                     $jenis_kontrak_text = $kontrak->jenis_kontrak == 'K' ? 'Kontrak' : ($kontrak->jenis_kontrak == 'T' ? 'Tetap' : $kontrak->jenis_kontrak);

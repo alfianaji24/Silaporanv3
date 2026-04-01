@@ -13,7 +13,10 @@ class DepartemenController extends Controller
     public function index(Request $request)
     {
         $query = Departemen::query();
-        $data['departemen'] = $query->get();
+        if (!empty($request->nama_dept)) {
+            $query->where('nama_dept', 'like', '%' . $request->nama_dept . '%');
+        }
+        $data['departemen'] = $query->orderBy('kode_dept')->get();
         return view('datamaster.departemen.index', $data);
     }
 

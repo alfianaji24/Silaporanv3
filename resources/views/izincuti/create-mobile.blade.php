@@ -1,695 +1,321 @@
-@extends('layouts.mobile.app')
-@section('content')
+@extends('layouts.mobile.modern')
+
+@section('title', 'Buat Izin Cuti')
+
+@section('header_left')
+    <a href="{{ route('pengajuanizin.index') }}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/10 text-white active:scale-95 transition-all">
+        <ion-icon name="chevron-back-outline" class="text-lg"></ion-icon>
+    </a>
+@endsection
+
+@push('mystyle')
     <style>
-        /* Tambahkan style untuk header dan content */
-        #header-section {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
+        body {
+            background: #e6fcf5 !important;
         }
 
-        #content-section {
-            margin-top: 70px;
-            padding-top: 5px;
-            position: relative;
-            z-index: 1;
+        .form-container {
+            padding: 10px 5px;
         }
 
-        /* Custom Flatpickr Styling */
-        .flatpickr-date {
+        .form-label-group {
             position: relative;
+            margin-bottom: 12px;
+            background: transparent !important;
+            border: 1px solid #32745e;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .form-label-group .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 11px;
+            font-size: 20px;
+            color: #32745e;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .form-label-group input,
+        .form-label-group select,
+        .form-label-group textarea {
+            width: 100% !important;
+            height: 44px;
+            padding: 18px 14px 2px 42px !important;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2a6350;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            display: block !important;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .form-label-group select {
             cursor: pointer;
-            transition: all 0.3s ease;
-            padding-right: 45px !important;
         }
 
-        .flatpickr-date:focus {
-            border-color: #32745e !important;
-            box-shadow: 0 0 0 3px rgba(50, 116, 94, 0.1) !important;
-        }
-
-        .flatpickr-date::after {
-            content: '';
+        .form-label-group .select-chevron {
             position: absolute;
             right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2332745e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            top: 14px;
+            font-size: 16px;
+            color: #32745e;
             pointer-events: none;
-            z-index: 1;
-            opacity: 0.7;
-            transition: all 0.3s ease;
+            z-index: 10;
         }
 
-        .flatpickr-date:hover::after,
-        .flatpickr-date:focus::after {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
+        .form-label-group textarea {
+            height: 80px !important;
+            padding-top: 22px !important;
+            resize: none;
         }
 
-        /* Flatpickr Calendar Container */
-        .flatpickr-calendar {
-            border-radius: 16px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
-            border: none !important;
-            overflow: hidden;
-            animation: slideDown 0.3s ease-out;
-            max-width: 100%;
-            box-sizing: border-box !important;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Flatpickr Header */
-        .flatpickr-months {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            padding: 15px 0 !important;
-            border-radius: 16px 16px 0 0;
-        }
-
-        .flatpickr-month {
-            color: white !important;
-        }
-
-        .flatpickr-current-month {
-            color: white !important;
-            font-weight: 600 !important;
-            font-size: 16px !important;
-        }
-
-        .flatpickr-prev-month,
-        .flatpickr-next-month {
-            color: white !important;
-            fill: white !important;
-            padding: 8px !important;
-            border-radius: 8px !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-prev-month:hover,
-        .flatpickr-next-month:hover {
-            background: rgba(255, 255, 255, 0.2) !important;
-            transform: scale(1.1);
-        }
-
-        /* Flatpickr Weekdays */
-        .flatpickr-weekdays {
-            background: rgba(50, 116, 94, 0.1) !important;
-            padding: 10px 0 !important;
-        }
-
-        .flatpickr-weekday {
-            color: #32745e !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
-        }
-
-        /* Flatpickr Days */
-        .flatpickr-days {
-            padding: 10px !important;
-        }
-
-        .flatpickr-day {
-            border-radius: 10px !important;
-            border: 2px solid transparent !important;
-            transition: all 0.2s ease !important;
-            font-weight: 500 !important;
-        }
-
-        .flatpickr-day:hover {
-            background: rgba(50, 116, 94, 0.1) !important;
-            border-color: #32745e !important;
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(50, 116, 94, 0.2) !important;
-        }
-
-        .flatpickr-day.selected {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            border-color: #32745e !important;
-            color: white !important;
-            font-weight: 600 !important;
-            box-shadow: 0 4px 12px rgba(50, 116, 94, 0.4) !important;
-        }
-
-        .flatpickr-day.today {
-            border-color: #32745e !important;
-            background: rgba(50, 116, 94, 0.1) !important;
-            color: #32745e !important;
-            font-weight: 700 !important;
-        }
-
-        .flatpickr-day.today.selected {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%) !important;
-            color: white !important;
-        }
-
-        .flatpickr-day.flatpickr-disabled {
-            color: #ccc !important;
-            opacity: 0.5 !important;
-        }
-
-        /* Flatpickr Time Input (if enabled) */
-        .flatpickr-time {
-            border-top: 1px solid #e0e0e0 !important;
-            padding: 15px !important;
-        }
-
-        .flatpickr-time input {
-            border-radius: 8px !important;
-            border: 2px solid #e0e0e0 !important;
-            transition: all 0.2s ease !important;
-        }
-
-        .flatpickr-time input:hover {
-            border-color: #32745e !important;
-        }
-
-        /* Mobile Responsive - Enhanced */
-        @media (max-width: 576px) {
-            .flatpickr-calendar {
-                width: calc(100vw - 32px) !important;
-                max-width: calc(100vw - 32px) !important;
-                min-width: calc(100vw - 32px) !important;
-                left: 16px !important;
-                right: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-calendar .flatpickr-innerContainer {
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-calendar .flatpickr-days {
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-day {
-                height: 38px !important;
-                line-height: 38px !important;
-                font-size: 14px !important;
-            }
-
-            .flatpickr-weekday {
-                font-size: 12px !important;
-                padding: 8px 0 !important;
-            }
-
-            .flatpickr-months {
-                padding: 12px 0 !important;
-            }
-
-            .flatpickr-current-month {
-                font-size: 14px !important;
-            }
-
-            .flatpickr-prev-month,
-            .flatpickr-next-month {
-                padding: 6px !important;
-            }
-
-            .flatpickr-days {
-                padding: 8px !important;
-            }
-        }
-
-        /* Extra Small Mobile */
-        @media (max-width: 375px) {
-            .flatpickr-calendar {
-                width: calc(100vw - 24px) !important;
-                max-width: calc(100vw - 24px) !important;
-                min-width: calc(100vw - 24px) !important;
-                left: 12px !important;
-                right: auto !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-sizing: border-box !important;
-            }
-
-            .flatpickr-day {
-                height: 35px !important;
-                line-height: 35px !important;
-                font-size: 13px !important;
-            }
-
-            .flatpickr-weekday {
-                font-size: 11px !important;
-            }
-        }
-
-        /* Animasi untuk alert modern */
-        @keyframes slideInAlert {
-            0% {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.3;
-            }
-
-            50% {
-                transform: scale(1.1);
-                opacity: 0.6;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 0.3;
-            }
-        }
-
-        /* Hover effect untuk alert */
-        .modern-alert:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(50, 116, 94, 0.25) !important;
-            transition: all 0.3s ease;
-        }
-
-        /* Responsive design untuk alert */
-        @media (max-width: 576px) {
-            .modern-alert {
-                padding: 16px !important;
-                margin: 10px 0 !important;
-            }
-
-            .modern-alert h5 {
-                font-size: 14px !important;
-            }
-
-            .modern-alert p {
-                font-size: 13px !important;
-            }
-        }
-
-        /* Modern Alert Styles */
-        .modern-alert {
-            background: linear-gradient(135deg, rgba(50, 116, 94, 0.1) 0%, rgba(88, 144, 125, 0.1) 100%);
-            border: none;
-            border-radius: 16px;
-            padding: 20px;
-            margin: 15px 0;
-            box-shadow: 0 8px 32px rgba(50, 116, 94, 0.15);
-            position: relative;
-            overflow: hidden;
-            animation: slideInAlert 0.5s ease-out;
-        }
-
-        .alert-border {
+        .form-label-group label {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, #32745e 0%, #58907D 100%);
+            top: 11px;
+            left: 42px;
+            font-size: 14px;
+            color: #32745e;
+            opacity: 0.8;
+            pointer-events: none;
+            transition: all 0.2s ease-in-out;
+            margin-bottom: 0;
+            z-index: 5;
         }
 
-        .alert-content {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
+        .form-label-group input:focus ~ label,
+        .form-label-group input:not(:placeholder-shown) ~ label,
+        .form-label-group select:focus ~ label,
+        .form-label-group select:valid ~ label,
+        .form-label-group textarea:focus ~ label,
+        .form-label-group textarea:not(:placeholder-shown) ~ label {
+            top: 2px;
+            left: 42px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #32745e;
         }
 
-        .alert-icon {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+        .btn-submit-modern {
+            width: 100%;
+            height: 48px;
+            background: #32745e;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(50, 116, 94, 0.3);
+            gap: 10px;
+            margin-top: 5px;
+            transition: all 0.3s;
         }
 
-        .alert-icon i {
-            color: #fff;
-            font-size: 18px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-        }
-
-        .alert-text {
-            flex: 1;
-        }
-
-        .alert-text h5 {
-            margin: 0 0 8px 0;
-            color: #32745e;
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-title {
-            background: linear-gradient(135deg, #32745e 0%, #58907D 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .alert-text p {
-            margin: 0;
-            color: #32745e;
-            font-size: 14px;
-            line-height: 1.5;
-            opacity: 0.9;
-        }
-
-        .alert-decoration {
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(50, 116, 94, 0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        .btn-submit-modern:active {
+            transform: scale(0.97);
+            background: #2a6350;
         }
     </style>
-    <div id="header-section">
-        <div class="appHeader bg-primary text-light">
-            <div class="left">
-                <a href="{{ route('dashboard.index') }}" class="headerButton goBack">
-                    <ion-icon name="chevron-back-outline"></ion-icon>
-                </a>
-            </div>
-            <div class="pageTitle">Izin Cuti</div>
-            <div class="right"></div>
-        </div>
-    </div>
-    <div id="content-section">
-        <div class="row" style="margin-top: 30px">
-            <div class="col pl-3 pr-3">
-                <form action="{{ route('izincuti.store') }}" method="POST" id="formIzin" autocomplete="off">
-                    @csrf
+@endpush
 
-                    <input type="text" class="feedback-input dari flatpickr-date" name="dari" placeholder="Dari" id="datePicker" />
-                    <input type="text" class="feedback-input sampai flatpickr-date" name="sampai" placeholder="Sampai" id="datePicker2" />
-                    <select name="kode_cuti" id="kode_cuti" class="feedback-input kode_cuti">
-                        <option value="">Jenis Cuti</option>
-                        @foreach ($jenis_cuti as $d)
-                            <option value="{{ $d->kode_cuti }}">{{ $d->jenis_cuti }} </option>
-                        @endforeach
-                    </select>
-                    <input type="text" class="feedback-input jml_hari" name="jml_hari" placeholder="Jumlah Hari" disabled />
-                    <textarea placeholder="Keterangan" class="feedback-input keterangan" name="keterangan" style="height: 100px"></textarea>
-                    <button class="btn btn-primary w-100" id="btnSimpan"><i class="ti ti-send me-1"></i>Buat Izin Cuti</button>
-                </form>
-            </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col" id="sisa_cuti_alert">
+@section('content')
+    <div class="fade-up form-container">
+        <form action="{{ route('izincuti.store') }}" method="POST" id="formIzin" autocomplete="off">
+            @csrf
 
+            <div class="form-label-group">
+                <ion-icon name="today-outline" class="input-icon"></ion-icon>
+                <select name="kode_cuti" id="kode_cuti" required>
+                    <option value="" disabled selected></option>
+                    @foreach ($jenis_cuti as $d)
+                        <option value="{{ $d->kode_cuti }}">{{ $d->jenis_cuti }}</option>
+                    @endforeach
+                </select>
+                <ion-icon name="chevron-down-outline" class="select-chevron"></ion-icon>
+                <label for="kode_cuti">Pilih Jenis Cuti</label>
             </div>
-        </div>
+
+            {{-- Info Sisa Cuti --}}
+            <div id="info-sisa-cuti" class="hidden mb-3 px-3 py-2 rounded-lg bg-[#32745e]/10 border border-[#32745e]/20 text-[#2a6350] text-xs font-semibold flex items-center gap-2">
+                <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
+                <span id="label-sisa-cuti"></span>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
+                <input type="text" name="dari" id="dari" placeholder=" " required readonly>
+                <label for="dari">Dari Tanggal</label>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
+                <input type="text" name="sampai" id="sampai" placeholder=" " required readonly>
+                <label for="sampai">Sampai Tanggal</label>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="calculator-outline" class="input-icon"></ion-icon>
+                <input type="text" name="jml_hari" id="jml_hari" placeholder=" " readonly>
+                <label for="jml_hari">Jumlah Hari</label>
+            </div>
+
+            <div class="form-label-group">
+                <ion-icon name="document-text-outline" class="input-icon"></ion-icon>
+                <textarea name="keterangan" id="keterangan" placeholder=" " required></textarea>
+                <label for="keterangan">Keterangan</label>
+            </div>
+
+            <button type="submit" class="btn-submit-modern" id="btnSimpan">
+                <ion-icon name="paper-plane-outline"></ion-icon>
+                <span>Ajukan Izin Cuti</span>
+            </button>
+        </form>
     </div>
 @endsection
+
 @push('myscript')
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.5.0/air-datepicker.min.js"></script>
     <script>
-        // Define Indonesian locale for flatpickr
-        const indonesianLocale = {
-            firstDayOfWeek: 1,
-            weekdays: {
-                shorthand: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-                longhand: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-            },
-            months: {
-                shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-                longhand: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-            }
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            let sisaCuti = 0;
+            let currentCutiName = "";
 
-        // Initialize flatpickr for date inputs with enhanced styling and mobile optimization
-        const datePicker1 = flatpickr('#datePicker', {
-            dateFormat: 'Y-m-d',
-            allowInput: false,
-            monthSelectorType: 'static',
-            animate: true,
-            locale: indonesianLocale,
-            clickOpens: true,
-            disableMobile: false,
-            onChange: function(selectedDates, dateStr, instance) {
-                let jmlhari = hitungHari(dateStr, $('#datePicker2').val());
-                $('.jml_hari').val(jmlhari);
-            },
-            onOpen: function(selectedDates, dateStr, instance) {
-                instance.calendarContainer.style.animation = 'slideDown 0.3s ease-out';
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.position = 'fixed';
-                    instance.calendarContainer.style.left = padding + 'px';
-                    instance.calendarContainer.style.right = 'auto';
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.margin = '0';
-                    instance.calendarContainer.style.padding = '0';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
+            const localeIndo = {
+                days: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
+                daysShort: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                daysMin: ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'],
+                months: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+                monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                today: 'Hari ini',
+                clear: 'Hapus',
+                dateFormat: 'yyyy-MM-dd',
+                timeFormat: 'HH:mm',
+                firstDay: 1
+            };
+
+            const batasi_hari_izin = "{{ $general_setting->batasi_hari_izin ?? 0 }}";
+            const jml_hari_izin_max = "{{ $general_setting->jml_hari_izin_max ?? 0 }}";
+
+            function hitungHari(startDate, endDate) {
+                if (startDate && endDate) {
+                    var start = new Date(startDate);
+                    var end = new Date(endDate);
+                    var timeDifference = end - start + (1000 * 3600 * 24);
+                    var dayDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+                    return dayDifference > 0 ? dayDifference : 0;
                 }
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
-                }
-            }
-        });
-
-        const datePicker2 = flatpickr('#datePicker2', {
-            dateFormat: 'Y-m-d',
-            allowInput: false,
-            monthSelectorType: 'static',
-            animate: true,
-            locale: indonesianLocale,
-            clickOpens: true,
-            disableMobile: false,
-            onChange: function(selectedDates, dateStr, instance) {
-                let jmlhari = hitungHari($('#datePicker').val(), dateStr);
-                $('.jml_hari').val(jmlhari);
-            },
-            onOpen: function(selectedDates, dateStr, instance) {
-                instance.calendarContainer.style.animation = 'slideDown 0.3s ease-out';
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.position = 'fixed';
-                    instance.calendarContainer.style.left = padding + 'px';
-                    instance.calendarContainer.style.right = 'auto';
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.margin = '0';
-                    instance.calendarContainer.style.padding = '0';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
-                }
-            },
-            onReady: function(selectedDates, dateStr, instance) {
-                if (window.innerWidth <= 576) {
-                    const padding = window.innerWidth <= 375 ? 12 : 16;
-                    const calendarWidth = window.innerWidth - (padding * 2);
-                    instance.calendarContainer.style.width = calendarWidth + 'px';
-                    instance.calendarContainer.style.maxWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.minWidth = calendarWidth + 'px';
-                    instance.calendarContainer.style.boxSizing = 'border-box';
-                }
-            }
-        });
-
-        // Handle window resize for responsive calendar
-        $(window).on('resize', function() {
-            if (window.innerWidth <= 576) {
-                const padding = window.innerWidth <= 375 ? 12 : 16;
-                const calendarWidth = window.innerWidth - (padding * 2);
-                $('.flatpickr-calendar').css({
-                    'width': calendarWidth + 'px',
-                    'max-width': calendarWidth + 'px',
-                    'min-width': calendarWidth + 'px',
-                    'left': padding + 'px',
-                    'right': 'auto',
-                    'margin': '0',
-                    'padding': '0',
-                    'box-sizing': 'border-box'
-                });
-            }
-        });
-
-        let sisa_cuti = 0;
-
-        function hitungHari(startDate, endDate) {
-
-            if (startDate && endDate) {
-                // let parts1 = startDate.split("-");
-                // startDate = `${parts1[2]}-${parts1[1]}-${parts1[0]}`;
-
-                // let parts2 = endDate.split("-");
-                // endDate = `${parts2[2]}-${parts2[1]}-${parts2[0]}`;
-
-                var start = new Date(startDate);
-                var end = new Date(endDate);
-
-                // Tambahkan 1 hari agar penghitungan inklusif
-                var timeDifference = end - start + (1000 * 3600 * 24);
-                var dayDifference = timeDifference / (1000 * 3600 * 24);
-
-                return dayDifference;
-            } else {
                 return 0;
             }
-        }
 
-        $("#formIzin").submit(function(e) {
-            let dari = $('.dari').val();
-            let sampai = $('.sampai').val();
-            let kode_cuti = $('.kode_cuti').val();
-            let jml_hari = $('.jml_hari').val();
-            let keterangan = $('.keterangan').val();
-
-            if (dari == "" && sampai == "") {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Periode Izin Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.dari').focus();
-                    }
-                });
-                return false;
-            } else if (kode_cuti == "") {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Jenis Cuti Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.kode_cuti').focus();
-                    }
-                });
-                return false;
-            } else if (jml_hari == "") {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Jumlah Hari Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.jml_hari').focus();
-                    }
-                });
-                return false;
-            } else if (sampai < dari) {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Periode Izin Harus Sesuai !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        form.find("#sampai").focus();
-                    }
-                });
-                return false;
-            } else if (hitungHari(dari, sampai) > parseInt(sisa_cuti)) {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Periode Izin Tidak Boleh Lebih Dari ' + sisa_cuti + ' Hari !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        form.find("#sampai").focus();
-                    }
-                });
-                return false;
-            } else if (keterangan == '') {
-                Swal.fire({
-                    title: "Oops!",
-                    text: 'Keterangan Harus Diisi !',
-                    icon: "warning",
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $('.keterangan').focus();
-                    }
-                });
-                return false;
-            }
-        });
-
-        function buttonDisabled() {
-            $("#btnSimpan").prop('disabled', true);
-            $("#btnSimpan").html(`
-                <div class="spinner-border spinner-border-sm text-white mr-2" role="status">
-                </div>
-                Sedang Mengirim..`);
-        }
-
-        $("#kode_cuti").change(function() {
-            let kode_cuti = $(this).val();
-            $.ajax({
-                type: 'GET',
-                url: "{{ route('izincuti.getsisaharicuti') }}",
-                data: {
-                    kode_cuti: kode_cuti,
-                    tanggal: $('.dari').val(),
-                },
-                success: function(response) {
-                    console.log(response);
-                    if (response.status) {
-                        sisa_cuti = response.sisa_cuti;
-                        $('#sisa_cuti_alert').html(`
-                            <div class="modern-alert">
-                                <div class="alert-border"></div>
-                                <div class="alert-content">
-                                    <div class="alert-icon">
-                                        <ion-icon name="information-circle-outline"></ion-icon>
-                                    </div>
-                                    <div class="alert-text">
-                                        <h5>
-                                            <span class="alert-title">ℹ️ Informasi</span>
-                                        </h5>
-                                        <p>${response.message}</p>
-                                    </div>
-                                </div>
-                                <div class="alert-decoration"></div>
-                            </div>
-                        `);
-                    } else {
-                        $('#sisa_cuti_alert').html('');
-                    }
+            const dpDari = new AirDatepicker('#dari', {
+                locale: localeIndo,
+                autoClose: true,
+                isMobile: true,
+                buttons: ['today', 'clear'],
+                onSelect: ({date, formattedDate}) => {
+                    let sampai = document.getElementById('sampai').value;
+                    let jmlhari = hitungHari(formattedDate, sampai);
+                    document.getElementById('jml_hari').value = jmlhari;
                 }
+            });
+
+            const dpSampai = new AirDatepicker('#sampai', {
+                locale: localeIndo,
+                autoClose: true,
+                isMobile: true,
+                buttons: ['today', 'clear'],
+                onSelect: ({date, formattedDate}) => {
+                    let dari = document.getElementById('dari').value;
+                    let jmlhari = hitungHari(dari, formattedDate);
+                    document.getElementById('jml_hari').value = jmlhari;
+                }
+            });
+
+            // Handle Sisa Cuti Info
+            $('#kode_cuti').on('change', function() {
+                const kode_cuti = $(this).val();
+                const infoBox = $('#info-sisa-cuti');
+                const labelSisa = $('#label-sisa-cuti');
+
+                if (kode_cuti) {
+                    labelSisa.html('<ion-icon name="sync-outline" class="animate-spin"></ion-icon> Mengecek sisa cuti...');
+                    infoBox.removeClass('hidden');
+
+                    $.ajax({
+                        type: 'GET',
+                        url: '/izincuti/getsisaharicuti',
+                        data: {
+                            kode_cuti: kode_cuti
+                        },
+                        cache: false,
+                        success: function(respond) {
+                            if (respond.status) {
+                                labelSisa.text(respond.message);
+                                sisaCuti = respond.sisa_cuti;
+                                currentCutiName = respond.message;
+                            } else {
+                                infoBox.addClass('hidden');
+                                sisaCuti = 0;
+                            }
+                        },
+                        error: function() {
+                            infoBox.addClass('hidden');
+                        }
+                    });
+                } else {
+                    infoBox.addClass('hidden');
+                }
+            });
+
+            const form = document.getElementById('formIzin');
+            form.addEventListener('submit', function(e) {
+                let kode_cuti = document.getElementById('kode_cuti').value;
+                let dari = document.getElementById('dari').value;
+                let sampai = document.getElementById('sampai').value;
+                let jml_hari = document.getElementById('jml_hari').value;
+                let keterangan = document.getElementById('keterangan').value;
+
+                if (!kode_cuti) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Jenis Cuti Harus Dipilih !', icon: "warning" });
+                    return;
+                }
+
+                if (!dari || !sampai) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Periode Cuti Harus Diisi !', icon: "warning" });
+                    return;
+                }
+
+                if (new Date(sampai) < new Date(dari)) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Periode Cuti Tidak Valid !', icon: "warning" });
+                    return;
+                }
+
+                if (parseInt(jml_hari) > parseInt(sisaCuti)) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Jumlah hari melebihi batas! ' + $('#label-sisa-cuti').text(), icon: "warning" });
+                    return;
+                }
+
+                if (!keterangan.trim()) {
+                    e.preventDefault();
+                    Swal.fire({ title: "Oops!", text: 'Keterangan Harus Diisi !', icon: "warning" });
+                    return;
+                }
+
+                const btn = document.getElementById('btnSimpan');
+                btn.disabled = true;
+                btn.innerHTML = `<ion-icon name="sync-outline" class="animate-spin"></ion-icon><span>Memproses...</span>`;
             });
         });
     </script>

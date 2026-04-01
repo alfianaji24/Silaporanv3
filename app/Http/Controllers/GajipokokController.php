@@ -57,13 +57,17 @@ class GajipokokController extends Controller
             'tanggal_berlaku' => [
                 'required',
                 'date'
+            ],
+            'jenis_upah' => [
+                'required'
             ]
         ], [
             'nik.required' => 'Karyawan wajib dipilih',
             'nik.exists' => 'Karyawan yang dipilih tidak valid',
             'jumlah.required' => 'Gaji Pokok wajib diisi',
             'tanggal_berlaku.required' => 'Tanggal Berlaku wajib diisi',
-            'tanggal_berlaku.date' => 'Format Tanggal Berlaku tidak valid'
+            'tanggal_berlaku.date' => 'Format Tanggal Berlaku tidak valid',
+            'jenis_upah.required' => 'Jenis Upah wajib dipilih'
         ]);
 
         try {
@@ -87,6 +91,7 @@ class GajipokokController extends Controller
                 'kode_gaji' => $kode_gaji,
                 'nik' => $request->nik,
                 'jumlah' => $jumlah,
+                'jenis_upah' => $request->jenis_upah,
                 'tanggal_berlaku' => $request->tanggal_berlaku
             ]);
 
@@ -131,11 +136,15 @@ class GajipokokController extends Controller
             'tanggal_berlaku' => [
                 'required',
                 'date'
+            ],
+            'jenis_upah' => [
+                'required'
             ]
         ], [
             'jumlah.required' => 'Gaji Pokok wajib diisi',
             'tanggal_berlaku.required' => 'Tanggal Berlaku wajib diisi',
-            'tanggal_berlaku.date' => 'Format Tanggal Berlaku tidak valid'
+            'tanggal_berlaku.date' => 'Format Tanggal Berlaku tidak valid',
+            'jenis_upah.required' => 'Jenis Upah wajib dipilih'
         ]);
 
         try {
@@ -149,6 +158,7 @@ class GajipokokController extends Controller
 
             Gajipokok::where('kode_gaji', $kode_gaji)->update([
                 'jumlah' => $jumlah,
+                'jenis_upah' => $request->jenis_upah,
                 'tanggal_berlaku' => $request->tanggal_berlaku
             ]);
             return Redirect::back()->with(messageSuccess('Data Berhasil Diupdate'));

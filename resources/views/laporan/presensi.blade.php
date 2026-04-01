@@ -11,7 +11,6 @@
             <div class="card-body">
                 <form action="{{ route('laporan.cetakpresensi') }}" method="POST" target="_blank" id="formPresensi">
                     @csrf
-                    @if ($cabang->count() > 1)
                     <div class="form-group mb-3">
                         <select name="kode_cabang" id="kode_cabang_presensi" class="form-select select2Kodecabangpresensi">
                             <option value="">Semua Cabang</option>
@@ -20,7 +19,6 @@
                             @endforeach
                         </select>
                     </div>
-                    @endif
                     <div class="form-group mb-3">
                         <select name="kode_dept" id="kode_dept_presensi" class="form-select select2Kodedeptpresensi">
                             <option value="">Semua Departemen</option>
@@ -62,6 +60,13 @@
                             <option value="1" selected>Laporan Presensi</option>
                             <option value="2">Laporan Gaji</option>
                             <option value="3">Slip Gaji</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3" id="baris_jenis_upah">
+                        <select name="jenis_upah" id="jenis_upah" class="form-select">
+                            <option value="" disabled selected>Pilih Jenis Upah</option>
+                            <option value="Bulanan">Bulanan</option>
+                            <option value="Harian">Harian</option>
                         </select>
                     </div>
                     {{-- <div class="form-group mb-3">
@@ -156,30 +161,33 @@
             });
         }
 
-        function loadKaryawanPresensi(kode_cabang) {
+        function loadKaryawan() {
+            const kode_cabang = $("#kode_cabang_presensi").val();
+            const kode_dept = $("#kode_dept_presensi").val();
+
             $.ajax({
                 type: "GET",
                 url: "{{ route('karyawan.getkaryawan') }}",
-                data: { kode_cabang: kode_cabang || '' },
+                data: {
+                    kode_cabang: kode_cabang,
+                    kode_dept: kode_dept
+                },
                 cache: false,
                 success: function(respond) {
                     $("#nik_presensi").empty();
                     $("#nik_presensi").append("<option value=''>Semua Karyawan</option>");
                     respond.forEach(function(item) {
-                        $("#nik_presensi").append("<option value='" + item.nik + "'>" + item.nik + " - " + item.nama_karyawan + "</option>");
+                        $("#nik_presensi").append("<option value='" + item.nik + "'>" + item.nik + " - " + item
+                            .nama_karyawan +
+                            "</option>");
                     });
                 }
             });
         }
 
-        $("#kode_cabang_presensi").on('change', function() {
-            loadKaryawanPresensi($(this).val());
+        $("#kode_cabang_presensi, #kode_dept_presensi").change(function() {
+            loadKaryawan();
         });
-
-        // Jika filter cabang disembunyikan (hanya 1 cabang), load karyawan aktif saat halaman ready
-        if ($("#kode_cabang_presensi").length === 0) {
-            loadKaryawanPresensi('');
-        }
 
         $("#formPresensi").submit(function(e) {
             const periode_laporan = $("#periode_laporan").val();
@@ -272,10 +280,27 @@
             }
         }
 
+        function toggleJenisUpah() {
+            const format_laporan = $("#format_laporan").val();
+            // 1 = Laporan Presensi, 2 = Laporan Gaji, 3 = Slip Gaji
+            if (format_laporan == "1") {
+                $("#baris_jenis_upah").hide();
+                $("#jenis_upah").removeAttr('required');
+            } else {
+                $("#baris_jenis_upah").show();
+                $("#jenis_upah").attr('required', true);
+            }
+        }
+
         togglePeriodeLaporan();
+        toggleJenisUpah();
 
         $("#periode_laporan").change(function() {
             togglePeriodeLaporan();
+        });
+
+        $("#format_laporan").change(function() {
+            toggleJenisUpah();
         });
     });
 </script>

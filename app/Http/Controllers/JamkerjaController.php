@@ -76,6 +76,11 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:255'
+            ],
+            'color' => [
+                'nullable',
+                'string',
+                'max:7'
             ]
         ], [
             'kode_jam_kerja.required' => 'Kode Jam Kerja wajib diisi',
@@ -154,7 +159,8 @@ class JamkerjaController extends Controller
                 'total_jam' => $total_jam,
                 'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
                 'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
-                'keterangan' => $keterangan
+                'keterangan' => $keterangan,
+                'color' => $request->color
             ]);
 
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan'));
@@ -238,6 +244,11 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:255'
+            ],
+            'color' => [
+                'nullable',
+                'string',
+                'max:7'
             ]
         ], [
             'nama_jam_kerja.required' => 'Nama Jam Kerja wajib diisi',
@@ -298,7 +309,8 @@ class JamkerjaController extends Controller
                 'total_jam' => $total_jam,
                 'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
                 'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
-                'keterangan' => $keterangan
+                'keterangan' => $keterangan,
+                'color' => $request->color
             ]);
 
             return Redirect::back()->with(messageSuccess('Data Berhasil Diupdate'));

@@ -22,8 +22,7 @@ class AktivitasKaryawanController extends Controller
         $user = User::where('id', auth()->user()->id)->first();
         $user_karyawan = Userkaryawan::where('id_user', $user->id)->first();
         $query = AktivitasKaryawan::join('karyawan', 'aktivitas_karyawan.nik', '=', 'karyawan.nik')
-            ->select('aktivitas_karyawan.*', 'karyawan.nama_karyawan')
-            ->where('karyawan.status_aktif_karyawan', 1);
+            ->select('aktivitas_karyawan.*', 'karyawan.nama_karyawan');
 
         // If user is karyawan role, only show their own activities
         if ($user->hasRole('karyawan')) {
@@ -84,8 +83,7 @@ class AktivitasKaryawanController extends Controller
      */
     private function getKaryawansByAccess($user)
     {
-        $query = Karyawan::query()
-            ->where('status_aktif_karyawan', 1);
+        $query = Karyawan::query();
 
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();

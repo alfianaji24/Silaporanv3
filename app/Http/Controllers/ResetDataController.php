@@ -41,6 +41,7 @@ class ResetDataController extends Controller
             $this->deleteTable('presensi_izinabsen_approve', $deletedTables, $errors);
             $this->deleteTable('presensi_izincuti_approve', $deletedTables, $errors);
             $this->deleteTable('presensi_izinsakit_approve', $deletedTables, $errors);
+            $this->deleteTable('approvals', $deletedTables, $errors);
 
             // Tahap 2: Tabel izin yang memiliki foreign key ke presensi dan karyawan
             $this->deleteTable('presensi_izinabsen', $deletedTables, $errors);
@@ -67,6 +68,15 @@ class ResetDataController extends Controller
             $this->deleteTable('presensi_jamkerja_byday', $deletedTables, $errors);
             $this->deleteTable('presensi_jamkerja_bydate', $deletedTables, $errors);
             $this->deleteTable('pelanggaran', $deletedTables, $errors);
+            $this->deleteTable('ajuan_jadwal', $deletedTables, $errors);
+            $this->deleteTable('mutasi_karyawan', $deletedTables, $errors);
+
+            // Tahap 5.5: Tabel KPI (Performance)
+            $this->deleteTable('kpi_details', $deletedTables, $errors);
+            $this->deleteTable('kpi_employees', $deletedTables, $errors);
+            $this->deleteTable('kpi_indicator_details', $deletedTables, $errors);
+            $this->deleteTable('kpi_indicators', $deletedTables, $errors);
+            $this->deleteTable('kpi_periods', $deletedTables, $errors);
 
             // Tahap 6: Tabel payroll yang memiliki foreign key ke karyawan
             $this->deleteTable('karyawan_tunjangan', $deletedTables, $errors);
@@ -100,6 +110,7 @@ class ResetDataController extends Controller
             $this->deleteTable('messages', $deletedTables, $errors);
             $this->deleteTable('devices', $deletedTables, $errors);
             $this->deleteTable('update_logs', $deletedTables, $errors);
+            $this->deleteTable('pengumuman', $deletedTables, $errors);
 
             // Jangan hapus: users, roles, permissions, permission_groups, pengaturan_umum, status_kawin, denda, model_has_roles, model_has_permissions, role_has_permissions
 

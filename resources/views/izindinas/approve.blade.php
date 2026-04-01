@@ -1,4 +1,4 @@
-<form action="{{ route('izindinas.storeapprove', Crypt::encrypt($izindinas->kode_izin_dinas)) }}" method="POST" id="formApproveizin">
+<form action="{{ isset($isDelegation) && $isDelegation ? route('karyawan-approval.izindinas.storeapprove', Crypt::encrypt($izindinas->kode_izin_dinas)) : route('izindinas.storeapprove', Crypt::encrypt($izindinas->kode_izin_dinas)) }}" method="POST" id="formApproveizin">
     @csrf
     <div class="row">
         <div class="col">

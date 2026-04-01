@@ -50,38 +50,44 @@ class UpdateManagementController extends Controller
             'title' => 'required',
             'description' => 'nullable',
             'changelog' => 'nullable',
-            'file_url' => 'required|url',
-            'file_size' => 'nullable|numeric',
-            'checksum' => 'nullable',
+            'file_upload' => 'required|file|mimes:zip',
             'is_major' => 'boolean',
             'is_active' => 'boolean',
             'released_at' => 'nullable|date',
         ]);
 
         try {
-            // Parse migrations dan seeders jika ada
-            $migrations = null;
-            if ($request->filled('migrations')) {
-                $migrations = array_filter(array_map('trim', explode(',', $request->migrations)));
+            $file = $request->file('file_upload');
+            $filename = 'update-v' . $request->version . '-' . time() . '.zip';
+            $destinationPath = public_path('updates');
+            
+            // Create directory if not exists
+            if (!File::exists($destinationPath)) {
+                File::makeDirectory($destinationPath, 0755, true);
             }
 
-            $seeders = null;
-            if ($request->filled('seeders')) {
-                $seeders = array_filter(array_map('trim', explode(',', $request->seeders)));
-            }
+            // Move file
+            $file->move($destinationPath, $filename);
+            
+            $fullPath = $destinationPath . '/' . $filename;
+            $fileUrl = asset('updates/' . $filename);
+            
+            // Calculate size and checksum
+            $fileSize = File::size($fullPath);
+            $checksum = md5_file($fullPath);
 
             Update::create([
                 'version' => $request->version,
                 'title' => $request->title,
                 'description' => $request->description,
                 'changelog' => $request->changelog,
-                'file_url' => $request->file_url,
-                'file_size' => $request->file_size,
-                'checksum' => $request->checksum,
+                'file_url' => $fileUrl,
+                'file_size' => $fileSize,
+                'checksum' => $checksum,
                 'is_major' => $request->has('is_major') ? 1 : 0,
                 'is_active' => $request->has('is_active') ? 1 : 0,
-                'migrations' => $migrations ? json_encode($migrations) : null,
-                'seeders' => $seeders ? json_encode($seeders) : null,
+                'migrations' => null,
+                'seeders' => null,
                 'released_at' => $request->released_at ? $request->released_at : now(),
             ]);
 

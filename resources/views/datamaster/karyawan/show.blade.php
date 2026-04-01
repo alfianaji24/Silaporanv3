@@ -168,23 +168,23 @@
             <div class="col-md-12">
                 <ul class="nav nav-pills flex-column flex-sm-row mb-4">
                     <li class="nav-item">
-                        <a class="nav-link active" href="javascript:void(0);"><i class="ti-xs ti ti-face-id me-1"></i> Wajah</a>
+                        <a class="nav-link active" href="javascript:void(0);" onclick="showTab('face')"><i class="ti-xs ti ti-face-id me-1"></i> Wajah</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0);"><i class="ti-xs ti ti-home-move me-1"></i>
+                        <a class="nav-link" href="javascript:void(0);" onclick="showTab('mutation')"><i class="ti-xs ti ti-home-move me-1"></i>
                             Mutasi/Promosi/Demosi</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0);"><i class="ti-xs ti ti-coins me-1"></i>
+                        <a class="nav-link" href="javascript:void(0);" onclick="showTab('salary')"><i class="ti-xs ti ti-coins me-1"></i>
                             Gaji</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="javascript:void(0);"><i class="ti-xs ti ti-report-money me-1"></i> Tunjangan</a>
+                        <a class="nav-link" href="javascript:void(0);" onclick="showTab('allowance')"><i class="ti-xs ti ti-report-money me-1"></i> Tunjangan</a>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="row">
+        <div class="row" id="face_completeness">
             <div class="col-md-12">
                 <div class="card card-action mb-4">
                     <div class="card-header align-items-center d-flex justify-content-between">
@@ -235,6 +235,70 @@
             </div>
         </div>
         <!--/ Activity Timeline -->
+
+        <!-- Mutation History -->
+        <div class="row" style="display: none;" id="mutation_completeness">
+            <div class="col-md-12">
+               @if($mutasi->isEmpty())
+                <div class="alert alert-info">Belum ada data riwayat mutasi/promosi/demosi.</div>
+               @else
+                 @foreach ($mutasi as $d)
+                    <div class="card mb-2 shadow-sm border">
+                        <div class="card-body p-2">
+                            <div class="row align-items-center">
+                                <!-- Identity -->
+                                <div class="col-md-4">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="ti ti-calendar me-1 text-muted"></i>
+                                        <span class="fw-bold text-dark" style="font-size: 13px;">{{ date('d-m-Y', strtotime($d->tanggal_mutasi)) }}</span>
+                                    </div>
+                                    <div>
+                                        @if ($d->jenis_mutasi == 'MUTASI')
+                                            <span class="badge bg-info" style="font-size: 10px;">Mutasi</span>
+                                        @elseif ($d->jenis_mutasi == 'PROMOSI')
+                                            <span class="badge bg-success" style="font-size: 10px;">Promosi</span>
+                                        @else
+                                            <span class="badge bg-warning" style="font-size: 10px;">Demosi</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <!-- Mutation Details -->
+                                <div class="col-md-5">
+                                    <div class="d-flex align-items-center justify-content-start" style="font-size: 11px;">
+                                        <div class="text-secondary text-end pe-2" style="width: 45%;">
+                                            <div class="fw-bold">{{ $d->cabangLama->nama_cabang ?? '-' }}</div>
+                                            <div>{{ $d->deptLama->nama_dept ?? '-' }}</div>
+                                            <div>{{ $d->jabatanLama->nama_jabatan ?? '-' }}</div>
+                                        </div>
+                                        <div class="text-center px-1" style="width: 10%;">
+                                            <i class="ti ti-arrow-right text-primary"></i>
+                                        </div>
+                                        <div class="text-primary ps-2" style="width: 45%;">
+                                            <div class="fw-bold">{{ $d->cabangBaru->nama_cabang ?? '-' }}</div>
+                                            <div>{{ $d->deptBaru->nama_dept ?? '-' }}</div>
+                                            <div>{{ $d->jabatanBaru->nama_jabatan ?? '-' }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Keterangan & SK -->
+                                <div class="col-md-3">
+                                    <div class="text-muted mb-1" style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">
+                                        <em>{{ $d->keterangan ?? 'Tidak ada keterangan' }}</em>
+                                    </div>
+                                    @if ($d->doc_sk)
+                                        <a href="{{ asset('storage/uploads/mutasi/' . $d->doc_sk) }}" target="_blank" class="text-primary" style="font-size: 11px;">
+                                            <i class="ti ti-file-text me-1"></i> Lihat SK
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+               @endif
+            </div>
+        </div>
+        <!--/ Mutation History -->
     </div>
 </div>
 <x-modal-form id="modal" show="loadmodal" size="modal-lg" />
@@ -283,6 +347,30 @@
     }
 </style>
 <script>
+    function showTab(tab) {
+        // Hide all tabs
+        $("#face_completeness").hide();
+        $("#mutation_completeness").hide();
+
+        // Remove active class from all nav links
+        $(".nav-link").removeClass("active");
+
+        // Show selected tab and set active class
+        if (tab == 'face') {
+            $("#face_completeness").show();
+            $(".nav-link:contains('Wajah')").addClass("active");
+        } else if (tab == 'mutation') {
+            $("#mutation_completeness").show();
+            $(".nav-link:contains('Mutasi')").addClass("active");
+        } else if (tab == 'salary') {
+             // Future implementation
+             $(".nav-link:contains('Gaji')").addClass("active");
+        } else if (tab == 'allowance') {
+             // Future implementation
+             $(".nav-link:contains('Tunjangan')").addClass("active");
+        }
+    }
+
     $("#btnAddface").click(function(e) {
         e.preventDefault();
         $('#modal').modal("show");

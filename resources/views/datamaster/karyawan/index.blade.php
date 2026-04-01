@@ -3,7 +3,31 @@
 
 @section('content')
 @section('navigasi')
-    <span>Karyawan</span>
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            Karyawan
+            <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+                Manajemen data master karyawan, unit kerja, jabatan, dan konfigurasi akses operasional.
+            </div>
+        </div>
+        <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard.index') }}">
+                        <i class="ti ti-home-2 ti-xs"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0);">
+                        <i class="ti ti-database ti-xs me-1"></i> Data Master
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="ti ti-users ti-xs me-1"></i> Karyawan
+                </li>
+            </ol>
+        </nav>
+    </div>
 @endsection
 
 <div class="row">
@@ -25,24 +49,15 @@
                     <div class="col-12">
                         <form action="{{ route('karyawan.index') }}">
                             <div class="row g-2">
-                                <div class="col-lg-4 col-sm-12 col-md-12">
+                                <div class="col-lg-5 col-sm-12 col-md-12">
                                     <x-input-with-icon label="Cari Nama Karyawan" value="{{ Request('nama_karyawan') }}" name="nama_karyawan"
                                         icon="ti ti-search" hideLabel />
                                 </div>
-                                <div class="col-lg-2 col-sm-12 col-md-12">
-                                    <select name="status_aktif" class="form-select" id="status_aktif">
-                                        <option value="">Semua Status</option>
-                                        <option value="1" {{ Request('status_aktif', '1') === '1' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="0" {{ Request('status_aktif') === '0' ? 'selected' : '' }}>Non Aktif</option>
-                                    </select>
-                                </div>
-                                @if ($cabang->count() > 1)
-                                <div class="col-lg-2 col-sm-12 col-md-12">
+                                <div class="col-lg-3 col-sm-12 col-md-12">
                                     <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
                                         selected="{{ Request('kode_cabang') }}" hideLabel />
                                 </div>
-                                @endif
-                                <div class="col-lg-2 col-sm-12 col-md-12">
+                                <div class="col-lg-3 col-sm-12 col-md-12">
                                     <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                         selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />
                                 </div>
@@ -91,6 +106,12 @@
                                                                 $badge_class = $d->status_karyawan == 'T' ? 'bg-label-success' : 'bg-label-primary';
                                                             @endphp
                                                             <span class="badge {{ $badge_class }}" style="font-size: 10px;">{{ $status_karyawan_text }}</span>
+                                                        @endif
+                                                        @if ($d->jenis_upah)
+                                                            @php
+                                                                $upah_class = $d->jenis_upah == 'Harian' ? 'bg-label-info' : 'bg-label-success';
+                                                            @endphp
+                                                            <span class="badge {{ $upah_class }}" style="font-size: 10px;">{{ $d->jenis_upah }}</span>
                                                         @endif
                                                     </div>
                                                 </div>

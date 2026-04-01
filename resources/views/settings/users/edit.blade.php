@@ -78,6 +78,22 @@
     </div>
     @endif
     
+    {{-- Approval Admin Delegation (hanya untuk karyawan) --}}
+    @if($isKaryawan && isset($userkaryawan))
+    <div class="form-group">
+        <label class="form-label">Approval Admin (Delegasi)</label>
+        <select name="approval_admin_id" class="form-select">
+            <option value="">-- Tidak Ada --</option>
+            @foreach($adminUsers as $adminUser)
+                <option value="{{ $adminUser->id }}" {{ (isset($userkaryawan) && $userkaryawan->approval_admin_id == $adminUser->id) ? 'selected' : '' }}>
+                    {{ $adminUser->name }} ({{ $adminUser->getRoleNames()->first() }})
+                </option>
+            @endforeach
+        </select>
+        <small class="text-muted">Pilih admin yang akan didelegasikan hak approval-nya ke karyawan ini</small>
+    </div>
+    @endif
+
     <div class="form-group">
         <button class="btn btn-primary w-100" type="submit">
             <ion-icon name="repeat-outline" class="me-1"></ion-icon>

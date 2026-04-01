@@ -23,18 +23,18 @@ class PresensiController extends Controller
 {
     public function store()
     {
-        $original_data  = file_get_contents('php://input');
-        $decoded_data   = json_decode($original_data, true);
-        $encoded_data   = json_encode($decoded_data);
+        $original_data = file_get_contents('php://input');
+        $decoded_data = json_decode($original_data, true);
+        $encoded_data = json_encode($decoded_data);
 
-        $data           = $decoded_data['data'];
-        $pin            = $data['pin'];
-        $status_scan    = $data['status_scan'];
-        $scan           = $data['scan'];
+        $data = $decoded_data['data'];
+        $pin = $data['pin'];
+        $status_scan = $data['status_scan'];
+        $scan = $data['scan'];
 
 
         $generalsetting = Pengaturanumum::where('id', 1)->first();
-        $karyawan       = Karyawan::where('pin', $pin)->first();
+        $karyawan = Karyawan::where('pin', $pin)->first();
 
         if ($karyawan == null) {
             return response()->json([
@@ -42,17 +42,16 @@ class PresensiController extends Controller
                 'message' => 'Karyawan Tidak Ditemukan',
             ]);
             $nik = "";
-        } else {
+        }
+        else {
             $nik = $karyawan->nik;
         }
 
-        // Gunakan waktu dari mesin ($scan) sebagai acuan
-        $tanggal_sekarang   = date("Y-m-d", strtotime($scan));
+        $tanggal_sekarang = date("Y-m-d", strtotime($scan));
         $jam_sekarang = date("H:i", strtotime($scan));
-        // Hitung kemarin & besok berdasarkan tanggal scan,
-        // agar lintas hari tetap konsisten meskipun data lama baru masuk
-        $tanggal_kemarin = date("Y-m-d", strtotime($scan . " -1 days"));
-        $tanggal_besok   = date("Y-m-d", strtotime($scan . " +1 days"));
+        $tanggal_kemarin = date("Y-m-d", strtotime("-1 days"));
+
+        $tanggal_besok = date("Y-m-d", strtotime("+1 days"));
 
         //Cek Presensi Kemarin
         $presensi_kemarin = Presensi::where('nik', $karyawan->nik)
@@ -61,18 +60,10 @@ class PresensiController extends Controller
             ->where('tanggal', $tanggal_kemarin)->first();
 
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
-        $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
 
-        // Jika kemarin lintas hari, secara default tanggal presensi ikut tanggal kemarin
+        //Jika Presensi Kemarin Status Lintas Hari nya 1 Makan Tanggal Presensi Sekarang adalah Tanggal Kemarin
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
-        $tanggal_pulang   = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
-
-        // Jika sudah lewat batas presensi lintas hari,
-        // maka tanggal aktif digeser +1 (ke tanggal hari ini)
-        if ($lintas_hari == 1 && $jam_sekarang > $batas_presensi_lintashari) {
-            $tanggal_presensi = $tanggal_sekarang;
-            $tanggal_pulang   = $tanggal_besok;
-        }
+        $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
 
 
         $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
@@ -91,7 +82,8 @@ class PresensiController extends Controller
                     ->where('tanggal', $tanggal_presensi)
                     ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
                     ->first();
-            } else {
+            }
+            else {
                 $jamkerja = null;
             }
 
@@ -109,9 +101,10 @@ class PresensiController extends Controller
                     ->where('kode_cabang', $karyawan->kode_cabang)
                     ->where('hari', $namahari)->first();
             }
-            // Jika Semua Pengecekan Jam Kerja Kosong
-            // Maka biarkan $jamkerja tetap null, supaya presensi TIDAK bisa disimpan
-            // dan mengembalikan response "Jam Kerja Tidak Ditemukan" di bawah.
+            // Jika Jam Kerja Harian Kosong
+            if ($jamkerja == null) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', 'JK01')->first();
+            }
         }
 
         //Cek Presensi
@@ -122,7 +115,8 @@ class PresensiController extends Controller
                 'status' => false,
                 'message' => 'Presensi Sudah Ada',
             ]);
-        } else if ($jamkerja == null) {
+        }
+        else if ($jamkerja == null) {
             return response()->json([
                 'status' => false,
                 'message' => 'Jam Kerja Tidak Ditemukan',
@@ -143,13 +137,15 @@ class PresensiController extends Controller
         if (in_array($status_scan, [0, 2, 4, 6, 8])) {
             if ($presensi_hariini && $presensi_hariini->jam_in != null) {
                 return response()->json(['status' => false, 'message' => 'Anda Sudah Absen Masuk Hari Ini', 'notifikasi' => 'notifikasi_sudahabsen'], 400);
-            } else {
+            }
+            else {
                 try {
                     if ($presensi_hariini != null) {
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_in' => $jam_presensi,
                         ]);
-                    } else {
+                    }
+                    else {
                         Presensi::create([
                             'nik' => $karyawan->nik,
                             'tanggal' => $tanggal_presensi,
@@ -162,13 +158,12 @@ class PresensiController extends Controller
                         ]);
                     }
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                    if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
+                    if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                         try {
-                            $tanggal_indonesia = DateToIndo($tanggal_sekarang);
-                            $waktu_presensi = date('H:i', strtotime($scan));
-                            $message = "Terima Kasih, " . $karyawan->nama_karyawan . " Absen Masuk Anda Pada " . $tanggal_indonesia . " pukul " . $waktu_presensi . " Telah berhasil tercatat. Selamat Berkerja!";
+                            $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen masuk pada " . $jam_presensi . " Semagat Bekerja";
                             $this->sendwa($karyawan->no_hp, $message);
-                        } catch (\Exception $waException) {
+                        }
+                        catch (\Exception $waException) {
                             // Log error pengiriman WA tapi tidak mempengaruhi response sukses
                             Log::error('Gagal mengirim notifikasi WA untuk absen masuk (API)', [
                                 'nik' => $karyawan->nik,
@@ -180,17 +175,20 @@ class PresensiController extends Controller
                     }
 
                     return response()->json(['status' => true, 'message' => 'Berhasil Absen Masuk', 'notifikasi' => 'notifikasi_absenmasuk'], 200);
-                } catch (\Exception $e) {
+                }
+                catch (\Exception $e) {
                     return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
                 }
             }
-        } else {
+        }
+        else {
             try {
                 if ($presensi_hariini != null) {
                     Presensi::where('id', $presensi_hariini->id)->update([
                         'jam_out' => $jam_presensi,
                     ]);
-                } else {
+                }
+                else {
                     Presensi::create([
                         'nik' => $karyawan->nik,
                         'tanggal' => $tanggal_presensi,
@@ -203,13 +201,12 @@ class PresensiController extends Controller
                     ]);
                 }
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
-                if (($karyawan->no_hp != null && $karyawan->no_hp != "") && $generalsetting->notifikasi_wa == 1) {
+                if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                     try {
-                        $tanggal_indonesia = DateToIndo($tanggal_sekarang);
-                        $waktu_presensi = date('H:i', strtotime($scan));
-                        $message = "Terima Kasih, " . $karyawan->nama_karyawan . " Absen Pulang Anda Pada " . $tanggal_indonesia . " pukul " . $waktu_presensi . " Telah berhasil tercatat. Sampai Jumpa Besok!";
+                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
                         $this->sendwa($karyawan->no_hp, $message);
-                    } catch (\Exception $waException) {
+                    }
+                    catch (\Exception $waException) {
                         // Log error pengiriman WA tapi tidak mempengaruhi response sukses
                         Log::error('Gagal mengirim notifikasi WA untuk absen pulang (API)', [
                             'nik' => $karyawan->nik,
@@ -220,7 +217,8 @@ class PresensiController extends Controller
                     }
                 }
                 return response()->json(['status' => true, 'message' => 'Berhasil Absen Pulang', 'notifikasi' => 'notifikasi_absenpulang'], 200);
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
             }
         }
@@ -232,184 +230,184 @@ class PresensiController extends Controller
         dispatch(new SendWaMessage($no_hp, $message));
     }
 
-    /**
-     * Menerima data dari mesin Fingerspot REVO melalui ADMS
-     * Data akan disimpan ke file txt untuk keperluan debugging dan logging
-     * Response disesuaikan agar mesin tidak terus mengirim request
-     */
-    // public function receiveRevoData(Request $request)
-    // {
-    //     try {
-    //         // Ambil raw data dari request
-    //         $rawData = file_get_contents('php://input');
+/**
+ * Menerima data dari mesin Fingerspot REVO melalui ADMS
+ * Data akan disimpan ke file txt untuk keperluan debugging dan logging
+ * Response disesuaikan agar mesin tidak terus mengirim request
+ */
+// public function receiveRevoData(Request $request)
+// {
+//     try {
+//         // Ambil raw data dari request
+//         $rawData = file_get_contents('php://input');
 
-    //         // Ambil semua data dari request (termasuk form data dan JSON)
-    //         $requestData = $request->all();
+//         // Ambil semua data dari request (termasuk form data dan JSON)
+//         $requestData = $request->all();
 
-    //         // Buat hash dari raw data untuk mencegah duplikasi
-    //         $dataHash = md5($rawData . $request->ip() . microtime(true));
-    //         $cacheKey = 'revo_data_' . $dataHash;
+//         // Buat hash dari raw data untuk mencegah duplikasi
+//         $dataHash = md5($rawData . $request->ip() . microtime(true));
+//         $cacheKey = 'revo_data_' . $dataHash;
 
-    //         // Cek apakah data ini sudah pernah diterima (dalam 5 detik terakhir)
-    //         if (Cache::has($cacheKey)) {
-    //             // Data duplikat, langsung return OK tanpa proses ulang
-    //             Log::info('Data REVO duplikat terdeteksi, skip processing', [
-    //                 'hash' => $dataHash,
-    //                 'ip' => $request->ip()
-    //             ]);
+//         // Cek apakah data ini sudah pernah diterima (dalam 5 detik terakhir)
+//         if (Cache::has($cacheKey)) {
+//             // Data duplikat, langsung return OK tanpa proses ulang
+//             Log::info('Data REVO duplikat terdeteksi, skip processing', [
+//                 'hash' => $dataHash,
+//                 'ip' => $request->ip()
+//             ]);
 
-    //             $responseText = 'OK';
-    //             return response($responseText, 200)
-    //                 ->header('Content-Type', 'text/plain')
-    //                 ->header('Content-Length', strlen($responseText))
-    //                 ->header('Connection', 'close');
-    //         }
+//             $responseText = 'OK';
+//             return response($responseText, 200)
+//                 ->header('Content-Type', 'text/plain')
+//                 ->header('Content-Length', strlen($responseText))
+//                 ->header('Connection', 'close');
+//         }
 
-    //         // Set cache untuk 5 detik
-    //         Cache::put($cacheKey, true, 5);
+//         // Set cache untuk 5 detik
+//         Cache::put($cacheKey, true, 5);
 
-    //         // Buat timestamp untuk nama file
-    //         $timestamp = date('Y-m-d_H-i-s');
-    //         $dateFolder = date('Y-m-d');
+//         // Buat timestamp untuk nama file
+//         $timestamp = date('Y-m-d_H-i-s');
+//         $dateFolder = date('Y-m-d');
 
-    //         // Buat folder berdasarkan tanggal jika belum ada
-    //         $folderPath = storage_path('app/public/revo_logs/' . $dateFolder);
-    //         if (!file_exists($folderPath)) {
-    //             mkdir($folderPath, 0755, true);
-    //         }
+//         // Buat folder berdasarkan tanggal jika belum ada
+//         $folderPath = storage_path('app/public/revo_logs/' . $dateFolder);
+//         if (!file_exists($folderPath)) {
+//             mkdir($folderPath, 0755, true);
+//         }
 
-    //         // Nama file dengan timestamp dan random string untuk menghindari duplikasi
-    //         $fileName = 'revo_' . $timestamp . '_' . uniqid() . '.txt';
-    //         $filePath = $folderPath . '/' . $fileName;
+//         // Nama file dengan timestamp dan random string untuk menghindari duplikasi
+//         $fileName = 'revo_' . $timestamp . '_' . uniqid() . '.txt';
+//         $filePath = $folderPath . '/' . $fileName;
 
-    //         // Siapkan konten untuk disimpan
-    //         $content = "=== DATA REVO DARI ADMS ===\n";
-    //         $content .= "Tanggal: " . date('Y-m-d H:i:s') . "\n";
-    //         $content .= "IP Address: " . $request->ip() . "\n";
-    //         $content .= "User Agent: " . ($request->userAgent() ?? 'N/A') . "\n";
-    //         $content .= "Method: " . $request->method() . "\n";
-    //         $content .= "URL: " . $request->fullUrl() . "\n";
-    //         $content .= "Data Hash: " . $dataHash . "\n";
-    //         $content .= "\n--- RAW DATA (HEX) ---\n";
-    //         $content .= bin2hex($rawData) . "\n";
-    //         $content .= "\n--- RAW DATA (STRING) ---\n";
-    //         $content .= $rawData . "\n";
-    //         $content .= "\n--- PARSED DATA ---\n";
-    //         $content .= json_encode($requestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
-    //         $content .= "\n--- HEADERS ---\n";
-    //         $content .= json_encode($request->headers->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
-    //         $content .= "\n=== END OF DATA ===\n";
+//         // Siapkan konten untuk disimpan
+//         $content = "=== DATA REVO DARI ADMS ===\n";
+//         $content .= "Tanggal: " . date('Y-m-d H:i:s') . "\n";
+//         $content .= "IP Address: " . $request->ip() . "\n";
+//         $content .= "User Agent: " . ($request->userAgent() ?? 'N/A') . "\n";
+//         $content .= "Method: " . $request->method() . "\n";
+//         $content .= "URL: " . $request->fullUrl() . "\n";
+//         $content .= "Data Hash: " . $dataHash . "\n";
+//         $content .= "\n--- RAW DATA (HEX) ---\n";
+//         $content .= bin2hex($rawData) . "\n";
+//         $content .= "\n--- RAW DATA (STRING) ---\n";
+//         $content .= $rawData . "\n";
+//         $content .= "\n--- PARSED DATA ---\n";
+//         $content .= json_encode($requestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
+//         $content .= "\n--- HEADERS ---\n";
+//         $content .= json_encode($request->headers->all(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
+//         $content .= "\n=== END OF DATA ===\n";
 
-    //         // Simpan ke file
-    //         file_put_contents($filePath, $content);
+//         // Simpan ke file
+//         file_put_contents($filePath, $content);
 
-    //         // Parse JSON dari raw data jika ada
-    //         $jsonData = null;
-    //         $parsedJson = null;
-    //         if (!empty($rawData)) {
-    //             // Coba extract JSON dari raw data (skip binary header jika ada)
-    //             $jsonStart = strpos($rawData, '{');
-    //             if ($jsonStart !== false) {
-    //                 $jsonString = substr($rawData, $jsonStart);
-    //                 $parsedJson = json_decode($jsonString, true);
-    //             }
-    //         }
+//         // Parse JSON dari raw data jika ada
+//         $jsonData = null;
+//         $parsedJson = null;
+//         if (!empty($rawData)) {
+//             // Coba extract JSON dari raw data (skip binary header jika ada)
+//             $jsonStart = strpos($rawData, '{');
+//             if ($jsonStart !== false) {
+//                 $jsonString = substr($rawData, $jsonStart);
+//                 $parsedJson = json_decode($jsonString, true);
+//             }
+//         }
 
-    //         // Log juga ke Laravel log untuk tracking
-    //         Log::info('Data REVO diterima dari ADMS', [
-    //             'file' => $fileName,
-    //             'ip' => $request->ip(),
-    //             'data_count' => count($requestData),
-    //             'raw_length' => strlen($rawData),
-    //             'hash' => $dataHash,
-    //             'request_code' => $request->header('request-code'),
-    //             'dev_id' => $request->header('dev-id'),
-    //             'trans_id' => $request->header('trans-id'),
-    //             'parsed_json' => $parsedJson
-    //         ]);
+//         // Log juga ke Laravel log untuk tracking
+//         Log::info('Data REVO diterima dari ADMS', [
+//             'file' => $fileName,
+//             'ip' => $request->ip(),
+//             'data_count' => count($requestData),
+//             'raw_length' => strlen($rawData),
+//             'hash' => $dataHash,
+//             'request_code' => $request->header('request-code'),
+//             'dev_id' => $request->header('dev-id'),
+//             'trans_id' => $request->header('trans-id'),
+//             'parsed_json' => $parsedJson
+//         ]);
 
-    //         // Ambil header dari request
-    //         $requestCode = $request->header('request-code', '');
-    //         $devId = $request->header('dev-id', '');
-    //         $transId = $request->header('trans-id', '');
-    //         $contentType = $request->header('Content-Type', '');
+//         // Ambil header dari request
+//         $requestCode = $request->header('request-code', '');
+//         $devId = $request->header('dev-id', '');
+//         $transId = $request->header('trans-id', '');
+//         $contentType = $request->header('Content-Type', '');
 
-    //         // Response untuk realtime_glog - format binary/hex yang diharapkan ADMS
-    //         if ($requestCode === 'realtime_glog') {
-    //             // Response string "OK" dalam format binary/hex
-    //             // "OK" dalam hex = 0x4F 0x4B
-    //             $responseBinary = 'OK';
+//         // Response untuk realtime_glog - format binary/hex yang diharapkan ADMS
+//         if ($requestCode === 'realtime_glog') {
+//             // Response string "OK" dalam format binary/hex
+//             // "OK" dalam hex = 0x4F 0x4B
+//             $responseBinary = 'OK';
 
-    //             // Log response untuk debugging
-    //             Log::info('Response REVO realtime_glog', [
-    //                 'request_code' => $requestCode,
-    //                 'response_hex' => bin2hex($responseBinary),
-    //                 'response_string' => $responseBinary,
-    //                 'response_length' => strlen($responseBinary),
-    //                 'response_format' => 'ok_string_hex'
-    //             ]);
+//             // Log response untuk debugging
+//             Log::info('Response REVO realtime_glog', [
+//                 'request_code' => $requestCode,
+//                 'response_hex' => bin2hex($responseBinary),
+//                 'response_string' => $responseBinary,
+//                 'response_length' => strlen($responseBinary),
+//                 'response_format' => 'ok_string_hex'
+//             ]);
 
-    //             return response($responseBinary, 200)
-    //                 ->header('Content-Type', 'application/octet-stream')
-    //                 ->header('Content-Length', strlen($responseBinary))
-    //                 ->header('Connection', 'close');
-    //         }
+//             return response($responseBinary, 200)
+//                 ->header('Content-Type', 'application/octet-stream')
+//                 ->header('Content-Length', strlen($responseBinary))
+//                 ->header('Connection', 'close');
+//         }
 
-    //         // Response untuk receive_cmd - format binary/hex yang diharapkan ADMS
-    //         if ($requestCode === 'receive_cmd') {
-    //             // Response string "OK" dalam format binary/hex
-    //             // "OK" dalam hex = 0x4F 0x4B
-    //             $responseBinary = 'OK';
+//         // Response untuk receive_cmd - format binary/hex yang diharapkan ADMS
+//         if ($requestCode === 'receive_cmd') {
+//             // Response string "OK" dalam format binary/hex
+//             // "OK" dalam hex = 0x4F 0x4B
+//             $responseBinary = 'OK';
 
-    //             // Log response untuk debugging
-    //             Log::info('Response REVO receive_cmd', [
-    //                 'request_code' => $requestCode,
-    //                 'response_hex' => bin2hex($responseBinary),
-    //                 'response_string' => $responseBinary,
-    //                 'response_length' => strlen($responseBinary),
-    //                 'response_format' => 'ok_string_hex'
-    //             ]);
+//             // Log response untuk debugging
+//             Log::info('Response REVO receive_cmd', [
+//                 'request_code' => $requestCode,
+//                 'response_hex' => bin2hex($responseBinary),
+//                 'response_string' => $responseBinary,
+//                 'response_length' => strlen($responseBinary),
+//                 'response_format' => 'ok_string_hex'
+//             ]);
 
-    //             return response($responseBinary, 200)
-    //                 ->header('Content-Type', 'application/octet-stream')
-    //                 ->header('Content-Length', strlen($responseBinary))
-    //                 ->header('Connection', 'close');
-    //         }
+//             return response($responseBinary, 200)
+//                 ->header('Content-Type', 'application/octet-stream')
+//                 ->header('Content-Length', strlen($responseBinary))
+//                 ->header('Connection', 'close');
+//         }
 
-    //         // Jika content-type adalah application/octet-stream, return "OK" dalam hex
-    //         if ($contentType === 'application/octet-stream') {
-    //             // Response string "OK" dalam format binary/hex
-    //             $responseBinary = 'OK';
+//         // Jika content-type adalah application/octet-stream, return "OK" dalam hex
+//         if ($contentType === 'application/octet-stream') {
+//             // Response string "OK" dalam format binary/hex
+//             $responseBinary = 'OK';
 
-    //             return response($responseBinary, 200)
-    //                 ->header('Content-Type', 'application/octet-stream')
-    //                 ->header('Content-Length', strlen($responseBinary))
-    //                 ->header('Connection', 'close');
-    //         }
+//             return response($responseBinary, 200)
+//                 ->header('Content-Type', 'application/octet-stream')
+//                 ->header('Content-Length', strlen($responseBinary))
+//                 ->header('Connection', 'close');
+//         }
 
-    //         // Default: Response "OK" dalam format binary/hex
-    //         $responseBinary = 'OK';
+//         // Default: Response "OK" dalam format binary/hex
+//         $responseBinary = 'OK';
 
-    //         return response($responseBinary, 200)
-    //             ->header('Content-Type', 'application/octet-stream')
-    //             ->header('Content-Length', strlen($responseBinary))
-    //             ->header('Connection', 'close');
-    //     } catch (\Exception $e) {
-    //         // Log error
-    //         Log::error('Error menerima data REVO dari ADMS', [
-    //             'error' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString(),
-    //             'ip' => $request->ip()
-    //         ]);
+//         return response($responseBinary, 200)
+//             ->header('Content-Type', 'application/octet-stream')
+//             ->header('Content-Length', strlen($responseBinary))
+//             ->header('Connection', 'close');
+//     } catch (\Exception $e) {
+//         // Log error
+//         Log::error('Error menerima data REVO dari ADMS', [
+//             'error' => $e->getMessage(),
+//             'trace' => $e->getTraceAsString(),
+//             'ip' => $request->ip()
+//         ]);
 
-    //         // Tetap return response sukses agar mesin tidak terus mengirim
-    //         // Format "OK" dalam hex sesuai protokol ADMS
-    //         $responseBinary = 'OK';
+//         // Tetap return response sukses agar mesin tidak terus mengirim
+//         // Format "OK" dalam hex sesuai protokol ADMS
+//         $responseBinary = 'OK';
 
-    //         return response($responseBinary, 200)
-    //             ->header('Content-Type', 'application/octet-stream')
-    //             ->header('Content-Length', strlen($responseBinary))
-    //             ->header('Connection', 'close');
-    //     }
-    // }
+//         return response($responseBinary, 200)
+//             ->header('Content-Type', 'application/octet-stream')
+//             ->header('Content-Length', strlen($responseBinary))
+//             ->header('Connection', 'close');
+//     }
+// }
 }

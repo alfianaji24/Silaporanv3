@@ -3,83 +3,114 @@
 
 @section('content')
 @section('navigasi')
-    <span>Jabatan</span>
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            Jabatan
+            <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+                Manajemen data jabatan karyawan.
+            </div>
+        </div>
+        <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+            <ol class="breadcrumb breadcrumb-style1 mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard.index') }}">
+                        <i class="ti ti-home-2 ti-xs"></i>
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0);">
+                        <i class="ti ti-database ti-xs me-1"></i> Data Master
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    <i class="ti ti-briefcase ti-xs me-1"></i> Jabatan
+                </li>
+            </ol>
+        </nav>
+    </div>
 @endsection
 
 <div class="row">
-    <div class="col-lg-6 col-sm-12 col-xs-12">
-        <div class="card">
-            <div class="card-header">
-                @can('jabatan.create')
-                    <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i> Tambah
-                        Jabatan</a>
-                @endcan
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <form action="{{ route('jabatan.index') }}">
-                            <div class="row">
-                                {{-- <div class="col-lg-4 col-sm-12 col-md-12">
-                           <x-input-with-icon label="Cari Nama Karyawan" value="{{ Request('nama_karyawan') }}"
-                              name="nama_karyawan" icon="ti ti-search" />
-                        </div>
-                        <div class="col-lg-2 col-sm-12 col-md-12">
-                           <button class="btn btn-primary"><i
-                                 class="ti ti-icons ti-search me-1"></i>Cari</button>
-                        </div> --}}
-                            </div>
-
-                        </form>
-                    </div>
+    <div class="col-lg-6 col-md-12 col-sm-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            @can('jabatan.create')
+                <a href="#" class="btn btn-primary" id="btnCreate">
+                    <i class="ti ti-plus me-1"></i> Tambah Jabatan
+                </a>
+            @endcan
+        </div>
+        <form action="{{ route('jabatan.index') }}">
+            <div class="row g-2 mb-3">
+                <div class="col-lg-10 col-md-9 col-sm-12">
+                    <x-input-with-icon label="Cari Nama Jabatan" value="{{ Request('nama_jabatan') }}" name="nama_jabatan"
+                        icon="ti ti-search" hideLabel />
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-responsive mb-2">
-                            <table class="table  table-hover table-bordered table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Kode Jabatan</th>
-                                        <th>Nama Jabatan</th>
-                                        <th>#</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($jabatan as $j)
-                                        <tr>
-                                            <td>{{ $j->kode_jabatan }}</td>
-                                            <td>{{ $j->nama_jabatan }}</td>
-                                            <td>
-                                                <div class="d-flex">
-                                                    @can('jabatan.edit')
-                                                        <div>
-                                                            <a href="#" class="me-2 btnEdit" kode_jabatan="{{ Crypt::encrypt($j->kode_jabatan) }}">
-                                                                <i class="ti ti-edit text-success"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
+                <div class="col-lg-2 col-md-3 col-sm-12">
+                    <button class="btn btn-primary w-100"><i class="ti ti-search me-1"></i> Cari</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
-                                                    @can('jabatan.delete')
-                                                        <div>
-                                                            <form method="POST" name="deleteform" class="deleteform"
-                                                                action="{{ route('jabatan.delete', Crypt::encrypt($j->kode_jabatan)) }}">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <a href="#" class="delete-confirm ml-1">
-                                                                    <i class="ti ti-trash text-danger"></i>
-                                                                </a>
-                                                            </form>
-                                                        </div>
-                                                    @endcan
+<div class="row">
+    <div class="col-lg-6 col-md-12 col-sm-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-layout-grid me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Data Jabatan</h6>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: var(--theme-color-1) !important; color: white !important;">
+                            <tr>
+                                <th class="text-white py-3" style="width: 60px;">NO.</th>
+                                <th class="text-white py-3">KODE</th>
+                                <th class="text-white py-3">NAMA JABATAN</th>
+                                <th class="text-white py-3 text-center" style="width: 100px;">#</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jabatan as $j)
+                                <tr>
+                                    <td class="py-2">{{ $loop->iteration }}</td>
+                                    <td class="fw-bold py-2">{{ $j->kode_jabatan }}</td>
+                                    <td class="py-2">{{ $j->nama_jabatan }}</td>
+                                    <td class="py-2 text-center">
+                                        <div class="d-inline-flex border rounded overflow-hidden shadow-xs">
+                                            @can('jabatan.edit')
+                                                <a href="#" class="btn btn-sm btnEdit px-2 py-1 border-0 rounded-0"
+                                                    kode_jabatan="{{ Crypt::encrypt($j->kode_jabatan) }}" title="Edit"
+                                                    style="background: #f8f9fa;">
+                                                    <i class="ti ti-edit fs-6 text-primary"></i>
+                                                </a>
+                                            @endcan
 
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                            @can('jabatan.delete')
+                                                <form method="POST" name="deleteform" class="deleteform m-0"
+                                                    action="{{ route('jabatan.delete', Crypt::encrypt($j->kode_jabatan)) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm delete-confirm px-2 py-1 border-0 rounded-0 border-start"
+                                                        title="Hapus" style="background: #f8f9fa;">
+                                                        <i class="ti ti-trash fs-6 text-danger"></i>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @if($jabatan->isEmpty())
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -87,10 +118,10 @@
 </div>
 <x-modal-form id="modal" show="loadmodal" />
 @endsection
+
 @push('myscript')
 <script>
     $(function() {
-
         function loading() {
             $("#loadmodal").html(`<div class="sk-wave sk-primary" style="margin:auto">
             <div class="sk-wave-rect"></div>
@@ -107,7 +138,6 @@
             $(".modal-title").text("Tambah Data Jabatan");
             $("#loadmodal").load("{{ route('jabatan.create') }}");
         });
-
 
         $(".btnEdit").click(function() {
             loading();

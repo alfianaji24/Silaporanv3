@@ -65,7 +65,7 @@
                     searchKaryawan(searchTerm);
                 }, 500);
             } else if (searchTerm.length === 0) {
-                showEmptyState();
+                searchKaryawanWithFilters();
             }
         });
 
@@ -212,42 +212,39 @@
             }
 
             let html = `<div class="mb-3"><small class="text-muted">Ditemukan ${count} karyawan</small></div>`;
+            html += `<div class="row g-2">`; // Menggunakan grid row
 
             karyawan.forEach(function(k) {
                 let fotoElement;
                 if (k.foto && k.foto_exists) {
                     fotoElement =
-                        `<img src="{{ asset('storage/karyawan') }}/${k.foto}" alt="${k.nama_karyawan}" class="rounded-circle" width="60" height="60" style="object-fit: cover;">`;
+                        `<img src="{{ asset('storage/karyawan') }}/${k.foto}" alt="${k.nama_karyawan}" class="rounded-circle" width="45" height="45" style="object-fit: cover;">`;
                 } else {
-                    fotoElement = `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border: 2px solid #e0e0e0;">
-                        <i class="ti ti-user" style="font-size: 24px; color: #6c757d;"></i>
+                    fotoElement = `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border: 1px solid #e0e0e0;">
+                        <i class="ti ti-user" style="font-size: 18px; color: #6c757d;"></i>
                     </div>`;
                 }
 
                 html += `
-                    <div class="card mb-3 border">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    ${fotoElement}
-                                </div>
-                                <div class="col">
-                                    <h6 class="mb-1">${k.nama_karyawan}</h6>
-                                    <p class="mb-1 text-muted small">NIK: ${k.nik}</p>
-                                    <p class="mb-1 text-muted small">
-                                        <i class="ti ti-briefcase me-1"></i>${k.nama_jabatan || '-'}
-                                    </p>
-                                    <p class="mb-1 text-muted small">
-                                        <i class="ti ti-building me-1"></i>${k.nama_dept || '-'}
-                                    </p>
-                                    <p class="mb-0 text-muted small">
-                                        <i class="ti ti-map-pin me-1"></i>${k.nama_cabang || '-'}
-                                    </p>
-                                </div>
-                                <div class="col-auto">
-                                    <button type="button" class="btn btn-primary btn-sm btnTambahKaryawan" data-nik="${k.nik}" data-nama="${k.nama_karyawan}">
-                                        <i class="ti ti-user-plus me-1"></i>Tambah
-                                    </button>
+                    <div class="col-md-6 col-sm-12">
+                        <div class="card mb-2 border shadow-none" style="border-radius: 8px;">
+                            <div class="card-body p-2">
+                                <div class="row align-items-center g-2">
+                                    <div class="col-auto">
+                                        ${fotoElement}
+                                    </div>
+                                    <div class="col overflow-hidden">
+                                        <div class="fw-bold text-truncate mb-0" style="font-size: 0.8rem; line-height: 1.2;">${k.nama_karyawan}</div>
+                                        <div class="text-muted mb-0 text-truncate" style="font-size: 0.7rem;">${k.nik}</div>
+                                        <div class="text-muted text-truncate" style="font-size: 0.7rem; opacity: 0.8;">
+                                            <i class="ti ti-building me-1" style="font-size: 0.7rem;"></i>${k.nama_dept || '-'} | <i class="ti ti-map-pin me-1" style="font-size: 0.7rem;"></i>${k.nama_cabang || '-'}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-primary btn-sm btn-icon btnTambahKaryawan" data-nik="${k.nik}" data-nama="${k.nama_karyawan}" title="Tambah Anggota">
+                                            <i class="ti ti-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -255,6 +252,7 @@
                 `;
             });
 
+            html += `</div>`; // Tutup grid row
             $('#searchResults').html(html);
         }
 
@@ -298,8 +296,8 @@
                     nik: nik
                 },
                 success: function(response) {
-                    // Langsung hapus kartu karyawan dari hasil pencarian
-                    $(`.btnTambahKaryawan[data-nik="${nik}"]`).closest('.card').fadeOut(300, function() {
+                    // Langsung hapus kartu karyawan dari hasil pencarian (menghapus wrapper kolom)
+                    $(`.btnTambahKaryawan[data-nik="${nik}"]`).closest('.col-md-6').fadeOut(300, function() {
                         $(this).remove();
 
                         // Update count jika ada
@@ -382,10 +380,10 @@
                 console.log('Using searchKaryawanWithFilters');
                 searchKaryawanWithFilters();
             }
-            // Jika tidak ada search term dan filter, tampilkan empty state
+            // Jika tidak ada search term dan filter, tetap panggil search filters untuk refresh list (agar user yang sudah ditambah hilang)
             else {
-                console.log('Showing empty state');
-                showEmptyState();
+                console.log('Refreshing with searchKaryawanWithFilters (no search term or filter)');
+                searchKaryawanWithFilters();
             }
         }
 

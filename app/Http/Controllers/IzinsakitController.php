@@ -300,12 +300,15 @@ class IzinsakitController extends Controller
         $kode_izin_sakit = Crypt::decrypt($kode_izin_sakit);
         $izinsakit = Izinsakit::where('kode_izin_sakit', $kode_izin_sakit)
             ->join('karyawan', 'presensi_izinsakit.nik', '=', 'karyawan.nik')
+            ->select('presensi_izinsakit.*', 'karyawan.kode_dept', 'karyawan.kode_cabang', 'karyawan.kode_jabatan')
             ->first();
         
         // Cek akses jika bukan super admin
         if (!$user->isSuperAdmin()) {
-            $userCabangs = $user->getCabangCodes();
-            $userDepartemens = $user->getDepartemenCodes();
+            // Untuk delegasi, gunakan cabang/dept admin
+            $accessUser = $user->getApprovalAdmin() ?? $user;
+            $userCabangs = $accessUser->getCabangCodes();
+            $userDepartemens = $accessUser->getDepartemenCodes();
             
             if (!in_array($izinsakit->kode_cabang, $userCabangs) || !in_array($izinsakit->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke izin sakit ini.');
@@ -313,12 +316,15 @@ class IzinsakitController extends Controller
         }
 
         // Dynamic Approval Logic
+        $approvalService = app(ApprovalService::class);
         $userRole = $user->getRoleNames()->first();
         $currentStep = $izinsakit->approval_step;
+        $approvalUserId = $approvalService->getApprovalUserId($user);
+        $approvalAdmin = $approvalUserId != $user->id ? User::find($approvalUserId) : $user;
 
         // Check Authorization using Service
-        $approvalService = app(ApprovalService::class); // Instantiate service if not injected, or better inject it
-        if (!$approvalService->canApprove('IZIN', $currentStep, $userRole, $izinsakit->kode_dept)) {
+        $kode_cabang = $izinsakit->kode_cabang;
+        if (!$approvalService->canApprove('IZIN', $currentStep, $userRole, $izinsakit->kode_dept, $izinsakit->kode_jabatan, $user, $kode_cabang)) {
              if (!$user->isSuperAdmin()) {
                  return Redirect::back()->with(messageError('Anda tidak memiliki wewenang untuk approval tahap ke-' . $currentStep));
              }
@@ -328,30 +334,25 @@ class IzinsakitController extends Controller
         $sampai = $izinsakit->sampai;
         $nik = $izinsakit->nik;
         $kode_dept = $izinsakit->kode_dept;
+        $kode_jabatan = $izinsakit->kode_jabatan;
         $error = '';
         DB::beginTransaction();
         try {
             if (isset($request->approve)) {
                 
-                // 1. Record Approval
+                // 1. Record Approval (atas nama admin jika delegasi)
                 Approval::create([
                     'approvable_type' => Izinsakit::class,
                     'approvable_id' => $kode_izin_sakit,
-                    'user_id' => $user->id,
+                    'user_id' => $approvalUserId,
                     'level' => $currentStep,
                     'status' => 'approved',
-                    'keterangan' => 'Approved by ' . $user->name,
+                    'keterangan' => 'Approved by ' . $approvalAdmin->name,
                 ]);
 
                 // 2. Check for Next Level rule
                 $nextLevel = $currentStep + 1;
-                 $nextRule = ApprovalLayer::where('feature', 'IZIN')
-                    ->where('level', $nextLevel)
-                     ->where(function ($q) use ($kode_dept) {
-                        $q->where('kode_dept', $kode_dept)
-                          ->orWhereNull('kode_dept');
-                    })
-                    ->first();
+                $nextRule = $approvalService->getLayer('IZIN', $nextLevel, $kode_dept, $kode_jabatan, $kode_cabang);
                 
                  if ($nextRule && !$user->hasRole('super admin')) {
                     // Move to next step
@@ -415,10 +416,10 @@ class IzinsakitController extends Controller
                  Approval::create([
                     'approvable_type' => Izinsakit::class,
                     'approvable_id' => $kode_izin_sakit,
-                    'user_id' => $user->id,
+                    'user_id' => $approvalUserId,
                     'level' => $currentStep,
                     'status' => 'rejected',
-                    'keterangan' => 'Rejected by ' . $user->name,
+                    'keterangan' => 'Rejected by ' . $approvalAdmin->name,
                 ]);
 
                 Izinsakit::where('kode_izin_sakit', $kode_izin_sakit)->update([

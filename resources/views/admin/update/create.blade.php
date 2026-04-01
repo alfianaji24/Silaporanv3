@@ -15,7 +15,7 @@
                 </a>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.update.store') }}" method="POST" id="formUpdate">
+                <form action="{{ route('admin.update.store') }}" method="POST" id="formUpdate" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row">
@@ -42,54 +42,34 @@
                     </div>
 
                     <div class="row mt-3">
-                        <div class="col-md-8">
-                            <x-input-with-icon label="File URL" name="file_url" icon="ti ti-link" required />
-                            <small class="text-muted">URL lengkap ke file ZIP update</small>
-                        </div>
-                        <div class="col-md-4">
-                            <x-input-with-icon label="Ukuran File (bytes)" name="file_size" icon="ti ti-file-zip" type="number" />
-                            <small class="text-muted">Contoh: 5242880 (5 MB)</small>
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-bold"><i class="ti ti-upload me-2"></i>File Update (ZIP)</label>
+                                <input type="file" class="form-control" name="file_upload" accept=".zip" required>
+                                <small class="text-muted">Upload file .zip update aplikasi. Checksum dan ukuran file akan dihitung otomatis.</small>
+                            </div>
                         </div>
                     </div>
 
                     <div class="row mt-3">
-                        <div class="col-md-6">
-                            <x-input-with-icon label="Checksum (MD5)" name="checksum" icon="ti ti-key" />
-                            <small class="text-muted">Opsional, untuk validasi file</small>
-                        </div>
                         <div class="col-md-6">
                             <x-input-with-icon label="Tanggal Rilis" name="released_at" icon="ti ti-calendar" type="date" />
                         </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <x-input-with-icon label="Migrations (comma separated)" name="migrations" icon="ti ti-database" />
-                            <small class="text-muted">Contoh: 2024_01_01_migration.php, 2024_01_02_migration.php</small>
-                        </div>
-                        <div class="col-md-6">
-                            <x-input-with-icon label="Seeders (comma separated)" name="seeders" icon="ti ti-seeding" />
-                            <small class="text-muted">Contoh: NewSeeder, AnotherSeeder</small>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" name="is_major" id="is_major" value="1">
-                                <label class="form-check-label" for="is_major">
-                                    <strong>Update Major</strong>
-                                </label>
-                                <small class="d-block text-muted">Update major biasanya breaking changes</small>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch mb-3">
-                                <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" checked>
-                                <label class="form-check-label" for="is_active">
-                                    <strong>Aktif</strong>
-                                </label>
-                                <small class="d-block text-muted">Update aktif akan muncul untuk user</small>
+                         <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="form-label fw-bold d-block">&nbsp;</label>
+                                <div class="form-check form-check-inline mt-2">
+                                    <input class="form-check-input" type="checkbox" name="is_major" id="is_major" value="1">
+                                    <label class="form-check-label" for="is_major">
+                                        <strong>Major Update</strong>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline mt-2">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1" checked>
+                                    <label class="form-check-label" for="is_active">
+                                        <strong>Aktif</strong>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>

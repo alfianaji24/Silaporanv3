@@ -45,12 +45,10 @@
                                             </select>
                                         </div>
                                     </div>
-                                    @if ($cabang->count() > 1)
                                     <div class="col-lg-4 col-md-6 col-sm-12">
                                         <x-select label="Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
                                             selected="{{ Request('kode_cabang') }}" upperCase="true" hideLabel />
                                     </div>
-                                    @endif
                                     <div class="col-lg-4 col-md-6 col-sm-12">
                                         <x-select label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept"
                                             selected="{{ Request('kode_dept') }}" upperCase="true" hideLabel />
@@ -92,13 +90,13 @@
                                             <div class="col-md-4 border-start border-end d-none d-md-block text-center">
                                                  <div class="fw-bold text-dark" style="font-size: 13px;">{{ date('d-m-Y', strtotime($d->tanggal)) }}</div>
                                                  <div class="text-muted" style="font-size: 11px;">
-                                                    <span class="text-danger">{{ $d->jamKerjaAwal ? $d->jamKerjaAwal->nama_jam_kerja : '-' }}</span> 
-                                                    <i class="ti ti-arrow-right mx-1"></i> 
+                                                    <span class="text-danger">{{ $d->jamKerjaAwal ? $d->jamKerjaAwal->nama_jam_kerja : '-' }}</span>
+                                                    <i class="ti ti-arrow-right mx-1"></i>
                                                     <span class="text-success">{{ $d->jamKerjaTujuan->nama_jam_kerja }}</span>
                                                  </div>
                                                  <div class="text-muted fst-italic" style="font-size: 10px;">"{{ $d->keterangan }}"</div>
                                             </div>
-                                            
+
                                             <!-- Status -->
                                             <div class="col-md-2 text-center">
                                                 @if ($d->status == 'p')
@@ -111,7 +109,7 @@
                                                     <span class="badge bg-danger py-1 px-2" style="font-size: 11px;">Ditolak</span>
                                                 @endif
                                             </div>
-                                            
+
                                             <!-- Actions -->
                                             <div class="col-md-1 text-end">
                                                 <div class="btn-group shadow-sm" role="group">

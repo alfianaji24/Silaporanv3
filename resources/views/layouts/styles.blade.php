@@ -18,6 +18,7 @@
  <link rel="stylesheet" href="{{ asset('assets/vendor/libs/spinkit/spinkit.css') }}" />
  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
      crossorigin="" />
+ <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
 
  <!-- Page CSS -->
  <style>
@@ -28,7 +29,7 @@
 
          --bs-primary: var(--theme-color-1);
          /* Note: bootstrap rgb var might need manual conversion if strict compliance needed, skipping for now */
-         --bs-primary-rgb: 5, 59, 34; 
+         --bs-primary-rgb: 5, 59, 34;
      }
 
      .form-group {

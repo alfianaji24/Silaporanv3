@@ -17,7 +17,10 @@ class GrupController extends Controller
     public function index(Request $request)
     {
         $query = Grup::query();
-        $data['grup'] = $query->get();
+        if (!empty($request->nama_grup)) {
+            $query->where('nama_grup', 'like', '%' . $request->nama_grup . '%');
+        }
+        $data['grup'] = $query->orderBy('kode_grup')->get();
         return view('datamaster.grup.index', $data);
     }
 

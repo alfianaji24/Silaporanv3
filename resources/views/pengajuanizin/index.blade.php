@@ -20,6 +20,7 @@
         #content-section {
             margin-top: 70px;
             padding-top: 5px;
+            padding-bottom: 80px;
             position: relative;
             z-index: 1;
         }
@@ -116,7 +117,7 @@
     <div id="content-section">
         <!-- Skeleton Loader -->
         <div id="skeleton-loader">
-            <div class="row" style="margin-top: 30px">
+            <div class="row" style="margin-top:10px">
                 <div class="col">
                     <div class="transactions">
                         @for ($i = 0; $i < 5; $i++)
@@ -141,67 +142,74 @@
 
         <!-- Real Content -->
         <div id="real-content" class="content-hide">
-            <div class="row" style="margin-top: 30px">
+            <div class="row" style="margin-top: 10px">
                 <div class="col">
-                    <div class="transactions">
-                        @foreach ($pengajuan_izin as $d)
-                            @php
-                                if ($d->ket == 'i') {
-                                    $route = 'izinabsen.delete';
-                                } elseif ($d->ket == 's') {
-                                    $route = 'izinsakit.delete';
-                                } elseif ($d->ket == 'c') {
-                                    $route = 'izincuti.delete';
-                                } elseif ($d->ket == 'd') {
-                                    $route = 'izindinas.delete';
-                                }
-                            @endphp
-                            <form method="POST" name="deleteform" class="deleteform me-1 mb-1"
-                                action="{{ route($route, Crypt::encrypt($d->kode)) }}">
-                                @csrf
-                                @method('DELETE')
-                                <a href="#" class="item {{ $d->status_izin == 0 ? 'cancel-confirm' : '' }}">
-                                    <div class="detail">
-                                        <div class="avatar avatar-sm me-4"><span class="avatar-initial rounded-circle bg-success">
-                                                {{ textUpperCase($d->ket) }}
-                                            </span></div>
-                                        <div>
-                                            <strong>
-                                                @php
-                                                    if ($d->ket == 'i') {
-                                                        $ket = 'Izin Absen';
-                                                    } elseif ($d->ket == 's') {
-                                                        $ket = 'Izin Sakit';
-                                                    } elseif ($d->ket == 'c') {
-                                                        $ket = 'Izin Cuti';
-                                                    } elseif ($d->ket == 'd') {
-                                                        $ket = 'Izin Dinas';
-                                                    }
-                                                @endphp
-                                                {{ $ket }}
-                                            </strong>
-                                            <p>{{ DateToIndo($d->dari) }} - {{ DateToIndo($d->sampai) }}</p>
-                                            <p>{{ $d->keterangan }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="right">
-                                        <div class="price">
-                                            @if ($d->status_izin == '0')
-                                                <span class="badge bg-warning">Pending</span>
-                                            @elseif ($d->status_izin == '1')
-                                                <span class="badge bg-success">Disetujui</span>
-                                            @elseif ($d->status_izin == '2')
-                                                <span class="badge bg-danger">Ditolak</span>
-                                            @endif
-                                        </div>
-                                        <div class="status">
+                    @foreach ($pengajuan_izin as $d)
+                        @php
+                            if ($d->ket == 'i') {
+                                $route = 'izinabsen.delete';
+                                $ket_text = 'Izin Absen';
+                            } elseif ($d->ket == 's') {
+                                $route = 'izinsakit.delete';
+                                $ket_text = 'Izin Sakit';
+                            } elseif ($d->ket == 'c') {
+                                $route = 'izincuti.delete';
+                                $ket_text = 'Izin Cuti';
+                            } elseif ($d->ket == 'd') {
+                                $route = 'izindinas.delete';
+                                $ket_text = 'Izin Dinas';
+                            }
 
+                            $namahari = ['Sun' => 'Minggu', 'Mon' => 'Senin', 'Tue' => 'Selasa', 'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu'];
+                            $day_eng = date('D', strtotime($d->dari));
+                            $day_indo = isset($namahari[$day_eng]) ? $namahari[$day_eng] : $day_eng;
+                            $day_short = strtoupper(substr($day_indo, 0, 3));
+                            $tgl = date('d', strtotime($d->dari));
+                            $jml_hari = date_diff(date_create($d->dari), date_create($d->sampai))->format('%a') + 1;
+
+                            $text_color = $d->status_izin == 0 ? '#ff9f40' : ($d->status_izin == 1 ? 'var(--color-nav)' : '#e74c3c');
+                            $bg_color = $d->status_izin == 0 ? 'rgba(255, 159, 64, 0.1)' : ($d->status_izin == 1 ? 'rgba(var(--color-nav-rgb), 0.1)' : 'rgba(231, 76, 60, 0.1)');
+
+                            $badge_bg = $d->status_izin == 0 ? '#fff3cd' : ($d->status_izin == 1 ? '#d1e7dd' : '#f8d7da');
+                            $badge_color = $d->status_izin == 0 ? '#856404' : ($d->status_izin == 1 ? '#0f5132' : '#721c24');
+                            $badge_border = $d->status_izin == 0 ? '#ffeeba' : ($d->status_izin == 1 ? '#badbcc' : '#f5c6cb');
+                            $status_text = $d->status_izin == 0 ? 'Pending' : ($d->status_izin == 1 ? 'Disetujui' : 'Ditolak');
+                        @endphp
+                        <form method="POST" name="deleteform" class="deleteform"
+                            action="{{ route($route, Crypt::encrypt($d->kode)) }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="card mb-1 {{ $d->status_izin == 0 ? 'cancel-confirm' : '' }}"
+                                style="border: 1px solid var(--color-nav); border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                                <div class="card-body p-2 d-flex align-items-center" style="gap: 10px;">
+                                    {{-- Date Badge --}}
+                                    <div class="d-flex align-items-center justify-content-center"
+                                        style="width: 45px; height: 45px; min-width: 45px; border-radius: 12px; background-color: {{ $bg_color }};">
+                                        <div style="text-align: center; line-height: 1;">
+                                            <span style="font-size: 10px; font-weight: 700; display: block; color: {{ $text_color }};">{{ $day_short }}</span>
+                                            <span style="font-size: 16px; font-weight: 800; display: block; margin-top: 1px; color: {{ $text_color }};">{{ $tgl }}</span>
                                         </div>
                                     </div>
-                                </a>
-                            </form>
-                        @endforeach
-                    </div>
+                                    {{-- Content --}}
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="font-size: 14px; font-weight: 600; color: #333;">{{ $ket_text }}</span>
+                                            <span class="badge" style="background-color: {{ $badge_bg }}; color: {{ $badge_color }}; font-size: 10px; border: 1px solid {{ $badge_border }}; white-space: nowrap;">
+                                                {{ $status_text }}
+                                            </span>
+                                        </div>
+                                        <div style="font-size: 11px; color: #555; margin-top: 2px;">
+                                            {{ DateToIndo($d->dari) }} - {{ DateToIndo($d->sampai) }}
+                                            <span class="badge bg-secondary" style="font-size: 9px; vertical-align: middle; margin-left: 4px;">{{ $jml_hari }} Hari</span>
+                                        </div>
+                                        <p class="text-muted mb-0 text-truncate" style="font-size: 11px; margin-top: 2px;">
+                                            {{ $d->keterangan }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    @endforeach
                 </div>
             </div>
         </div>

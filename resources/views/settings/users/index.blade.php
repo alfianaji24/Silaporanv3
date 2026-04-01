@@ -154,6 +154,16 @@
                                                         </div>
                                                     @else
                                                         <span class="text-muted fst-italic" style="font-size: 11px;">Akses Karyawan</span>
+                                                        @php
+                                                            $uk = \App\Models\Userkaryawan::where('id_user', $d->id)->first();
+                                                        @endphp
+                                                        @if($uk && $uk->approval_admin_id)
+                                                            <div class="mt-1">
+                                                                <span class="badge bg-warning" style="font-size: 10px;" title="Approval Admin">
+                                                                    <i class="ti ti-shield-check me-1"></i>{{ optional(\App\Models\User::find($uk->approval_admin_id))->name ?? '-' }}
+                                                                </span>
+                                                            </div>
+                                                        @endif
                                                     @endif
                                                 </div>
 
