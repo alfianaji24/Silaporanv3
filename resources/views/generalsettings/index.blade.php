@@ -413,7 +413,7 @@
                         <div id="group_wa_input" style="display: none;">
                             <x-input-with-icon-label label="ID Group WA" name="id_group_wa" icon="ti ti-users" :value="$setting->id_group_wa ?? ''" />
                         </div>
-                        <x-input-with-icon-label label="Domain WA Gateway (contoh: https://wa.adamadifa.site)" name="domain_wa_gateway"
+                        <x-input-with-icon-label label="Domain WA Gateway (contoh: https://wa.puskesmasbalaraja.com)" name="domain_wa_gateway"
                             icon="ti ti-message" :value="$setting->domain_wa_gateway ?? ''" />
                         <x-input-with-icon-label label="WA API Key" name="wa_api_key" icon="ti ti-brand-whatsapp" :value="$setting->wa_api_key ?? ''" />
                     </div>
