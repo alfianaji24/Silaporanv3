@@ -376,7 +376,11 @@
                             $total_potongan = ROUND($jumlah_potongan_jam) + $total_denda + $d['bpjs_kesehatan'] + $d['bpjs_tenagakerja'];
 
                             $total_all_potongan += $total_potongan;
-                            $upah_lembur = ROUND($upah_perjam) * ROUND($total_jam_lembur, 2);
+                            $lembur_enabled = (bool)($generalsetting->lembur ?? false);
+                            if (!$lembur_enabled) {
+                                $total_jam_lembur = 0;
+                            }
+                            $upah_lembur = $lembur_enabled ? ROUND($upah_perjam) * ROUND($total_jam_lembur, 2) : 0;
                             $total_upah_lembur += $upah_lembur;
                             $total_gaji_pokok += $d['gaji_pokok'];
                             $total_bpjs_kesehatan += $d['bpjs_kesehatan'];
@@ -397,8 +401,8 @@
                         <td style="text-align: right">{{ formatAngka($d['bpjs_kesehatan']) }}</td>
                         <td style="text-align: right">{{ formatAngka($d['bpjs_tenagakerja']) }}</td>
                         <td style="text-align: right">{{ formatAngka($total_potongan) }}</td>
-                        <td style="text-align: right">{{ formatAngkaDesimal($total_jam_lembur) }}</td>
-                        <td style="text-align: right">{{ formatAngka($upah_lembur) }}</td>
+                        <td style="text-align: right">{{ $lembur_enabled ? formatAngkaDesimal($total_jam_lembur) : '' }}</td>
+                        <td style="text-align: right">{{ $lembur_enabled ? formatAngka($upah_lembur) : '' }}</td>
                         <td style="text-align: right">{{ formatAngka($d['penambah']) }}</td>
                         <td style="text-align: right">{{ formatAngka($d['pengurang']) }}</td>
                         <td style="text-align: right">{{ formatAngka($gaji_bersih) }}</td>

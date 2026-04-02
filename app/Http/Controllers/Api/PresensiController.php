@@ -103,7 +103,11 @@ class PresensiController extends Controller
             }
             // Jika Jam Kerja Harian Kosong
             if ($jamkerja == null) {
-                $jamkerja = Jamkerja::where('kode_jam_kerja', 'JK01')->first();
+                // Fallback: pakai jam kerja yang sudah diset di data karyawan
+                // (menggantikan fallback tetap `JK01`).
+                if (!empty($karyawan->kode_jadwal)) {
+                    $jamkerja = Jamkerja::where('kode_jam_kerja', $karyawan->kode_jadwal)->first();
+                }
             }
         }
 

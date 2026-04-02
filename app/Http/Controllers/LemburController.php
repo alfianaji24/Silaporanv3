@@ -17,6 +17,22 @@ use Illuminate\Support\Facades\Storage;
 
 class LemburController extends Controller
 {
+    public function __construct()
+    {
+        // Jika flag lembur di generalsetting tidak aktif,
+        // semua route lembur ditolak agar fitur lembur tidak bisa digunakan.
+        $this->middleware(function ($request, $next) {
+            $setting = Pengaturanumum::where('id', 1)->first();
+            $enabled = (bool)($setting->lembur ?? false);
+
+            if (!$enabled) {
+                abort(404, 'Fitur lembur sedang dinonaktifkan.');
+            }
+
+            return $next($request);
+        });
+    }
+
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */

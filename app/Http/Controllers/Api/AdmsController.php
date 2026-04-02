@@ -277,6 +277,12 @@ class AdmsController extends Controller
                         ->where('kode_cabang', $karyawan->kode_cabang)
                         ->where('hari', $namahari)->first();
                 }
+
+            // Fallback: pakai jam kerja yang sudah diset di data karyawan
+            // ketika jadwal by-date/day/dept tidak ditemukan.
+            if ($jamkerja == null && !empty($karyawan->kode_jadwal)) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', $karyawan->kode_jadwal)->first();
+            }
             }
 
             Log::info('Status jamkerja', ['is_null' => $jamkerja == null]);

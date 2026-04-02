@@ -725,10 +725,83 @@ class PresensiController extends Controller
             }
         }
 
+        // Jika karyawan punya jadwal lintas hari, maka log mesin untuk tanggal ini
+        // perlu ditambah dari +1 hari ke depan.
+        $lintas_hari = 0;
+        $tanggal_next = date('Y-m-d', strtotime($tanggal . ' +1 day'));
+        if ($karyawan) {
+            $namahari = getnamaHari(date('D', strtotime($tanggal)));
+
+            $jamkerja = Setjamkerjabydate::join(
+                'presensi_jamkerja',
+                'presensi_jamkerja_bydate.kode_jam_kerja',
+                '=',
+                'presensi_jamkerja.kode_jam_kerja'
+            )
+                ->where('nik', $karyawan->nik)
+                ->where('tanggal', $tanggal)
+                ->first();
+
+            if ($jamkerja == null) {
+                $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
+                if ($cek_group) {
+                    $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
+                        ->where('tanggal', $tanggal)
+                        ->join(
+                            'presensi_jamkerja',
+                            'grup_jamkerja_bydate.kode_jam_kerja',
+                            '=',
+                            'presensi_jamkerja.kode_jam_kerja'
+                        )
+                        ->first();
+                }
+            }
+
+            if ($jamkerja == null) {
+                $jamkerja = Setjamkerjabyday::join(
+                    'presensi_jamkerja',
+                    'presensi_jamkerja_byday.kode_jam_kerja',
+                    '=',
+                    'presensi_jamkerja.kode_jam_kerja'
+                )
+                    ->where('nik', $karyawan->nik)
+                    ->where('hari', $namahari)
+                    ->first();
+            }
+
+            if ($jamkerja == null) {
+                $jamkerja = Detailsetjamkerjabydept::join(
+                    'presensi_jamkerja_bydept',
+                    'presensi_jamkerja_bydept_detail.kode_jk_dept',
+                    '=',
+                    'presensi_jamkerja_bydept.kode_jk_dept'
+                )
+                    ->join(
+                        'presensi_jamkerja',
+                        'presensi_jamkerja_bydept_detail.kode_jam_kerja',
+                        '=',
+                        'presensi_jamkerja.kode_jam_kerja'
+                    )
+                    ->where('kode_dept', $karyawan->kode_dept)
+                    ->where('kode_cabang', $karyawan->kode_cabang)
+                    ->where('hari', $namahari)
+                    ->first();
+            }
+
+            // Fallback: kalau tidak ada setjam per tanggal/hari/dept,
+            // gunakan kode jam kerja yang tersimpan di data karyawan.
+            if ($jamkerja == null && !empty($karyawan->kode_jadwal)) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', $karyawan->kode_jadwal)->first();
+            }
+
+            $lintas_hari = $jamkerja ? (int)$jamkerja->lintashari : 0;
+        }
+
+        $end_date = $lintas_hari == 1 ? $tanggal_next : $tanggal;
 
         //Mesin 1
         $url = 'https://developer.fingerspot.io/api/get_attlog';
-        $data = '{"trans_id":"1", "cloud_id":"' . $general_setting->cloud_id . '", "start_date":"' . $tanggal . '", "end_date":"' . $tanggal . '"}';
+        $data = '{"trans_id":"1", "cloud_id":"' . $general_setting->cloud_id . '", "start_date":"' . $tanggal . '", "end_date":"' . $end_date . '"}';
         $authorization = "Authorization: Bearer " . $general_setting->api_key;
 
         $ch = curl_init($url);
@@ -774,10 +847,25 @@ class PresensiController extends Controller
         //     return $obj->pin == $specific_value;
         // });
 
-        $log_lokal = \App\Models\LogMesinPresensi::select('log_mesin_presensis.*', 'mesin_fingerprints.nama_mesin', 'mesin_fingerprints.sn', 'mesin_fingerprints.lokasi')
+        $logQuery = \App\Models\LogMesinPresensi::select(
+            'log_mesin_presensis.*',
+            'mesin_fingerprints.nama_mesin',
+            'mesin_fingerprints.sn',
+            'mesin_fingerprints.lokasi'
+        )
             ->leftJoin('mesin_fingerprints', 'log_mesin_presensis.id_mesin', '=', 'mesin_fingerprints.id')
-            ->where('pin', $pin)
-            ->whereDate('jam_absen', $tanggal)
+            ->where('pin', $pin);
+
+        if ($lintas_hari == 1) {
+            $logQuery->whereBetween(
+                'jam_absen',
+                [$tanggal . ' 00:00:00', $tanggal_next . ' 23:59:59']
+            );
+        } else {
+            $logQuery->whereDate('jam_absen', $tanggal);
+        }
+
+        $log_lokal = $logQuery
             ->orderBy('jam_absen', 'desc')
             ->get();
 
@@ -878,7 +966,10 @@ class PresensiController extends Controller
 
             // Jika Jam Kerja Harian Kosong
             if ($jamkerja == null) {
-                $jamkerja = Jamkerja::where('kode_jam_kerja', 'JK01')->first();
+                // Fallback: pakai jam kerja yang sudah diset di data karyawan
+                if (!empty($karyawan->kode_jadwal)) {
+                    $jamkerja = Jamkerja::where('kode_jam_kerja', $karyawan->kode_jadwal)->first();
+                }
             }
         }
 

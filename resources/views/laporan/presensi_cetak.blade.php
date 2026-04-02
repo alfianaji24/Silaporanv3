@@ -256,8 +256,6 @@
                     <th rowspan="3" class="sticky-col second-col">Nik</th>
                     <th rowspan="3" class="sticky-col third-col">Nama Karyawan</th>
                     <th rowspan="3">Jabatan</th>
-                    <th rowspan="3">Dept</th>
-                    <th rowspan="3">Cabang</th>
                     <th colspan="{{ $jmlhari }}">Tanggal</th>
                     <th rowspan="3" style="min-width: 60px">Denda</th>
                     <th rowspan="3" style="min-width: 60px">Pot. Jam</th>
@@ -307,11 +305,9 @@
                     @endphp
                     <tr>
                         <td class="sticky-col first-col">{{ $loop->iteration }}</td>
-                        <td class="sticky-col second-col">'{{ $d['nik_show'] ?? $d['nik'] }}</td>
+                        <td class="sticky-col second-col">{{ $d['nik_show'] ?? $d['nik'] }}</td>
                         <td class="sticky-col third-col">{{ $d['nama_karyawan'] }}</td>
                         <td>{{ $d['nama_jabatan'] }}</td>
-                        <td style="text-align: center">{{ $d['kode_dept'] }}</td>
-                        <td style="text-align: center">{{ $d['kode_cabang'] }}</td>
                         @php
                             $total_denda = 0;
                             $total_potongan_jam = 0;
@@ -484,10 +480,11 @@
                                             ? '<p><span style="color:red">PJ: ' . formatAngkaDesimal($potongan_jam) . ' Jam</span></p>'
                                             : '';
 
-                                        $ket_jam_lembur =
-                                            $jml_jam_lembur > 0
+                                        $ket_jam_lembur = ($generalsetting->lembur ?? false)
+                                            ? ($jml_jam_lembur > 0
                                                 ? '<p><span style="color:rgb(11, 153, 179)"> Lembur :' . $jml_jam_lembur . ' Jam</span></p>'
-                                                : '';
+                                                : '')
+                                            : '';
                                         $ket =
                                             $ket_nama_jam_kerja .
                                             $ket_jadwal_kerja .
@@ -671,7 +668,7 @@
                                     }
 
                                     // Jika ada lembur terpisah, tetap tampilkan info lembur
-                                    if (!empty($ceklembur)) {
+                                    if (!empty($ceklembur) && ($generalsetting->lembur ?? false)) {
                                         $bgcolor = 'white';
                                         $textcolor = 'black';
                                         $ket_jam_lembur = '<p><span style="color:rgb(11, 153, 179)"> Lembur :' . $jml_jam_lembur . ' Jam</span></p>';
@@ -720,7 +717,9 @@
                         @endphp
                         <td style="text-align: right">{{ formatAngka($total_denda) }}</td>
                         <td style="text-align: center">{{ formatAngkaDesimal($total_potongan_jam) }}</td>
-                        <td style="text-align:center">{{ formatAngkaDesimal($total_jam_lembur) }}</td>
+                        <td style="text-align:center">
+                            {{ ($generalsetting->lembur ?? false) ? formatAngkaDesimal($total_jam_lembur) : '' }}
+                        </td>
                         <td style="text-align:center">{{ $jml_hadir }}</td>
                         <td style="text-align:center">{{ $jml_izin }}</td>
                         <td style="text-align:center">{{ $jml_sakit }}</td>

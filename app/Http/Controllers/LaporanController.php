@@ -53,6 +53,8 @@ class LaporanController extends Controller
         // Get Employees Query
         $query = Karyawan::query();
         $query->orderBy('nama_karyawan');
+        // Hanya karyawan aktif untuk data laporan
+        $query->where('status_aktif_karyawan', 1);
         if (!empty($kode_cabang)) {
             $query->where('kode_cabang', $kode_cabang);
         }
@@ -66,9 +68,18 @@ class LaporanController extends Controller
         $cuti_data = DB::table('presensi_izincuti_approve')
             ->join('presensi', 'presensi_izincuti_approve.id_presensi', '=', 'presensi.id')
             ->join('presensi_izincuti', 'presensi_izincuti_approve.kode_izin_cuti', '=', 'presensi_izincuti.kode_izin_cuti')
+            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->select('presensi.nik', 'presensi.tanggal', 'presensi_izincuti.kode_cuti')
             ->whereRaw('YEAR(presensi.tanggal) = ?', [$tahun])
-            ->get();
+            ->where('karyawan.status_aktif_karyawan', 1);
+
+        if (!empty($kode_cabang)) {
+            $cuti_data->where('karyawan.kode_cabang', $kode_cabang);
+        }
+        if (!empty($kode_dept)) {
+            $cuti_data->where('karyawan.kode_dept', $kode_dept);
+        }
+        $cuti_data = $cuti_data->get();
 
         // Process data structure
         $rekap_cuti = [];
@@ -172,6 +183,7 @@ class LaporanController extends Controller
             ->leftJoin('presensi_izinsakit', 'presensi_izinsakit_approve.kode_izin_sakit', '=', 'presensi_izinsakit.kode_izin_sakit')
             ->leftJoin('presensi_izincuti_approve', 'presensi.id', '=', 'presensi_izincuti_approve.id_presensi')
             ->leftJoin('presensi_izincuti', 'presensi_izincuti_approve.kode_izin_cuti', '=', 'presensi_izincuti.kode_izin_cuti')
+            ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->select(
                 'presensi.*',
                 'nama_jam_kerja',
@@ -186,6 +198,7 @@ class LaporanController extends Controller
                 'presensi_izinsakit.keterangan as keterangan_izin_sakit',
                 'presensi_izincuti.keterangan as keterangan_izin_cuti'
             )
+            ->where('karyawan.status_aktif_karyawan', 1)
             ->whereBetween('presensi.tanggal', [$periode_dari, $periode_sampai]);
 
         /**
@@ -202,12 +215,14 @@ class LaporanController extends Controller
         // 1) Jadwal by-date per karyawan
         $jadwal_bydate = DB::table('presensi_jamkerja_bydate')
             ->join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->join('karyawan', 'presensi_jamkerja_bydate.nik', '=', 'karyawan.nik')
             ->select(
                 'presensi_jamkerja_bydate.nik',
                 'presensi_jamkerja_bydate.tanggal',
                 'presensi_jamkerja.total_jam'
             )
             ->whereBetween('presensi_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->where('karyawan.status_aktif_karyawan', 1)
             ->get()
             ->groupBy('nik')
             ->map(function ($rows) {
@@ -222,12 +237,14 @@ class LaporanController extends Controller
         $jadwal_grup_bydate = DB::table('grup_detail')
             ->join('grup_jamkerja_bydate', 'grup_detail.kode_grup', '=', 'grup_jamkerja_bydate.kode_grup')
             ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->join('karyawan', 'grup_detail.nik', '=', 'karyawan.nik')
             ->select(
                 'grup_detail.nik',
                 'grup_jamkerja_bydate.tanggal',
                 'presensi_jamkerja.total_jam'
             )
             ->whereBetween('grup_jamkerja_bydate.tanggal', [$periode_dari, $periode_sampai])
+            ->where('karyawan.status_aktif_karyawan', 1)
             ->get()
             ->groupBy('nik')
             ->map(function ($rows) {
@@ -241,11 +258,13 @@ class LaporanController extends Controller
         // 3) Jadwal by-day per karyawan (presensi_jamkerja_byday)
         $jadwal_byday = DB::table('presensi_jamkerja_byday')
             ->join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+            ->join('karyawan', 'presensi_jamkerja_byday.nik', '=', 'karyawan.nik')
             ->select(
                 'presensi_jamkerja_byday.nik',
                 'presensi_jamkerja_byday.hari',
                 'presensi_jamkerja.total_jam'
             )
+            ->where('karyawan.status_aktif_karyawan', 1)
             ->get()
             ->groupBy('nik')
             ->map(function ($rows) {
@@ -347,6 +366,8 @@ class LaporanController extends Controller
             ->where('tahun', $request->tahun);
 
         $q_presensi = Karyawan::query();
+        // Hanya karyawan aktif untuk report
+        $q_presensi->where('karyawan.status_aktif_karyawan', 1);
         $q_presensi->select(
             'karyawan.nik',
             'karyawan.nik_show',
@@ -461,6 +482,7 @@ class LaporanController extends Controller
                 ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
                 ->select('karyawan.*', 'jabatan.nama_jabatan', 'departemen.nama_dept', 'cabang.nama_cabang')
                 ->where('karyawan.nik', $request->nik)
+                ->where('karyawan.status_aktif_karyawan', 1)
                 ->first();
             $data['karyawan'] = $karyawan;
             $data['presensi'] = $presensi;
@@ -697,7 +719,8 @@ class LaporanController extends Controller
                     'presensi_jamkerja.jam_pulang'
                 )
                 ->whereBetween('presensi.tanggal', [$periode_dari, $periode_sampai])
-                ->where('presensi.status', 'h'); // Hanya presensi dengan status hadir
+                ->where('presensi.status', 'h') // Hanya presensi dengan status hadir
+                ->where('karyawan.status_aktif_karyawan', 1);
 
             // Filter berdasarkan request
             if (!empty($request->kode_cabang)) {
@@ -719,6 +742,7 @@ class LaporanController extends Controller
             // Ambil semua karyawan yang sesuai filter
             $karyawan_query = Karyawan::query()
                 ->select('karyawan.nik', 'karyawan.kode_dept', 'karyawan.kode_cabang');
+            $karyawan_query->where('karyawan.status_aktif_karyawan', 1);
 
             if (!empty($request->kode_cabang)) {
                 $karyawan_query->where('karyawan.kode_cabang', $request->kode_cabang);
@@ -1117,6 +1141,8 @@ class LaporanController extends Controller
 
         $q_karyawan = Karyawan::query();
         $q_karyawan->select('karyawan.nik', 'karyawan.nik_show', 'nama_karyawan', 'nama_jabatan', 'karyawan.kode_dept', 'nama_dept', 'karyawan.kode_cabang');
+        // Hanya karyawan aktif untuk report jadwal
+        $q_karyawan->where('karyawan.status_aktif_karyawan', 1);
         $q_karyawan->leftJoin('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan');
         $q_karyawan->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
 

@@ -550,7 +550,7 @@
                             </div>
                         @endif
                     @endforeach
-                    @if ($total_jam_lembur > 0)
+                    @if (($generalsetting->lembur ?? false) && $total_jam_lembur > 0)
                         <div class="row">
                             <span>Lembur {{ formatAngkaDesimal($total_jam_lembur) }} jam </span>
                             <span class="currency">

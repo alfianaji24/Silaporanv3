@@ -315,6 +315,14 @@
                                 <span class="switch-right">No</span>
                             </label>
                         </div>
+                        <label for="" style="font-weight: 600" class="form-label">Lembur</label>
+                        <div class="checkbox-wrapper-55 mb-2">
+                            <label class="rocker rocker-small">
+                                <input type="checkbox" name="lembur" @checked($setting->lembur ?? false)>
+                                <span class="switch-left">Yes</span>
+                                <span class="switch-right">No</span>
+                            </label>
+                        </div>
                         <label for="" style="font-weight: 600" class="form-label">Face Recognition</label>
                         <div class="checkbox-wrapper-55 mb-2">
                             <label class="rocker rocker-small">

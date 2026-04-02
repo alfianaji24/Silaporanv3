@@ -54,6 +54,7 @@ class GeneralsettingController extends Controller
                 'total_jam_bulan' => $request->total_jam_bulan,
                 'status_potongan_jam' => $request->has('status_potongan_jam') ? 1 : 0,
                 'denda' => $request->has('denda') ? true : false,
+                'lembur' => $request->has('lembur') ? true : false,
                 'face_recognition' => $request->has('face_recognition') ? true : false,
                 'periode_laporan_dari' => $request->periode_laporan_dari,
                 'periode_laporan_sampai' => $request->periode_laporan_sampai,
