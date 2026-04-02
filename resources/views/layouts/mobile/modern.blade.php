@@ -9,6 +9,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>@yield('title')</title>
 
+    @include('layouts.favicon')
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kiosk Presensi</title>
-    <link rel="icon" type="image/png" href="{{ asset('storage/logo/' . ($active_colors['logo'] ?? 'logo.png')) }}" sizes="32x32">
+    @include('layouts.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">

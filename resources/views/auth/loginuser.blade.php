@@ -5,13 +5,13 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SILAPORAN | Puskesmas Balaraja</title>
+    <title>{{ config('app.name') }}{{ !empty($general_setting->nama_perusahaan) ? ' | ' . $general_setting->nama_perusahaan : '' }}</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="Silaporan V3">
+    <meta name="application-name" content="{{ config('app.name') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Silaporan V3">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -24,6 +24,8 @@
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
+
+    @include('layouts.favicon')
 
     <link rel="stylesheet" href="{{ asset('assets/login/css/style.css') }}" />
     <style>
@@ -77,6 +79,21 @@
         .text-group h2 {
             color: #ffffff !important;
         }
+
+        .logo h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 0.35rem;
+        }
+
+        .heading h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 0.35rem;
+            text-align: center;
+        }
     </style>
 
 </head>
@@ -93,13 +110,12 @@
                             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
                                 <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Company Logo" style="height: auto; width: 80px; margin-bottom: 20px;" />
                             @else
-                                <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="easyclass" />
+                                <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="easyclass" />
                             @endif
-                            <h4>SILAPORAN V3</h4>
+                            <h4>{{ config('app.name') }}</h4>
                         </div>
-
                         <div class="heading">
-                            <h2>Welcome Back</h2>
+                            <h2>Masuk</h2>
                         </div>
 
                         @if (session('error'))

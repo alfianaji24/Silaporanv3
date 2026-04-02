@@ -11,8 +11,7 @@
 
     <meta name="description" content="" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('logo.png') }}" />
+    @include('layouts.favicon')
 
     <!-- DNS Prefetch for external resources -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">

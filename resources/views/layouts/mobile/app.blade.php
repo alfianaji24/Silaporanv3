@@ -90,8 +90,8 @@
     <link rel="dns-prefetch" href="https://unpkg.com">
     <link rel="dns-prefetch" href="https://cdn.amcharts.com">
 
-    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" sizes="32x32">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('logo.png') }}">
+    @include('layouts.favicon')
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/img/icons/pwa/icon-192x192.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/template/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/template/css/styleform.css') }}">
 

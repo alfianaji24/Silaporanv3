@@ -9,8 +9,7 @@
     <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/img/favicon/favicon.ico') }}">
+    @include('layouts.favicon')
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>

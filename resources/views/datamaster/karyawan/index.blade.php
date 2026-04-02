@@ -106,9 +106,8 @@
                                                     <span class="text-muted fw-normal" style="font-size: 12px;">({{ $d->nik_show ?? $d->nik }})</span>
                                                 </div>
                                                 <div class="mt-1">
-                                                    <span class="badge bg-label-primary" style="font-size: 10px;">{{ $d->nama_jabatan }}</span>
-                                                    <span class="badge bg-label-info" style="font-size: 10px;">{{ $d->nama_dept }}</span>
-                                                    <span class="badge bg-label-warning" style="font-size: 10px;">{{ $d->nama_cabang }}</span>
+                                                    <span class="badge bg-label-warning" style="font-size: 10px;">{{ $d->nama_jabatan }}</span>
+
                                                     @if ($d->status_karyawan)
                                                     @php
                                                     $status_karyawan_text = $d->status_karyawan == 'K' ? 'Kontrak' : ($d->status_karyawan == 'T' ? 'Tetap' : $d->status_karyawan);

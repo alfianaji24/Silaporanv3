@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>E-Presensi Mobile Login</title>
+    <title>{{ config('app.name') }}{{ !empty($general_setting->nama_perusahaan) ? ' | ' . $general_setting->nama_perusahaan : '' }}</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="E-Presensi GPS V2">
+    <meta name="application-name" content="{{ config('app.name') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="E-Presensi">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#106f62">
+    <meta name="theme-color" content="#696cff">
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/assets/img/icons/pwa/icon-192x192.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
+
+    @include('layouts.favicon')
 
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -393,9 +395,9 @@
             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
                 <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
             @else
-                <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
+                <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
             @endif
-            <div style="color: #fff; font-size: 22px; font-weight: 800; letter-spacing: 1px;">GAWE V3</div>
+            <div style="color: #fff; font-size: 22px; font-weight: 800; letter-spacing: 1px;">{{ config('app.name') }}</div>
         </div>
         
         <h1 style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">Welcome!</h1>

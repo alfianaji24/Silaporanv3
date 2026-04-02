@@ -4,13 +4,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>SILAPORAN | Puskesmas Balaraja</title>
+    <title>{{ config('app.name') }}{{ !empty(optional($general_setting)->nama_perusahaan) ? ' | ' . $general_setting->nama_perusahaan : '' }}</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="Silaporan V3">
+    <meta name="application-name" content="{{ config('app.name') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Silaporan V3">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.name') }}">
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -25,7 +25,7 @@
     <link rel="manifest" href="/manifest.json">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    @include('layouts.favicon')
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -40,9 +40,9 @@
         body { font-family: 'Public Sans', sans-serif; background: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 9rem 1.5rem; }
         .login-container { width: 100%; max-width: 400px; }
 
-        .logo-section { text-align: center; margin-bottom: 2rem; }
-        .logo-section img { height: 56px; width: auto; margin-bottom: 0.5rem; }
-        .logo-section .brand { font-size: 1.5rem; font-weight: 700; color: #2d3748; }
+        .logo-section { text-align: center; margin-bottom: 1rem; }
+        .logo-section img { height: 98px; width: auto; margin-bottom: 0.5rem; }
+        .logo-section .brand { font-size: 2.5rem; font-weight: 700; color: #2d3748; }
         .logo-section .brand span { color: var(--primary); }
 
         .page-title { font-size: 1.75rem; font-weight: 700; color: #1a202c; text-align: center; margin-bottom: 1.75rem; }
@@ -88,7 +88,7 @@
             @if (!empty(optional($general_setting)->logo) && Storage::disk('public')->exists('logo/' . optional($general_setting)->logo))
                 <img src="{{ asset('storage/logo/' . optional($general_setting)->logo) }}" alt="Logo" />
             @else
-                <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" />
+                <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="Logo" />
             @endif
             <div class="brand">{{ config('app.name') }}</div>
         </div>

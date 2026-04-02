@@ -224,7 +224,9 @@
                                                 </div>
                                                 <div>
                                                     <small class="d-block text-muted">Terlambat</small>
-                                                    @if($terlambat != null)
+                                                    @if ($d->jam_in == null)
+                                                    <span class="fw-medium text-dark">-</span>
+                                                    @elseif ($terlambat != null)
                                                     <span class="fw-medium text-danger">{!! $terlambat['show'] !!}</span>
                                                     @else
                                                     <span class="text-success fw-medium"><i class="ti ti-check"></i> Tepat Waktu</span>

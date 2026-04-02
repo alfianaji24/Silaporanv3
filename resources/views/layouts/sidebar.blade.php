@@ -9,17 +9,17 @@
                      <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" class="w-100 h-100"
                          style="object-fit: cover;">
                  @else
-                     <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" class="w-100 h-100"
+                     <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="Logo" class="w-100 h-100"
                          style="object-fit: cover;">
                  @endif
              </span>
              <span class="app-brand-text demo menu-text fw-bold d-flex flex-column ms-2"
                  style="letter-spacing: 1px; color: #fff;">
-                 <span style="font-size: 18px;">GAWE</span>
+                 <span style="font-size: 18px;">{{ config('app.name') }}</span>
                  <small class="mt-1" style="font-size: 11px; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.7);">
-                     Your Workforce, Simplified
+                      
                  </small>
-                 <small class="mt-1">Version 3.0.1</small>
+                 <small class="mt-1"> </small>
              </span>
          </a>
 
