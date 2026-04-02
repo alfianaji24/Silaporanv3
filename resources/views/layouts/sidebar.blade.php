@@ -365,7 +365,7 @@
              </li>
          @endcan --}}
 
-         @if (auth()->user()->hasAnyPermission(['lembur.index']))
+         @if (auth()->user()->hasAnyPermission(['lembur.index']) && !empty($general_setting) && (bool) $general_setting->lembur)
          <li class="menu-item {{ request()->is(['lembur', 'lembur/*']) ? 'active' : '' }}">
              <a href="{{ route('lembur.index') }}" class="menu-link">
                  <i class="menu-icon tf-icons ti ti-clock"></i>

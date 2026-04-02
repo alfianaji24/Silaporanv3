@@ -35,10 +35,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="E-Presensi GPS V2">
+    <meta name="application-name" content="Silaporan">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="E-Presensi">
+    <meta name="apple-mobile-web-app-title" content="Silaporan">
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">

@@ -401,7 +401,7 @@
         </div>
         
         <h1 style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">Welcome!</h1>
-        <p style="opacity: 0.9;">to {{ $general_setting->nama_perusahaan ?? 'E-Presensi GPS' }}</p>
+        <p style="opacity: 0.9;">to {{ $general_setting->nama_perusahaan ?? 'Silaporan' }}</p>
         
         <div class="plant-wrapper">
             <div class="leaf-1"></div>

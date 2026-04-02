@@ -78,6 +78,7 @@
                 </div>
             </a>
 
+            @can('slipgaji.index')
             <a href="{{ route('slipgaji.index') }}" class="card press fade-up" style="animation-delay: 0.2s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -92,7 +93,9 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endcan
             
+            @can('kontrak.index')
             <a href="{{ route('kontrak.index') }}" class="card press fade-up" style="animation-delay: 0.25s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -107,7 +110,9 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endcan
 
+            @can('pelanggaran.index')
             <a href="{{ route('pelanggaran.index') }}" class="card press fade-up" style="animation-delay: 0.3s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -127,6 +132,7 @@
                     </div>
                 </div>
             </a>
+            @endcan
             
             {{-- Presensi & Daily --}}
             <div class="text-[11px] font-bold text-slate-400 tracking-wider uppercase px-2 pt-3 pb-1 fade-up" style="animation-delay: 0.35s">Absensi & Harian</div>
@@ -161,6 +167,7 @@
                 </div>
             </a>
 
+            @if(!empty($general_setting) && (bool) $general_setting->lembur)
             <a href="{{ route('lembur.index') }}" class="card press fade-up" style="animation-delay: 0.45s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -175,7 +182,9 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endif
 
+            @can('ajuanjadwal.index')
             <a href="{{ route('ajuanjadwal.index') }}" class="card press fade-up" style="animation-delay: 0.5s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -190,7 +199,9 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endcan
 
+            @can('kpi.employee.index')
             <a href="{{ route('kpi.transactions.myscore') }}" class="card press fade-up" style="animation-delay: 0.55s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -205,6 +216,7 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endcan
 
             <a href="{{ route('facerecognition.karyawan.create') }}" class="card press fade-up" style="animation-delay: 0.6s">
                 <div class="card-body p-1.5 flex items-center justify-between">
@@ -284,6 +296,7 @@
 
             <div class="text-[11px] font-bold text-slate-400 tracking-wider uppercase px-2 pt-3 pb-1 fade-up" style="animation-delay: 0.85s">Umum</div>
 
+            @can('pengumuman.index')
             <a href="{{ route('pengumuman.index') }}" class="card press fade-up" style="animation-delay: 0.9s">
                 <div class="card-body p-1.5 flex items-center justify-between">
                     <div class="flex items-center gap-2">
@@ -298,6 +311,7 @@
                     <ion-icon name="chevron-forward-outline" class="text-slate-300 text-lg mr-2"></ion-icon>
                 </div>
             </a>
+            @endcan
 
         </div>
     </div>

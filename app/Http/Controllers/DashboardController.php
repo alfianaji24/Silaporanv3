@@ -32,6 +32,8 @@ class DashboardController extends Controller
         // BUKAN date() yang menggunakan timezone PHP default
         $hari_ini = Carbon::now(config('app.timezone'))->format('Y-m-d');
         if ($user->hasRole('karyawan')) {
+            $data['bulan_skrg'] = Carbon::now(config('app.timezone'))->translatedFormat('F Y');
+
             $userkaryawan = Userkaryawan::where('id_user', auth()->user()->id)->first();
             $data['karyawan'] = Karyawan::where('nik', $userkaryawan->nik)
                 ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')

@@ -1,6 +1,6 @@
 @extends('layouts.mobile.modern')
 
-@section('title', 'E-Presensi')
+@section('title', 'Silaporan')
 
 @section('header_left')
     <a href="javascript:;" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 text-white active:scale-90 transition-transform" onclick="window.history.back()">

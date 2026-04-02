@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pengaturan_umum', function (Blueprint $table) {
-            $table->string('mobile_theme_scheme')->nullable()->default('green')->after('theme_color_2');
-        });
+        if (!Schema::hasColumn('pengaturan_umum', 'mobile_theme_scheme')) {
+            Schema::table('pengaturan_umum', function (Blueprint $table) {
+                $table->string('mobile_theme_scheme')->nullable()->default('green')->after('theme_color_2');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pengaturan_umum', function (Blueprint $table) {
-            $table->dropColumn('mobile_theme_scheme');
-        });
+        if (Schema::hasColumn('pengaturan_umum', 'mobile_theme_scheme')) {
+            Schema::table('pengaturan_umum', function (Blueprint $table) {
+                $table->dropColumn('mobile_theme_scheme');
+            });
+        }
     }
 };

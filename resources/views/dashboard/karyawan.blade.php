@@ -344,6 +344,7 @@
                 </a>
 
                 {{-- Lembur --}}
+                @if(!empty($namasettings) && (bool) $namasettings->lembur)
                 <a href="{{ route('lembur.index') }}" class="block">
                     <div class="bg-white rounded-[12px] text-center" style="padding:5px 5px; line-height:0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
                         @if ($scheme == 'green')
@@ -354,6 +355,7 @@
                         <br><span style="font-size:0.75rem; font-weight:400; color: {{ $t['primary'] ?? '#2d5a4c' }};">Lembur</span>
                     </div>
                 </a>
+                @endif
 
                 {{-- Slip Gaji --}}
                 <a href="{{ route('slipgaji.index') }}" class="block">
@@ -424,12 +426,14 @@
                 <button id="tabPresensi" onclick="switchTab('presensi')" class="flex-1 py-2 text-center text-[13px] font-semibold transition-all rounded-full" style="background:{{ $t['primary'] ?? '#2d5a4c' }}; color:white;">
                     30 Hari terakhir
                 </button>
+                @if(!empty($namasettings) && (bool) $namasettings->lembur)
                 <button id="tabLembur" onclick="switchTab('lembur')" class="flex-1 py-2 text-center text-[13px] font-medium transition-all rounded-full flex items-center justify-center gap-1" style="color:#888;">
                     Lembur
                     @if(isset($notiflembur) && $notiflembur > 0)
                         <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-[10px] font-bold" style="background:#ff5252;">{{ $notiflembur }}</span>
                     @endif
                 </button>
+                @endif
             </div>
 
             {{-- Tab Content: Presensi --}}
@@ -539,6 +543,7 @@
             </div>
 
             {{-- Tab Content: Lembur --}}
+            @if(!empty($namasettings) && (bool) $namasettings->lembur)
             <div id="contentLembur" style="display:none;">
                 @foreach ($lembur as $d)
                     <a href="{{ route('lembur.createpresensi', Crypt::encrypt($d->id)) }}" class="block">
@@ -570,6 +575,7 @@
                     </a>
                 @endforeach
             </div>
+            @endif
         </div>
 
         </div>
@@ -689,20 +695,39 @@
         // History Tab Switching
         function switchTab(tab) {
             var primary = '{{ $t["primary"] ?? "#2d5a4c" }}';
+            var contentPresensi = document.getElementById('contentPresensi');
+            var contentLembur = document.getElementById('contentLembur');
+            var tabPresensi = document.getElementById('tabPresensi');
+            var tabLembur = document.getElementById('tabLembur');
+
+            // Jika fitur lembur non-aktif, paksa selalu ke presensi (aman dari null)
+            if (!contentLembur || !tabLembur) {
+                if (contentPresensi) contentPresensi.style.display = '';
+                if (tabPresensi) {
+                    tabPresensi.style.background = primary;
+                    tabPresensi.style.color = 'white';
+                }
+                return;
+            }
+
             if (tab === 'presensi') {
-                document.getElementById('contentPresensi').style.display = '';
-                document.getElementById('contentLembur').style.display = 'none';
-                document.getElementById('tabPresensi').style.background = primary;
-                document.getElementById('tabPresensi').style.color = 'white';
-                document.getElementById('tabLembur').style.background = 'transparent';
-                document.getElementById('tabLembur').style.color = '#888';
+                if (contentPresensi) contentPresensi.style.display = '';
+                contentLembur.style.display = 'none';
+                if (tabPresensi) {
+                    tabPresensi.style.background = primary;
+                    tabPresensi.style.color = 'white';
+                }
+                tabLembur.style.background = 'transparent';
+                tabLembur.style.color = '#888';
             } else {
-                document.getElementById('contentPresensi').style.display = 'none';
-                document.getElementById('contentLembur').style.display = '';
-                document.getElementById('tabLembur').style.background = primary;
-                document.getElementById('tabLembur').style.color = 'white';
-                document.getElementById('tabPresensi').style.background = 'transparent';
-                document.getElementById('tabPresensi').style.color = '#888';
+                if (contentPresensi) contentPresensi.style.display = 'none';
+                contentLembur.style.display = '';
+                tabLembur.style.background = primary;
+                tabLembur.style.color = 'white';
+                if (tabPresensi) {
+                    tabPresensi.style.background = 'transparent';
+                    tabPresensi.style.color = '#888';
+                }
             }
         }
 

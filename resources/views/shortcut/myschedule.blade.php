@@ -135,7 +135,7 @@
                                         <span class="text-slate-300">-</span>
                                         <span>{{ $info->jam_pulang ? date('H:i', strtotime($info->jam_pulang)) : '__:__' }}</span>
                                     </div>
-                                    @if($info->color)
+                                    @if(isset($info->color) && !empty($info->color))
                                         <div class="w-2.5 h-2.5 rounded-full" style="background-color: {{ $info->color }}"></div>
                                     @endif
                                 </div>
