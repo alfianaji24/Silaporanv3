@@ -215,7 +215,7 @@
                         <h6 class="mb-0">Pengaturan Email</h6>
                     </div>
                     <div class="card-body">
-                        <x-input-with-icon-label label="Domain Email (contoh: adamadifa.site)" name="domain_email" icon="ti ti-mail" :value="$setting->domain_email ?? ''" />
+                        <x-input-with-icon-label label="Domain Email (contoh: wa.puskesmasbalaraja.com)" name="domain_email" icon="ti ti-mail" :value="$setting->domain_email ?? ''" />
                     </div>
                 </div>
             </div>
