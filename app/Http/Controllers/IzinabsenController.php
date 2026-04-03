@@ -469,6 +469,9 @@ class IzinabsenController extends Controller
 
                     $dari = date('Y-m-d', strtotime($dari . ' +1 day'));
                 }
+
+                // Notify employee that final approval is completed
+                $this->notifyKaryawanFinalApproval($izinabsen, 'absen');
             } else {
                 // REJECTION
                 Approval::create([

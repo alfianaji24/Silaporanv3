@@ -332,6 +332,9 @@ class IzindinasController extends Controller
                     Izindinas::where('kode_izin_dinas', $kode_izin_dinas)->update([
                         'status' => 1
                     ]);
+
+                    // Notify employee on final approval
+                    $this->notifyKaryawanFinalApproval($izindinas, 'dinas');
                 }
 
             } else {

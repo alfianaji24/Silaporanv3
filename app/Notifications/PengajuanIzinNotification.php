@@ -50,14 +50,34 @@ class PengajuanIzinNotification extends Notification
     public function toArray(object $notifiable): array
     {
         if ($this->notifType === 'karyawan') {
-            // Untuk karyawan yang mengajukan
+            // Untuk karyawan yang mengajukan (pending, sudah tersimpan)
             $tipe_text = $this->getTipeText($this->tipe);
+            $nama_karyawan = $this->izin->karyawan->nama_karyawan ?? ($notifiable->name ?? 'Karyawan');
+
+            // Kirim WhatsApp notification juga untuk karyawan
+            $this->sendWhatsappNotification($notifiable, $tipe_text, $nama_karyawan);
+
             return [
                 'title' => 'Pengajuan ' . $tipe_text . ' Berhasil',
                 'message' => 'Pengajuan ' . $tipe_text . ' Anda dari ' . date('d-m-Y', strtotime($this->izin->dari)) . ' - ' . date('d-m-Y', strtotime($this->izin->sampai)) . ' sudah tersimpan dan sedang diajukan ke atasan Anda.',
-                'url' => route('pengajuanizin.index'), // Atau ubah sesuai route pengajuan izin karyawan
+                'url' => route('pengajuanizin.index'),
                 'type' => 'pengajuan.'.strtolower($this->tipe),
                 'icon' => 'ti-clipboard-check',
+                'kode_izin' => $this->izin->kode_izin ?? null
+            ];
+        } elseif ($this->notifType === 'karyawan_final') {
+            // Untuk karyawan ketika seluruh proses approval selesai
+            $tipe_text = $this->getTipeText($this->tipe);
+            $nama_karyawan = $this->izin->karyawan->nama_karyawan ?? ($notifiable->name ?? 'Karyawan');
+
+            $this->sendWhatsappNotification($notifiable, $tipe_text, $nama_karyawan);
+
+            return [
+                'title' => 'Pengajuan ' . $tipe_text . ' Disetujui',
+                'message' => 'Selamat! Pengajuan ' . $tipe_text . ' Anda dari ' . date('d-m-Y', strtotime($this->izin->dari)) . ' - ' . date('d-m-Y', strtotime($this->izin->sampai)) . ' telah disetujui.',
+                'url' => route('pengajuanizin.index'),
+                'type' => 'approved.'.strtolower($this->tipe),
+                'icon' => 'ti-check-circle',
                 'kode_izin' => $this->izin->kode_izin ?? null
             ];
         } else {
@@ -112,7 +132,7 @@ class PengajuanIzinNotification extends Notification
     {
         $phoneNumber = null;
         
-        if ($this->notifType === 'karyawan') {
+        if ($this->notifType === 'karyawan' || $this->notifType === 'karyawan_final') {
             // Untuk karyawan, ambil nomor dari tabel karyawan
             $phoneNumber = $this->getKaryawanPhoneNumber($notifiable);
         } elseif ($this->notifType === 'atasan') {
@@ -127,6 +147,11 @@ class PengajuanIzinNotification extends Notification
                 $message .= "Pengajuan {$tipe_text} Anda dari " . date('d-m-Y', strtotime($this->izin->dari)) . " - " . date('d-m-Y', strtotime($this->izin->sampai)) . " telah berhasil disimpan.\n\n";
                 $message .= "Status: Menunggu Persetujuan Atasan\n\n";
                 $message .= "Anda akan menerima notifikasi selanjutnya setelah atasan memproses pengajuan Anda.";
+            } elseif ($this->notifType === 'karyawan_final') {
+                $message = "🎉 *Pengajuan {$tipe_text} Disetujui*\n\n";
+                $message .= "Halo {$nama_karyawan},\n\n";
+                $message .= "Pengajuan {$tipe_text} Anda dari " . date('d-m-Y', strtotime($this->izin->dari)) . " - " . date('d-m-Y', strtotime($this->izin->sampai)) . " telah disetujui sepenuhnya.\n\n";
+                $message .= "Terima kasih atas kesabaran Anda.";
             } else {
                 $message = "🔔 *Notifikasi Pengajuan {$tipe_text}*\n\n";
                 $message .= "Karyawan: {$nama_karyawan}\n";

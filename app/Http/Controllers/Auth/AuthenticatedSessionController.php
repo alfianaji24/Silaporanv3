@@ -9,15 +9,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Jenssegers\Agent\Agent;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $agent = new Agent();
+        
+        if ($agent->isMobile()) {
+            return view('auth.login');
+        }
+        
+        return view('auth.loginusermobile');
     }
 
     /**

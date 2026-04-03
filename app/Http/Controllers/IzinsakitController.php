@@ -424,6 +424,9 @@ class IzinsakitController extends Controller
 
                     $dari = date('Y-m-d', strtotime($dari . ' +1 day'));
                 }
+
+                // Notify the employee on final approval
+                $this->notifyKaryawanFinalApproval($izinsakit, 'sakit');
             } else {
                  // REJECTION
                  Approval::create([

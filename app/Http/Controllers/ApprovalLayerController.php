@@ -8,6 +8,7 @@ use App\Models\Departemen;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Schema;
 
 class ApprovalLayerController extends Controller
 {
@@ -21,6 +22,35 @@ class ApprovalLayerController extends Controller
         $jabatans = \App\Models\Jabatan::all();
 
         return view('konfigurasi.approvallayer.index', compact('approvalLayers', 'cabangs', 'departemens', 'jabatans'));
+    }
+
+    private function applyTargetFilters($query, $kode_cabang, $kode_dept, $kode_jabatan)
+    {
+        if (Schema::hasColumn('approval_layers', 'kode_cabang')) {
+            if (!empty($kode_cabang) && $kode_cabang !== 'ALL') {
+                $query->where('kode_cabang', $kode_cabang);
+            } else {
+                $query->whereNull('kode_cabang');
+            }
+        }
+
+        if (Schema::hasColumn('approval_layers', 'kode_dept')) {
+            if (!empty($kode_dept) && $kode_dept !== 'ALL') {
+                $query->where('kode_dept', $kode_dept);
+            } else {
+                $query->whereNull('kode_dept');
+            }
+        }
+
+        if (Schema::hasColumn('approval_layers', 'kode_jabatan')) {
+            if (!empty($kode_jabatan) && $kode_jabatan !== 'ALL') {
+                $query->where('kode_jabatan', $kode_jabatan);
+            } else {
+                $query->whereNull('kode_jabatan');
+            }
+        }
+
+        return $query;
     }
 
     public function create()
@@ -41,22 +71,29 @@ class ApprovalLayerController extends Controller
 
         try {
             // Delete existing configurations for this combination to prevent duplicates
-            ApprovalLayer::where('kode_cabang', $request->kode_cabang)
-                ->where('kode_dept', $request->kode_dept)
-                ->where('kode_jabatan', $request->kode_jabatan)
-                ->where('feature', 'IZIN')
-                ->delete();
+            $query = ApprovalLayer::where('feature', 'IZIN');
+            $query = $this->applyTargetFilters($query, $request->kode_cabang, $request->kode_dept, $request->kode_jabatan);
+            $query->delete();
 
             $level = 1;
             foreach ($request->role_names as $role) {
-                ApprovalLayer::create([
+                $payload = [
                     'feature' => 'IZIN',
                     'level' => $level,
                     'role_name' => $role,
-                    'kode_dept' => $request->kode_dept,
-                    'kode_jabatan' => $request->kode_jabatan,
-                    'kode_cabang' => $request->kode_cabang,
-                ]);
+                ];
+
+                if (Schema::hasColumn('approval_layers', 'kode_cabang')) {
+                    $payload['kode_cabang'] = !empty($request->kode_cabang) ? $request->kode_cabang : null;
+                }
+                if (Schema::hasColumn('approval_layers', 'kode_dept')) {
+                    $payload['kode_dept'] = !empty($request->kode_dept) ? $request->kode_dept : null;
+                }
+                if (Schema::hasColumn('approval_layers', 'kode_jabatan')) {
+                    $payload['kode_jabatan'] = !empty($request->kode_jabatan) ? $request->kode_jabatan : null;
+                }
+
+                ApprovalLayer::create($payload);
                 $level++;
             }
 
@@ -68,20 +105,12 @@ class ApprovalLayerController extends Controller
 
     public function editGroup(Request $request)
     {
-        $kode_cabang = $request->query('cabang');
-        $kode_dept = $request->query('dept');
-        $kode_jabatan = $request->query('jabatan');
+        $kode_cabang = $request->query('cabang') ?? 'ALL';
+        $kode_dept = $request->query('dept') ?? 'ALL';
+        $kode_jabatan = $request->query('jabatan') ?? 'ALL';
 
         $query = ApprovalLayer::where('feature', 'IZIN');
-        
-        if ($kode_cabang !== 'ALL') $query->where('kode_cabang', $kode_cabang);
-        else $query->whereNull('kode_cabang');
-
-        if ($kode_dept !== 'ALL') $query->where('kode_dept', $kode_dept);
-        else $query->whereNull('kode_dept');
-
-        if ($kode_jabatan !== 'ALL') $query->where('kode_jabatan', $kode_jabatan);
-        else $query->whereNull('kode_jabatan');
+        $query = $this->applyTargetFilters($query, $kode_cabang, $kode_dept, $kode_jabatan);
 
         $approvalLayers = $query->orderBy('level')->get();
 
@@ -104,37 +133,44 @@ class ApprovalLayerController extends Controller
         ]);
 
         try {
-            // Delete existing configs for the *original* combination being edited
-            // (Assuming target parameters could change, we delete old and insert new. 
-            // In Flow Builder, target is usually readonly during edit, but let's handle it)
-            
-            $old_cabang = $request->old_kode_cabang !== 'ALL' ? $request->old_kode_cabang : null;
-            $old_dept = $request->old_kode_dept !== 'ALL' ? $request->old_kode_dept : null;
-            $old_jabatan = $request->old_kode_jabatan !== 'ALL' ? $request->old_kode_jabatan : null;
+            // Convert empty strings to null (from "Semua" options in form)
+            $old_cabang = !empty($request->old_kode_cabang) && $request->old_kode_cabang !== 'ALL' ? $request->old_kode_cabang : null;
+            $old_dept = !empty($request->old_kode_dept) && $request->old_kode_dept !== 'ALL' ? $request->old_kode_dept : null;
+            $old_jabatan = !empty($request->old_kode_jabatan) && $request->old_kode_jabatan !== 'ALL' ? $request->old_kode_jabatan : null;
 
-            ApprovalLayer::where('feature', 'IZIN')
-                ->where('kode_cabang', $old_cabang)
-                ->where('kode_dept', $old_dept)
-                ->where('kode_jabatan', $old_jabatan)
-                ->delete();
+            $new_cabang = !empty($request->kode_cabang) ? $request->kode_cabang : null;
+            $new_dept = !empty($request->kode_dept) ? $request->kode_dept : null;
+            $new_jabatan = !empty($request->kode_jabatan) ? $request->kode_jabatan : null;
+
+            // Delete existing configs for the *original* combination being edited
+            $deleteOldQuery = ApprovalLayer::where('feature', 'IZIN');
+            $deleteOldQuery = $this->applyTargetFilters($deleteOldQuery, $old_cabang, $old_dept, $old_jabatan);
+            $deleteOldQuery->delete();
 
             // Also delete if the new target already exists to prevent duplication
-            ApprovalLayer::where('feature', 'IZIN')
-                ->where('kode_cabang', $request->kode_cabang)
-                ->where('kode_dept', $request->kode_dept)
-                ->where('kode_jabatan', $request->kode_jabatan)
-                ->delete();
+            $deleteNewQuery = ApprovalLayer::where('feature', 'IZIN');
+            $deleteNewQuery = $this->applyTargetFilters($deleteNewQuery, $new_cabang, $new_dept, $new_jabatan);
+            $deleteNewQuery->delete();
 
             $level = 1;
             foreach ($request->role_names as $role) {
-                ApprovalLayer::create([
+                $payload = [
                     'feature' => 'IZIN',
                     'level' => $level,
                     'role_name' => $role,
-                    'kode_dept' => $request->kode_dept,
-                    'kode_jabatan' => $request->kode_jabatan,
-                    'kode_cabang' => $request->kode_cabang,
-                ]);
+                ];
+
+                if (Schema::hasColumn('approval_layers', 'kode_cabang')) {
+                    $payload['kode_cabang'] = $new_cabang;
+                }
+                if (Schema::hasColumn('approval_layers', 'kode_dept')) {
+                    $payload['kode_dept'] = $new_dept;
+                }
+                if (Schema::hasColumn('approval_layers', 'kode_jabatan')) {
+                    $payload['kode_jabatan'] = $new_jabatan;
+                }
+
+                ApprovalLayer::create($payload);
                 $level++;
             }
 
@@ -147,15 +183,13 @@ class ApprovalLayerController extends Controller
     public function destroyGroup(Request $request)
     {
         try {
-            $kode_cabang = $request->query('cabang') !== 'ALL' ? $request->query('cabang') : null;
-            $kode_dept = $request->query('dept') !== 'ALL' ? $request->query('dept') : null;
-            $kode_jabatan = $request->query('jabatan') !== 'ALL' ? $request->query('jabatan') : null;
+            $kode_cabang = (!empty($request->query('cabang')) && $request->query('cabang') !== 'ALL') ? $request->query('cabang') : null;
+            $kode_dept = (!empty($request->query('dept')) && $request->query('dept') !== 'ALL') ? $request->query('dept') : null;
+            $kode_jabatan = (!empty($request->query('jabatan')) && $request->query('jabatan') !== 'ALL') ? $request->query('jabatan') : null;
 
-            ApprovalLayer::where('feature', 'IZIN')
-                ->where('kode_cabang', $kode_cabang)
-                ->where('kode_dept', $kode_dept)
-                ->where('kode_jabatan', $kode_jabatan)
-                ->delete();
+            $deleteQuery = ApprovalLayer::where('feature', 'IZIN');
+            $deleteQuery = $this->applyTargetFilters($deleteQuery, $kode_cabang, $kode_dept, $kode_jabatan);
+            $deleteQuery->delete();
 
             return Redirect::back()->with(['success' => 'Data Konfigurasi Berhasil Dihapus']);
         } catch (\Exception $e) {
