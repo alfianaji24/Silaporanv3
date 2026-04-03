@@ -249,10 +249,10 @@
         document.querySelector('form').addEventListener('submit', function(e) {
             const btn = document.getElementById('btn-signin-submit');
             btn.disabled = true;
-            btn.value = 'Signing In...';
+            btn.value = 'Tunggu...';
             // Add spinner to button
             btn.style.position = 'relative';
-            btn.innerHTML = '<div class="spinner" style="margin-right: 8px;"></div>Signing In...';
+            btn.innerHTML = '<div class="spinner" style="margin-right: 8px;"></div>Tunggu...';
         });
     </script>
 
