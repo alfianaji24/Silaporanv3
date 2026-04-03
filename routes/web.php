@@ -61,7 +61,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/', function () {
             $agent = new \Jenssegers\Agent\Agent();
             if ($agent->isMobile()) {
-                return view('auth.loginusermobile');
+                return view('auth.login');
             }
             return view('auth.loginuser');
         }

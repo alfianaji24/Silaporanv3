@@ -18,12 +18,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        $agent = new Agent();
-        
-        if ($agent->isMobile()) {
-            return view('auth.login');
-        }
-        
         return view('auth.loginusermobile');
     }
 
