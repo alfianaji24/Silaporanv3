@@ -78,7 +78,10 @@ class UserController extends Controller
             'username' => 'required',
             'email' => 'required|email',
             'password' => 'required',
+            'phone' => 'nullable|regex:/^(\+62|62|0)[0-9]{8,12}$/',
             'role' => 'required'
+        ], [
+            'phone.regex' => 'Format nomor HP tidak valid. Gunakan format: 08xxxxxxxxx atau 628xxxxxxxxx'
         ]);
 
         // Validasi untuk role selain super admin
@@ -98,12 +101,17 @@ class UserController extends Controller
         }
 
         try {
+            $phone = null;
+            if (strtolower($request->role) !== 'karyawan') {
+                $phone = isset($request->phone) ? normalizePhoneNumber($request->phone) : null;
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => $request->password,
-                'phone' => $request->phone,
+                'phone' => $phone,
             ]);
 
             $user->assignRole($request->role);
@@ -143,9 +151,17 @@ class UserController extends Controller
             'name' => 'required',
             'username' => 'required',
             'email' => 'required|email',
+            'phone' => 'nullable|regex:/^(\+62|62|0)[0-9]{8,12}$/',
+        ], [
+            'phone.regex' => 'Format nomor HP tidak valid. Gunakan format: 08xxxxxxxxx atau 628xxxxxxxxx'
         ]);
 
         try {
+            $roleName = isset($request->role) ? strtolower($request->role) : strtolower($user->roles->pluck('name')->first() ?? '');
+            $phone = null;
+            if ($roleName !== 'karyawan') {
+                $phone = isset($request->phone) ? normalizePhoneNumber($request->phone) : null;
+            }
 
             if (isset($request->password)) {
                 User::where('id', $id)->update([
@@ -153,14 +169,14 @@ class UserController extends Controller
                     'username' => $request->username,
                     'email' => $request->email,
                     'password' => bcrypt($request->password),
-                    'phone' => $request->phone,
+                    'phone' => $phone,
                 ]);
             } else {
                 User::where('id', $id)->update([
                     'name' => $request->name,
                     'username' => $request->username,
                     'email' => $request->email,
-                    'phone' => $request->phone,
+                    'phone' => $phone,
                 ]);
             }
 

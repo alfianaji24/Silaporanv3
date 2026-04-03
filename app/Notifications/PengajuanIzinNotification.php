@@ -82,14 +82,6 @@ class PengajuanIzinNotification extends Notification
     }
 
     /**
-     * Get nomor HP admin dari tabel users
-     */
-    private function getAdminPhoneNumber($user)
-    {
-        return $user->phone;
-    }
-
-    /**
      * Get nomor HP karyawan dari tabel karyawan
      */
     private function getKaryawanPhoneNumber($user)

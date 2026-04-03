@@ -3,7 +3,10 @@
     <x-input-with-icon icon="ti ti-user" label="Nama User" name="name" />
     <x-input-with-icon icon="ti ti-user" label="Username" name="username" />
     <x-input-with-icon icon="ti ti-mail" label="Email" name="email" />
-    <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" />
+    <div class="form-group" id="phone-group">
+        <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" />
+        <small class="form-text text-muted">Masukkan nomor HP (08.. atau 628..) hanya untuk user admin/atasan. Karyawan otomatis ambil dari data Karyawan.</small>
+    </div>
     <x-input-with-icon icon="ti ti-key" label="Password" name="password" type="password" />
     <x-select label="Role" name="role" :data="$roles" key="name" textShow="name" />
     
@@ -74,7 +77,6 @@
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/bundle/popular.min.js') }}"></script>
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/plugin-bootstrap5/index.min.js') }}"></script>
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/plugin-auto-focus/index.min.js') }}"></script>
-<script src="{{ asset('assets/js/pages/users/create.js') }}"></script>
 <script>
     // Auto-check semua cabang dan departemen jika role adalah super admin
     // Auto-check semua cabang dan departemen jika role adalah super admin
@@ -85,9 +87,21 @@
         const cabangHelpText = document.getElementById('cabang-help-text');
         const departemenHelpText = document.getElementById('departemen-help-text');
 
+        function getSelectedRole() {
+            const roleInput = document.querySelector('input[name="role"][type="hidden"]');
+            if (roleSelect) {
+                return (roleSelect.options[roleSelect.selectedIndex]?.text || '').toLowerCase();
+            }
+            if (roleInput) {
+                return (roleInput.value || '').toLowerCase();
+            }
+            return '';
+        }
+
         function toggleAccessBasedOnRole() {
-            const selectedRole = roleSelect ? roleSelect.options[roleSelect.selectedIndex].text.toLowerCase() : '';
+            const selectedRole = getSelectedRole();
             const isSuperAdmin = selectedRole === 'super admin';
+            const isKaryawan = selectedRole === 'karyawan';
             const cabangGroup = document.getElementById('cabang-access-group');
             const departemenGroup = document.getElementById('departemen-access-group');
 
@@ -133,8 +147,9 @@
         const form = document.getElementById('formcreateUser');
         if (form) {
             form.addEventListener('submit', function(e) {
-                const selectedRole = roleSelect ? roleSelect.options[roleSelect.selectedIndex].text.toLowerCase() : '';
+                const selectedRole = getSelectedRole();
                 const isSuperAdmin = selectedRole === 'super admin';
+                const isKaryawan = selectedRole === 'karyawan';
                 
                 if (isSuperAdmin) {
                     // Remove disabled attribute temporarily before submit
@@ -144,8 +159,10 @@
                     departemenCheckboxes.forEach(checkbox => {
                         checkbox.disabled = false;
                     });
+                } else if (isKaryawan) {
+                    // Karyawan tidak perlu validasi cabang/departemen di form user.
                 } else {
-                    // Validasi untuk role selain super admin
+                    // Validasi untuk role selain super admin dan karyawan
                     const checkedCabangs = Array.from(cabangCheckboxes).filter(cb => cb.checked).length;
                     const checkedDepartemens = Array.from(departemenCheckboxes).filter(cb => cb.checked).length;
                     
@@ -231,6 +248,32 @@
                     }
                 });
             });
+
+            function togglePhoneGroupByRole() {
+                const roleSelect = document.querySelector('select[name="role"]');
+                const roleInput = document.querySelector('input[name="role"][type="hidden"]');
+                const phoneGroup = document.getElementById('phone-group');
+                if (!phoneGroup) return;
+
+                let selectedRole = '';
+                if (roleSelect) {
+                    selectedRole = roleSelect.options[roleSelect.selectedIndex]?.text.toLowerCase() || '';
+                } else if (roleInput) {
+                    selectedRole = roleInput.value.toLowerCase();
+                }
+
+                if (selectedRole === 'karyawan') {
+                    phoneGroup.style.display = 'none';
+                } else {
+                    phoneGroup.style.display = 'block';
+                }
+            }
+
+            if (roleSelect) {
+                roleSelect.addEventListener('change', togglePhoneGroupByRole);
+            }
+
+            togglePhoneGroupByRole();
         }
     })();
 </script>

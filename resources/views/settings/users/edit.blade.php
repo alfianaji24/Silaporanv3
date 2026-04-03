@@ -9,7 +9,10 @@
     <x-input-with-icon icon="ti ti-user" label="Nama User" name="name" value="{{ $user->name }}" :readonly="$isKaryawan" />
     <x-input-with-icon icon="ti ti-user" label="Username" name="username" value="{{ $user->username }}" />
     <x-input-with-icon icon="ti ti-mail" label="Email" name="email" value="{{ $user->email }}" />
-    <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" value="{{ $user->phone }}" />
+    <div class="form-group" id="phone-group">
+        <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" value="{{ $user->phone }}" />
+        <small class="form-text text-muted">Hanya untuk user admin/atasan. Karyawan ambil no HP dari data Karyawan.</small>
+    </div>
     <x-input-with-icon icon="ti ti-key" label="Password" name="password" type="password" />
     @if(!$isKaryawan)
         <x-select label="Role" name="role" :data="$roles" key="name" textShow="name" :selected="$user->roles->pluck('name')[0]" />
@@ -106,20 +109,30 @@
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/bundle/popular.min.js') }}"></script>
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/plugin-bootstrap5/index.min.js') }}"></script>
 <script src="{{ asset('/assets/vendor/libs/@form-validation/umd/plugin-auto-focus/index.min.js') }}"></script>
-<script src="{{ asset('assets/js/pages/users/edit.js') }}"></script>
 <script>
-    const isKaryawan = @json($isKaryawan);
     // Auto-check semua cabang dan departemen jika role adalah super admin
     (function() {
         const roleSelect = document.querySelector('select[name="role"]');
+        const roleInput = document.querySelector('input[name="role"][type="hidden"]');
         const cabangCheckboxes = document.querySelectorAll('.cabang-checkbox');
         const departemenCheckboxes = document.querySelectorAll('.departemen-checkbox');
         const cabangHelpText = document.getElementById('cabang-help-text');
         const departemenHelpText = document.getElementById('departemen-help-text');
 
+        function getSelectedRole() {
+            if (roleSelect) {
+                return (roleSelect.options[roleSelect.selectedIndex]?.text || '').toLowerCase();
+            }
+            if (roleInput) {
+                return (roleInput.value || '').toLowerCase();
+            }
+            return '';
+        }
+
         function toggleAccessBasedOnRole() {
-            const selectedRole = roleSelect ? roleSelect.options[roleSelect.selectedIndex].text.toLowerCase() : '';
+            const selectedRole = getSelectedRole();
             const isSuperAdmin = selectedRole === 'super admin';
+            const isKaryawan = selectedRole === 'karyawan';
             const cabangGroup = document.getElementById('cabang-access-group');
             const departemenGroup = document.getElementById('departemen-access-group');
 
@@ -168,8 +181,9 @@
         const form = document.getElementById('formeditUser');
         if (form) {
             form.addEventListener('submit', function(e) {
-                const selectedRole = roleSelect ? roleSelect.options[roleSelect.selectedIndex].text.toLowerCase() : '';
+                const selectedRole = getSelectedRole();
                 const isSuperAdmin = selectedRole === 'super admin';
+                const isKaryawan = selectedRole === 'karyawan';
                 
                 if (isSuperAdmin) {
                     // Remove disabled attribute temporarily before submit
@@ -179,10 +193,14 @@
                     departemenCheckboxes.forEach(checkbox => {
                         checkbox.disabled = false;
                     });
-                } else if(!isKaryawan) {
-                    // Validasi untuk role selain super admin dan bukan karyawan
-                    const checkedCabangs = Array.from(cabangCheckboxes).filter(cb => cb.checked).length;
-                    const checkedDepartemens = Array.from(departemenCheckboxes).filter(cb => cb.checked).length;
+                } else {
+                    const isKaryawanCurrent = selectedRole === 'karyawan';
+                    if (isKaryawanCurrent) {
+                        // no need to validate cabang/departemen for karyawan
+                    } else {
+                        // Validasi untuk role selain super admin dan bukan karyawan
+                        const checkedCabangs = Array.from(cabangCheckboxes).filter(cb => cb.checked).length;
+                        const checkedDepartemens = Array.from(departemenCheckboxes).filter(cb => cb.checked).length;
                     
                     let hasError = false;
                     
@@ -226,7 +244,8 @@
                         return false;
                     }
                 }
-            });
+            }
+        });
             
             // Real-time validation saat checkbox berubah
             cabangCheckboxes.forEach(checkbox => {
@@ -266,6 +285,32 @@
                     }
                 });
             });
+
+            function togglePhoneGroupByRole() {
+                const roleSelect = document.querySelector('select[name="role"]');
+                const roleInput = document.querySelector('input[name="role"][type="hidden"]');
+                const phoneGroup = document.getElementById('phone-group');
+                if (!phoneGroup) return;
+
+                let selectedRole = '';
+                if (roleSelect) {
+                    selectedRole = roleSelect.options[roleSelect.selectedIndex]?.text.toLowerCase() || '';
+                } else if (roleInput) {
+                    selectedRole = roleInput.value.toLowerCase();
+                }
+
+                if (selectedRole === 'karyawan') {
+                    phoneGroup.style.display = 'none';
+                } else {
+                    phoneGroup.style.display = 'block';
+                }
+            }
+
+            if (roleSelect) {
+                roleSelect.addEventListener('change', togglePhoneGroupByRole);
+            }
+
+            togglePhoneGroupByRole();
         }
     })();
 </script>
