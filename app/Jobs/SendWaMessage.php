@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Device;
+use App\Models\Message;
 use App\Models\Pengaturanumum;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -73,6 +74,16 @@ class SendWaMessage implements ShouldQueue
             return;
         }
 
+        $logMessageRow = function (array $attrs): void {
+            try {
+                Message::create($attrs);
+            } catch (\Throwable $e) {
+                Log::error('SendWaMessage: gagal simpan ke tabel messages', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        };
+
         if ($providerWa === 'fe') {
             $curl = curl_init();
             curl_setopt_array($curl, array(
@@ -113,8 +124,34 @@ class SendWaMessage implements ShouldQueue
             ]);
 
             if ($errno || $httpCode >= 400) {
+                $logMessageRow([
+                    'pengirim' => 'fonnte',
+                    'penerima' => $penerima,
+                    'pesan' => $this->message,
+                    'status' => 'failed',
+                    'message_id' => null,
+                    'error_message' => ($err ?: ('HTTP ' . $httpCode)) . (is_string($response) && $response !== '' ? ' | ' . $response : ''),
+                ]);
                 throw new \RuntimeException('SendWaMessage Fonnte gagal: ' . ($err ?: ('HTTP ' . $httpCode)));
             }
+            $messageId = null;
+            if (is_string($response) && $response !== '') {
+                $decoded = json_decode($response, true);
+                if (is_array($decoded)) {
+                    $messageId = $decoded['message_id'] ?? $decoded['id'] ?? null;
+                    if ($messageId !== null) {
+                        $messageId = (string) $messageId;
+                    }
+                }
+            }
+            $logMessageRow([
+                'pengirim' => 'fonnte',
+                'penerima' => $penerima,
+                'pesan' => $this->message,
+                'status' => 'success',
+                'message_id' => $messageId,
+                'error_message' => null,
+            ]);
             return;
         }
 
@@ -128,6 +165,14 @@ class SendWaMessage implements ShouldQueue
         $sender = Device::where('status', 1)->first();
         if (!$sender) {
             Log::warning('SendWaMessage: Device sender aktif tidak ditemukan');
+            $logMessageRow([
+                'pengirim' => '-',
+                'penerima' => $penerima,
+                'pesan' => $this->message,
+                'status' => 'failed',
+                'message_id' => null,
+                'error_message' => 'Device sender aktif tidak ditemukan (devices.status=1)',
+            ]);
             return;
         }
 
@@ -158,8 +203,32 @@ class SendWaMessage implements ShouldQueue
             'tujuan_notifikasi' => $tujuanNotifikasi,
         ]);
 
-        if (!$response->successful()) {
-            throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
+        if ($response->successful()) {
+            $responseData = $response->json();
+            $logMessageRow([
+                'pengirim' => $sender->number,
+                'penerima' => $penerima,
+                'pesan' => $this->message,
+                'status' => 'success',
+                'message_id' => is_array($responseData) ? ($responseData['message_id'] ?? null) : null,
+                'error_message' => null,
+            ]);
+            return;
         }
+
+        $errorResponse = $response->json();
+        $statusCode = $response->status();
+        $errText = is_array($errorResponse)
+            ? ($errorResponse['message'] ?? json_encode($errorResponse, JSON_UNESCAPED_UNICODE))
+            : $response->body();
+        $logMessageRow([
+            'pengirim' => $sender->number,
+            'penerima' => $penerima,
+            'pesan' => $this->message,
+            'status' => 'failed',
+            'message_id' => null,
+            'error_message' => $errText !== '' ? $errText : "HTTP {$statusCode}",
+        ]);
+        throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
     }
 }
