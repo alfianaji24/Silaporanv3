@@ -58,7 +58,7 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', function () {
+    Route::get('/', function () {
             $agent = new \Jenssegers\Agent\Agent();
             if ($agent->isMobile()) {
                 return view('auth.loginusermobile');
