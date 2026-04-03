@@ -74,6 +74,13 @@ class PublicPresensiController extends Controller
         // Get jam kerja
         $jam_kerja = $this->getJamKerjaKaryawan($karyawan);
 
+        if ($jam_kerja && Jamkerja::isKodeLibur($jam_kerja->kode_jam_kerja ?? null)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Hari ini jadwal Anda libur (tidak perlu presensi).',
+            ], 200);
+        }
+
         // Foto URL
         $foto = null;
         if (!empty($karyawan->foto) && Storage::disk('public')->exists('karyawan/' . $karyawan->foto)) {
@@ -130,6 +137,10 @@ class PublicPresensiController extends Controller
         $jam_kerja = $this->getJamKerjaKaryawan($karyawan);
         if (!$jam_kerja) {
             return response()->json(['status' => 'error', 'message' => 'Jadwal kerja tidak ditemukan'], 200);
+        }
+
+        if (Jamkerja::isKodeLibur($jam_kerja->kode_jam_kerja ?? null)) {
+            return response()->json(['status' => 'error', 'message' => 'Hari ini jadwal Anda libur, tidak perlu presensi.'], 200);
         }
 
         // Determine status (1: Masuk, 2: Pulang)

@@ -65,7 +65,8 @@
                                 </div>
                                 <div class="col-lg-1 col-sm-12 col-md-12">
                                     <select name="status_aktif_karyawan" class="form-select">
-                                        <option value="">Semua</option>
+                                        <option value="">Pilih</option>
+                                        <option value="semua" @if(Request('status_aktif_karyawan')==='semua' ) selected @endif>Semua</option>
                                         <option value="1" @if(Request('status_aktif_karyawan')==='1' ) selected @endif>Aktif</option>
                                         <option value="0" @if(Request('status_aktif_karyawan')==='0' ) selected @endif>Non Aktif</option>
                                     </select>

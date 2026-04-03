@@ -62,15 +62,14 @@
                                                 <select name="kode_jam_kerja[]" id="kode_jam_kerja" class="form-select">
                                                     <option value="">Pilih Jam Kerja</option>
                                                     @foreach ($jamkerja as $d)
+                                                        @php $isLibur = $d->kode_jam_kerja === \App\Models\Jamkerja::KODE_LIBUR; @endphp
                                                         @if (array_key_exists($hari, $jamkerjabyday) && $jamkerjabyday[$hari] == $d->kode_jam_kerja)
-                                                            <option value="{{ $d->kode_jam_kerja }}" selected>{{ $d->nama_jam_kerja }}
-                                                                ({{ $d->jam_masuk }} -
-                                                                {{ $d->jam_pulang }})
+                                                            <option value="{{ $d->kode_jam_kerja }}" selected>
+                                                                {{ $isLibur ? 'Libur' : $d->nama_jam_kerja . ' (' . $d->jam_masuk . ' - ' . $d->jam_pulang . ')' }}
                                                             </option>
                                                         @else
-                                                            <option value="{{ $d->kode_jam_kerja }}">{{ $d->nama_jam_kerja }}
-                                                                ({{ $d->jam_masuk }} -
-                                                                {{ $d->jam_pulang }})
+                                                            <option value="{{ $d->kode_jam_kerja }}">
+                                                                {{ $isLibur ? 'Libur' : $d->nama_jam_kerja . ' (' . $d->jam_masuk . ' - ' . $d->jam_pulang . ')' }}
                                                             </option>
                                                         @endif
                                                     @endforeach
@@ -120,15 +119,21 @@
                     <div class="row mb-4">
                         <div class="col-12">
 
-                            <div class="d-flex flex-wrap gap-2" id="jamKerjaTemplates">
+                            <div class="d-flex flex-wrap gap-2 align-items-start" id="jamKerjaTemplates">
                                 @foreach ($jamkerja as $d)
-                                    <div class="jam-kerja-template" data-kode="{{ $d->kode_jam_kerja }}" data-nama="{{ $d->nama_jam_kerja }}"
-                                        data-jam="{{ $d->jam_masuk }} - {{ $d->jam_pulang }}" style="cursor: grab; user-select: none;">
-                                        <span class="badge bg-primary p-2" style="font-size: 12px;">
-                                            <i class="ti ti-clock me-1"></i>
+                                    @php $isLibur = $d->kode_jam_kerja === \App\Models\Jamkerja::KODE_LIBUR; @endphp
+                                    <div class="jam-kerja-template {{ $isLibur ? 'jam-kerja-libur' : '' }}" data-kode="{{ $d->kode_jam_kerja }}" data-nama="{{ $d->nama_jam_kerja }}"
+                                        data-jam="{{ $isLibur ? '00:00 - 00:00' : $d->jam_masuk . ' - ' . $d->jam_pulang }}" style="cursor: grab; user-select: none;">
+                                        <span class="badge {{ $isLibur ? 'bg-secondary' : 'bg-primary' }} p-2" style="font-size: 12px;">
+                                            <i class="ti {{ $isLibur ? 'ti-moon' : 'ti-clock' }} me-1"></i>
                                             {{ $d->nama_jam_kerja }}
-                                            <br>
-                                            <small>{{ $d->jam_masuk }} - {{ $d->jam_pulang }}</small>
+                                            @if (!$isLibur)
+                                                <br>
+                                                <small>{{ $d->jam_masuk }} - {{ $d->jam_pulang }}</small>
+                                            @else
+                                                <br>
+                                                <small>Hari libur</small>
+                                            @endif
                                         </span>
                                     </div>
                                 @endforeach
@@ -316,6 +321,14 @@
         background-color: #f59e0b;
     }
 
+    .jam-kerja-badge-libur {
+        background-color: #6b7280 !important;
+    }
+
+    .jam-kerja-badge-libur:hover {
+        background-color: #4b5563 !important;
+    }
+
     .jam-kerja-template {
         transition: all 0.2s ease;
     }
@@ -476,12 +489,14 @@
                     const jamMasuk = jk.jam_masuk || '';
                     const jamPulang = jk.jam_pulang || '';
                     const namaJamKerja = jk.nama_jam_kerja || 'Jam Kerja';
+                    const isLibur = jk.kode_jam_kerja === 'LBR';
+                    const badgeClass = isLibur ? 'jam-kerja-badge jam-kerja-badge-libur' : 'jam-kerja-badge';
 
                     jamKerjaHTML += `
-                        <div class="jam-kerja-badge" data-kode="${jk.kode_jam_kerja}" data-tanggal="${dateString}">
+                        <div class="${badgeClass}" data-kode="${jk.kode_jam_kerja}" data-tanggal="${dateString}">
                             <button class="delete-jam-kerja" type="button">&times;</button>
-                            ${namaJamKerja}
-                            <br><small>${jamMasuk} - ${jamPulang}</small>
+                            ${isLibur ? 'Libur' : namaJamKerja}
+                            <br><small>${isLibur ? 'Hari libur' : (jamMasuk + ' - ' + jamPulang)}</small>
                         </div>
                     `;
                 });

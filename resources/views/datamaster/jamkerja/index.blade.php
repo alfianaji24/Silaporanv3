@@ -89,7 +89,9 @@
                                     <td class="fw-bold py-2">{{ $d->kode_jam_kerja }}</td>
                                     <td class="py-2">{{ $d->nama_jam_kerja }}</td>
                                     <td class="py-2 text-center">
-                                        @if ($d->jabatan_terbatas_count === 0)
+                                        @if ($d->kode_jam_kerja === \App\Models\Jamkerja::KODE_LIBUR)
+                                            <span class="badge bg-label-secondary" title="Jam kerja sistem">Libur</span>
+                                        @elseif ($d->jabatan_terbatas_count === 0)
                                             <span class="text-muted" title="Belum dipilih jabatan — jam kerja tidak ditampilkan ke karyawan">Belum dipilih</span>
                                         @elseif ($total_jabatan > 0 && $d->jabatan_terbatas_count >= $total_jabatan)
                                             <span class="text-muted" title="Semua jabatan dipilih">Semua</span>
@@ -130,15 +132,17 @@
                                             @endcan
 
                                             @can('jamkerja.delete')
-                                                <form method="POST" name="deleteform" class="deleteform m-0"
-                                                    action="{{ route('jamkerja.delete', Crypt::encrypt($d->kode_jam_kerja)) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm delete-confirm px-2 py-1 border-0 rounded-0 border-start"
-                                                        title="Hapus" style="background: #f8f9fa;">
-                                                        <i class="ti ti-trash fs-6 text-danger"></i>
-                                                    </button>
-                                                </form>
+                                                @if ($d->kode_jam_kerja !== \App\Models\Jamkerja::KODE_LIBUR)
+                                                    <form method="POST" name="deleteform" class="deleteform m-0"
+                                                        action="{{ route('jamkerja.delete', Crypt::encrypt($d->kode_jam_kerja)) }}">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm delete-confirm px-2 py-1 border-0 rounded-0 border-start"
+                                                            title="Hapus" style="background: #f8f9fa;">
+                                                            <i class="ti ti-trash fs-6 text-danger"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @endcan
                                         </div>
                                     </td>

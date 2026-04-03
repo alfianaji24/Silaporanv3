@@ -10,10 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Jamkerja extends Model
 {
     use HasFactory;
+
+    /** Kode jam kerja khusus: tidak masuk kerja (set jadwal libur per hari/tanggal). */
+    public const KODE_LIBUR = 'LBR';
+
     protected $table = 'presensi_jamkerja';
     protected $primaryKey = 'kode_jam_kerja';
     protected $guarded = [];
     public $incrementing = false;
+
+    public static function isKodeLibur(?string $kode): bool
+    {
+        return $kode !== null && $kode !== '' && $kode === self::KODE_LIBUR;
+    }
 
     /**
      * Batasi jam kerja ke jabatan tertentu (halaman pilih jam kerja).
@@ -38,28 +47,31 @@ class Jamkerja extends Model
     {
         $totalJabatan = static::hitungJabatanDefinisi();
         if ($totalJabatan === 0) {
-            return $query->whereRaw('1 = 0');
+            return $query->where('presensi_jamkerja.kode_jam_kerja', self::KODE_LIBUR);
         }
 
-        return $query
-            ->whereExists(function ($sub) {
-                $sub->selectRaw('1')
-                    ->from('presensi_jamkerja_jabatan')
-                    ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja');
-            })
-            ->where(function (Builder $q) use ($kodeCabang, $kodeDept, $totalJabatan) {
-                $q->whereRaw(
-                    '(SELECT COUNT(DISTINCT presensi_jamkerja_jabatan.kode_jabatan) FROM presensi_jamkerja_jabatan WHERE presensi_jamkerja_jabatan.kode_jam_kerja = presensi_jamkerja.kode_jam_kerja) = ?',
-                    [$totalJabatan]
-                )->orWhereExists(function ($sub) use ($kodeCabang, $kodeDept) {
+        return $query->where(function (Builder $outer) use ($kodeCabang, $kodeDept, $totalJabatan) {
+            $outer->where(function (Builder $q) use ($kodeCabang, $kodeDept, $totalJabatan) {
+                $q->whereExists(function ($sub) {
                     $sub->selectRaw('1')
                         ->from('presensi_jamkerja_jabatan')
-                        ->join('karyawan', 'karyawan.kode_jabatan', '=', 'presensi_jamkerja_jabatan.kode_jabatan')
-                        ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja')
-                        ->where('karyawan.kode_cabang', $kodeCabang)
-                        ->where('karyawan.kode_dept', $kodeDept);
-                });
-            });
+                        ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja');
+                })
+                    ->where(function (Builder $q2) use ($kodeCabang, $kodeDept, $totalJabatan) {
+                        $q2->whereRaw(
+                            '(SELECT COUNT(DISTINCT presensi_jamkerja_jabatan.kode_jabatan) FROM presensi_jamkerja_jabatan WHERE presensi_jamkerja_jabatan.kode_jam_kerja = presensi_jamkerja.kode_jam_kerja) = ?',
+                            [$totalJabatan]
+                        )->orWhereExists(function ($sub) use ($kodeCabang, $kodeDept) {
+                            $sub->selectRaw('1')
+                                ->from('presensi_jamkerja_jabatan')
+                                ->join('karyawan', 'karyawan.kode_jabatan', '=', 'presensi_jamkerja_jabatan.kode_jabatan')
+                                ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja')
+                                ->where('karyawan.kode_cabang', $kodeCabang)
+                                ->where('karyawan.kode_dept', $kodeDept);
+                        });
+                    });
+            })->orWhere('presensi_jamkerja.kode_jam_kerja', self::KODE_LIBUR);
+        });
     }
 
     /**
@@ -70,29 +82,33 @@ class Jamkerja extends Model
     {
         $totalJabatan = static::hitungJabatanDefinisi();
         if ($totalJabatan === 0) {
-            return $query->whereRaw('1 = 0');
+            return $query->where('presensi_jamkerja.kode_jam_kerja', self::KODE_LIBUR);
         }
 
-        $query = $query->whereExists(function ($sub) {
-            $sub->selectRaw('1')
-                ->from('presensi_jamkerja_jabatan')
-                ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja');
-        });
+        return $query->where(function (Builder $outer) use ($kodeJabatan, $totalJabatan) {
+            $outer->where(function (Builder $q) use ($kodeJabatan, $totalJabatan) {
+                $q->whereExists(function ($sub) {
+                    $sub->selectRaw('1')
+                        ->from('presensi_jamkerja_jabatan')
+                        ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja');
+                });
 
-        if ($kodeJabatan === null || $kodeJabatan === '') {
-            return $query->whereRaw('1 = 0');
-        }
-
-        return $query->where(function (Builder $q) use ($kodeJabatan, $totalJabatan) {
-            $q->whereRaw(
-                '(SELECT COUNT(DISTINCT presensi_jamkerja_jabatan.kode_jabatan) FROM presensi_jamkerja_jabatan WHERE presensi_jamkerja_jabatan.kode_jam_kerja = presensi_jamkerja.kode_jam_kerja) = ?',
-                [$totalJabatan]
-            )->orWhereExists(function ($sub) use ($kodeJabatan) {
-                $sub->selectRaw('1')
-                    ->from('presensi_jamkerja_jabatan')
-                    ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja')
-                    ->where('presensi_jamkerja_jabatan.kode_jabatan', $kodeJabatan);
-            });
+                if ($kodeJabatan === null || $kodeJabatan === '') {
+                    $q->whereRaw('1 = 0');
+                } else {
+                    $q->where(function (Builder $q2) use ($kodeJabatan, $totalJabatan) {
+                        $q2->whereRaw(
+                            '(SELECT COUNT(DISTINCT presensi_jamkerja_jabatan.kode_jabatan) FROM presensi_jamkerja_jabatan WHERE presensi_jamkerja_jabatan.kode_jam_kerja = presensi_jamkerja.kode_jam_kerja) = ?',
+                            [$totalJabatan]
+                        )->orWhereExists(function ($sub) use ($kodeJabatan) {
+                            $sub->selectRaw('1')
+                                ->from('presensi_jamkerja_jabatan')
+                                ->whereColumn('presensi_jamkerja_jabatan.kode_jam_kerja', 'presensi_jamkerja.kode_jam_kerja')
+                                ->where('presensi_jamkerja_jabatan.kode_jabatan', $kodeJabatan);
+                        });
+                    });
+                }
+            })->orWhere('presensi_jamkerja.kode_jam_kerja', self::KODE_LIBUR);
         });
     }
 }

@@ -396,6 +396,9 @@ class JamkerjaController extends Controller
     public function destroy($kode_jam_kerja)
     {
         $kode_jam_kerja = Crypt::decrypt($kode_jam_kerja);
+        if ($kode_jam_kerja === Jamkerja::KODE_LIBUR) {
+            return Redirect::back()->with(messageError('Jam kerja Libur (sistem) tidak dapat dihapus.'));
+        }
         try {
             Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->delete();
             return Redirect::back()->with(messageSuccess('Data Berhasil Dihapus'));

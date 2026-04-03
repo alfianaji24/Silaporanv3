@@ -90,13 +90,18 @@ class KaryawanController extends Controller
             $query->where('nama_karyawan', 'like', '%' . $request->nama_karyawan . '%');
         }
 
-        // Default: hanya tampilkan karyawan aktif jika tidak ada filter status
-        if ($request->has('status_aktif_karyawan')) {
-            if ($request->status_aktif_karyawan === '1' || $request->status_aktif_karyawan === '0') {
-                $query->where('karyawan.status_aktif_karyawan', $request->status_aktif_karyawan);
-            }
-            // Jika kosong ("Semua"), tidak filter status_aktif_karyawan sama sekali
+        // Filter status karyawan:
+        // - Jika pilih 'semua' → tampilkan semua (aktif + non-aktif)
+        // - Jika pilih '1' (Aktif) → tampilkan aktif saja
+        // - Jika pilih '0' (Non Aktif) → tampilkan non-aktif saja
+        // - Jika tidak pilih atau kosong → default tampilkan aktif saja
+        if ($request->status_aktif_karyawan === 'semua') {
+            // Pilih "Semua" - tidak filter, tampilkan semua
+        } elseif ($request->status_aktif_karyawan === '1' || $request->status_aktif_karyawan === '0') {
+            // Pilih "Aktif" atau "Non Aktif"
+            $query->where('karyawan.status_aktif_karyawan', $request->status_aktif_karyawan);
         } else {
+            // Default: hanya tampilkan karyawan aktif
             $query->where('karyawan.status_aktif_karyawan', 1);
         }
         $query->orderBy('nama_karyawan', 'asc');
@@ -455,6 +460,7 @@ class KaryawanController extends Controller
         $data['start_year'] = config('global.start_year');
         $data['jamkerja'] = Jamkerja::query()
             ->visibleUntukJabatanKaryawan($data['karyawan']->kode_jabatan)
+            ->orderByRaw('CASE WHEN kode_jam_kerja = ? THEN 0 ELSE 1 END', [Jamkerja::KODE_LIBUR])
             ->orderBy('kode_jam_kerja')
             ->get();
         $data['jamkerjabyday'] = Setjamkerjabyday::where('nik', $nik)->pluck('kode_jam_kerja', 'hari')->toArray();
