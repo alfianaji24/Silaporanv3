@@ -12,10 +12,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Jalankan worker queue tiap menit untuk memproses job antrian
-        $schedule->command('queue:work --queue=default --sleep=3 --tries=3 --stop-when-empty')
+        // Dipicu oleh cron: * * * * * php artisan schedule:run
+        // Tidak perlu cron terpisah untuk queue:work selama baris ini tetap ada.
+        $schedule->command(
+            'queue:work --queue=default --sleep=3 --tries=3 --max-time=3600 --stop-when-empty'
+        )
             ->everyMinute()
-            ->withoutOverlapping();
+            ->withoutOverlapping(15)
+            ->appendOutputTo(storage_path('logs/queue-scheduler.log'));
     }
 
     /**
