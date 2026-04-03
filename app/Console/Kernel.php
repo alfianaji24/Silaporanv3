@@ -20,6 +20,9 @@ class Kernel extends ConsoleKernel
             ->everyMinute()
             ->withoutOverlapping(15)
             ->appendOutputTo(storage_path('logs/queue-scheduler.log'));
+
+        // Kirim ucapan ulang tahun otomatis setiap hari jam 08:00
+        $schedule->command('send:birthday-whatsapp')->dailyAt('08:00')->appendOutputTo(storage_path('logs/birthday-scheduler.log'));
     }
 
     /**

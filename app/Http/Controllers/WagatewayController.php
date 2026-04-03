@@ -673,4 +673,5 @@ class WagatewayController extends Controller
             ], 500);
         }
     }
+
 }
