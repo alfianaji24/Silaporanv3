@@ -33,6 +33,24 @@
     <x-input-with-icon icon="ti ti-file-text" label="Keterangan" name="keterangan" :value="$jamkerja->keterangan" maxlength="255" placeholder="Contoh: Jam kerja untuk shift pagi (Opsional, maksimal 255 karakter)" />
     <x-input-with-icon icon="ti ti-palette" label="Warna (Untuk Laporan)" name="color" type="color" :value="$jamkerja->color" placeholder="Pilih Warna" />
     <div class="form-group mb-3">
+        <span class="form-label d-block mb-2" style="font-weight: 600;">
+            Batasi ke jabatan (halaman pilih jam kerja)
+        </span>
+        <div class="border rounded p-3 " style="max-height: 220px; overflow-y: auto;">
+            @foreach ($jabatan as $j)
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="kode_jabatan_terbatas[]"
+                        id="kode_jabatan_terbatas_{{ $j->kode_jabatan }}" value="{{ $j->kode_jabatan }}"
+                        @checked(in_array($j->kode_jabatan, $kode_jabatan_terpilih ?? [], true))>
+                    <label class="form-check-label" for="kode_jabatan_terbatas_{{ $j->kode_jabatan }}">
+                        <span class="text-muted">{{ $j->nama_jabatan }}</span>
+                    </label>
+                </div>
+            @endforeach
+        </div>
+        <small class="text-muted d-block mt-1">Tanpa centang, jam kerja ini tidak ditampilkan ke siapa pun. Centang semua jabatan agar setara &quot;semua jabatan&quot;.</small>
+    </div>
+    <div class="form-group mb-3">
         <label for="lintashari" class="form-label" style="font-weight: 600;">
             Lintas Hari <span class="text-danger">*</span>
         </label>

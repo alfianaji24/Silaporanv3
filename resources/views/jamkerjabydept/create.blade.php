@@ -35,12 +35,8 @@
                     </td>
                     <td>
                         <div class="form-group p-0" style="margin-bottom: 0px !important">
-                            <select name="kode_jam_kerja[]" id="kode_jam_kerja" class="form-select">
-                                <option value="">Pilih Jam Kerja</option>
-                                @foreach ($jamkerja as $d)
-                                    <option value="{{ $d->kode_jam_kerja }}">{{ $d->nama_jam_kerja }} ({{ $d->jam_masuk }} - {{ $d->jam_pulang }})
-                                    </option>
-                                @endforeach
+                            <select name="kode_jam_kerja[]" class="form-select kode-jam-kerja-row">
+                                <option value="">Pilih Cabang &amp; Departemen dulu</option>
                             </select>
                         </div>
                     </td>
@@ -54,6 +50,32 @@
 </form>
 <script>
     $(document).ready(function() {
+        function refreshJamKerjaDeptOptions() {
+            var cab = $("#kode_cabang").val();
+            var dept = $("#kode_dept").val();
+            if (!cab || !dept) {
+                $("select.kode-jam-kerja-row").each(function() {
+                    $(this).html('<option value="">Pilih Cabang &amp; Departemen dulu</option>');
+                });
+                return;
+            }
+            $.get("{{ route('jamkerja.opsiDepartemen') }}", { kode_cabang: cab, kode_dept: dept }, function(rows) {
+                $("select.kode-jam-kerja-row").each(function() {
+                    var cur = $(this).val();
+                    var $sel = $(this);
+                    $sel.empty();
+                    $sel.append('<option value="">Pilih Jam Kerja</option>');
+                    rows.forEach(function(d) {
+                        $sel.append($("<option>", { value: d.kode_jam_kerja, text: d.nama_jam_kerja + " (" + d.jam_masuk + " - " + d.jam_pulang + ")" }));
+                    });
+                    if (cur && $sel.find('option[value="' + cur + '"]').length) {
+                        $sel.val(cur);
+                    }
+                });
+            });
+        }
+        $("#kode_cabang, #kode_dept").on("change", refreshJamKerjaDeptOptions);
+
         $("#formSetJamkerja").submit(function(e) {
             let kode_cabang = $(this).find("#kode_cabang").val();
             let kode_dept = $(this).find("#kode_dept").val();

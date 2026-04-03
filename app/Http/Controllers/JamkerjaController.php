@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jamkerja;
+use App\Models\Jabatan;
+use App\Models\Karyawan;
+use App\Models\PresensiJamkerjaJabatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Redirect;
@@ -15,14 +18,59 @@ class JamkerjaController extends Controller
         if (!empty($request->nama_jam_kerja_search)) {
             $query->where('nama_jam_kerja', 'like', '%' . $request->nama_jam_kerja_search . '%');
         }
-        $data['jamkerja'] = $query->get();
+        $data['jamkerja'] = $query->withCount('jabatanTerbatas')->get();
+        $data['total_jabatan'] = Jamkerja::hitungJabatanDefinisi();
 
         return view('datamaster.jamkerja.index', $data);
     }
 
+    /**
+     * JSON: jam kerja yang boleh dipilih untuk NIK (sesuai batasan jabatan).
+     */
+    public function opsiUntukNik(Request $request)
+    {
+        abort_unless(
+            $request->user()->can('ajuanjadwal.create')
+                || $request->user()->can('karyawan.setjamkerja')
+                || $request->user()->can('presensi.edit'),
+            403
+        );
+        $request->validate(['nik' => 'required|string']);
+        $karyawan = Karyawan::where('nik', $request->nik)->firstOrFail();
+        $jamkerja = Jamkerja::query()
+            ->visibleUntukJabatanKaryawan($karyawan->kode_jabatan)
+            ->orderBy('nama_jam_kerja')
+            ->get(['kode_jam_kerja', 'nama_jam_kerja', 'jam_masuk', 'jam_pulang']);
+
+        return response()->json($jamkerja);
+    }
+
+    /**
+     * JSON: jam kerja untuk seting jadwal departemen (gabungan jabatan di cabang+dept).
+     */
+    public function opsiUntukCabangDepartemen(Request $request)
+    {
+        abort_unless(
+            $request->user()->can('jamkerjabydept.create') || $request->user()->can('jamkerjabydept.edit'),
+            403
+        );
+        $request->validate([
+            'kode_cabang' => 'required|string',
+            'kode_dept' => 'required|string',
+        ]);
+        $jamkerja = Jamkerja::query()
+            ->visibleUntukDepartemenCabang($request->kode_cabang, $request->kode_dept)
+            ->orderBy('kode_jam_kerja')
+            ->get(['kode_jam_kerja', 'nama_jam_kerja', 'jam_masuk', 'jam_pulang']);
+
+        return response()->json($jamkerja);
+    }
+
     public function create()
     {
-        return view('datamaster.jamkerja.create');
+        $data['jabatan'] = Jabatan::orderBy('nama_jabatan')->get();
+
+        return view('datamaster.jamkerja.create', $data);
     }
 
     public function store(Request $request)
@@ -81,7 +129,9 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:7'
-            ]
+            ],
+            'kode_jabatan_terbatas' => ['nullable', 'array'],
+            'kode_jabatan_terbatas.*' => ['string', 'exists:jabatan,kode_jabatan'],
         ], [
             'kode_jam_kerja.required' => 'Kode Jam Kerja wajib diisi',
             'kode_jam_kerja.max' => 'Kode Jam Kerja maksimal 4 karakter',
@@ -163,6 +213,8 @@ class JamkerjaController extends Controller
                 'color' => $request->color
             ]);
 
+            $this->syncJabatanTerbatas($kode_jam_kerja, $request->input('kode_jabatan_terbatas', []));
+
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan'));
         } catch (\Illuminate\Database\QueryException $e) {
             // Tangani error database khusus
@@ -192,7 +244,10 @@ class JamkerjaController extends Controller
     {
         $kode_jam_kerja = Crypt::decrypt($kode_jam_kerja);
         $data['jamkerja'] = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
-        //dd($data['jamkerja']);
+        $data['jabatan'] = Jabatan::orderBy('nama_jabatan')->get();
+        $data['kode_jabatan_terpilih'] = PresensiJamkerjaJabatan::where('kode_jam_kerja', $kode_jam_kerja)
+            ->pluck('kode_jabatan')
+            ->all();
         return view('datamaster.jamkerja.edit', $data);
     }
 
@@ -249,7 +304,9 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:7'
-            ]
+            ],
+            'kode_jabatan_terbatas' => ['nullable', 'array'],
+            'kode_jabatan_terbatas.*' => ['string', 'exists:jabatan,kode_jabatan'],
         ], [
             'nama_jam_kerja.required' => 'Nama Jam Kerja wajib diisi',
             'nama_jam_kerja.max' => 'Nama Jam Kerja maksimal 50 karakter',
@@ -313,6 +370,8 @@ class JamkerjaController extends Controller
                 'color' => $request->color
             ]);
 
+            $this->syncJabatanTerbatas($kode_jam_kerja, $request->input('kode_jabatan_terbatas', []));
+
             return Redirect::back()->with(messageSuccess('Data Berhasil Diupdate'));
         } catch (\Illuminate\Database\QueryException $e) {
             // Tangani error database khusus
@@ -342,6 +401,30 @@ class JamkerjaController extends Controller
             return Redirect::back()->with(messageSuccess('Data Berhasil Dihapus'));
         } catch (\Exception $e) {
             return Redirect::back()->with(messageError($e->getMessage()));
+        }
+    }
+
+    /**
+     * Kosong = tidak ada yang melihat jam kerja ini; isi = hanya jabatan terdaftar;
+     * jika jumlah sama jumlah definisi jabatan master = setara "semua jabatan".
+     */
+    private function syncJabatanTerbatas(string $kodeJamKerja, ?array $kodeJabatanList): void
+    {
+        PresensiJamkerjaJabatan::where('kode_jam_kerja', $kodeJamKerja)->delete();
+        if (empty($kodeJabatanList) || !is_array($kodeJabatanList)) {
+            return;
+        }
+        $seen = [];
+        foreach ($kodeJabatanList as $kode) {
+            $kode = is_string($kode) ? trim($kode) : '';
+            if ($kode === '' || isset($seen[$kode])) {
+                continue;
+            }
+            $seen[$kode] = true;
+            PresensiJamkerjaJabatan::create([
+                'kode_jam_kerja' => $kodeJamKerja,
+                'kode_jabatan' => $kode,
+            ]);
         }
     }
 }

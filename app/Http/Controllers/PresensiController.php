@@ -149,7 +149,10 @@ class PresensiController extends Controller
             if ($presensi != null) {
                 return redirect('/presensi/create?kode_jam_kerja=' . $presensi->kode_jam_kerja);
             }
-            $data['jamkerja'] = Jamkerja::orderBy('jam_masuk')->get();
+            $data['jamkerja'] = Jamkerja::query()
+                ->visibleUntukJabatanKaryawan($karyawan->kode_jabatan)
+                ->orderBy('jam_masuk')
+                ->get();
             return view('presensi.pilih_jam_kerja', $data);
         }
 
@@ -612,11 +615,22 @@ class PresensiController extends Controller
         $tanggal = $request->tanggal;
 
         $karyawan = Karyawan::where('nik', $nik)->first();
-        $jam_kerja = Jamkerja::all();
         $presensi = Presensi::where('nik', $nik)->where('tanggal', $tanggal)->first();
         if ($presensi && $presensi->status_potongan !== null) {
             return '<div class="alert alert-warning">Data Presensi Sudah Dikunci, Hubungi Admin Untuk Membuka Kunci Laporan</div>';
         }
+        $kodeJamAktif = $presensi?->kode_jam_kerja;
+        $jam_kerja = Jamkerja::query()
+            ->where(function ($q) use ($karyawan, $kodeJamAktif) {
+                $q->where(function ($q2) use ($karyawan) {
+                    $q2->visibleUntukJabatanKaryawan($karyawan->kode_jabatan);
+                });
+                if ($kodeJamAktif) {
+                    $q->orWhere('presensi_jamkerja.kode_jam_kerja', $kodeJamAktif);
+                }
+            })
+            ->orderBy('kode_jam_kerja')
+            ->get();
         $data['presensi'] = $presensi;
         $data['karyawan'] = $karyawan;
         $data['jam_kerja'] = $jam_kerja;
@@ -644,6 +658,17 @@ class PresensiController extends Controller
         $jam_in = $request->jam_in;
         $jam_out = $request->jam_out;
         $status = $request->status;
+
+        $karyawanUpdate = Karyawan::where('nik', $nik)->first();
+        if ($karyawanUpdate) {
+            $izinJamKerja = Jamkerja::query()
+                ->where('kode_jam_kerja', $kode_jam_kerja)
+                ->visibleUntukJabatanKaryawan($karyawanUpdate->kode_jabatan)
+                ->exists();
+            if (!$izinJamKerja) {
+                return Redirect::back()->with(messageError('Jam kerja tidak diizinkan untuk jabatan karyawan ini.'));
+            }
+        }
 
         try {
             $cekpresensi = Presensi::where('nik', $nik)->where('tanggal', $tanggal)->first();

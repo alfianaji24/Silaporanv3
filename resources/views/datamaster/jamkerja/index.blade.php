@@ -70,6 +70,7 @@
                                 <th class="text-white py-3" style="width: 60px;">NO.</th>
                                 <th class="text-white py-3">KODE</th>
                                 <th class="text-white py-3">NAMA JAM KERJA</th>
+                                <th class="text-white py-3 text-center" style="min-width: 100px;">TOTAL JABATAN</th>
                                 <th class="text-white py-3">MASUK</th>
                                 <th class="text-white py-3">PULANG</th>
                                 <th class="text-white py-3 text-center">ISTIRAHAT</th>
@@ -87,6 +88,15 @@
                                     <td class="py-2">{{ $loop->iteration }}</td>
                                     <td class="fw-bold py-2">{{ $d->kode_jam_kerja }}</td>
                                     <td class="py-2">{{ $d->nama_jam_kerja }}</td>
+                                    <td class="py-2 text-center">
+                                        @if ($d->jabatan_terbatas_count === 0)
+                                            <span class="text-muted" title="Belum dipilih jabatan — jam kerja tidak ditampilkan ke karyawan">Belum dipilih</span>
+                                        @elseif ($total_jabatan > 0 && $d->jabatan_terbatas_count >= $total_jabatan)
+                                            <span class="text-muted" title="Semua jabatan dipilih">Semua</span>
+                                        @else
+                                            <span class="badge bg-label-primary">{{ $d->jabatan_terbatas_count }} Jabatan</span>
+                                        @endif
+                                    </td>
                                     <td class="py-2">{{ $d->jam_masuk }}</td>
                                     <td class="py-2">{{ $d->jam_pulang }}</td>
                                     <td class="py-2 text-center">
@@ -136,7 +146,7 @@
                             @endforeach
                             @if($jamkerja->isEmpty())
                                 <tr>
-                                    <td colspan="12" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
+                                    <td colspan="13" class="text-center py-4 text-muted">Data tidak ditemukan.</td>
                                 </tr>
                             @endif
                         </tbody>

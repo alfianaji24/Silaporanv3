@@ -115,14 +115,25 @@ class AjuanJadwalController extends Controller
 
     public function create()
     {
-        $jamkerja = Jamkerja::orderBy('nama_jam_kerja')->get();
         $user = auth()->user();
         $karyawan = [];
-        
+        $jamkerja = collect();
+
         if (!$user->hasRole('karyawan')) {
-             $karyawan = Karyawan::orderBy('nama_karyawan')->get();
+            $karyawan = Karyawan::orderBy('nama_karyawan')->get();
+        } else {
+            $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
+            if ($userkaryawan) {
+                $k = Karyawan::where('nik', $userkaryawan->nik)->first();
+                if ($k) {
+                    $jamkerja = Jamkerja::query()
+                        ->visibleUntukJabatanKaryawan($k->kode_jabatan)
+                        ->orderBy('nama_jam_kerja')
+                        ->get();
+                }
+            }
         }
-        
+
         return view('ajuanjadwal.create', compact('jamkerja', 'karyawan'));
     }
 
@@ -156,6 +167,18 @@ class AjuanJadwalController extends Controller
 
         // Get Employee Data
     $karyawan = Karyawan::where('nik', $nik)->first();
+    if (!$karyawan) {
+        return Redirect::back()->with(['warning' => 'Data karyawan tidak ditemukan.']);
+    }
+
+    $izinTujuan = Jamkerja::query()
+        ->where('kode_jam_kerja', $request->kode_jam_kerja_tujuan)
+        ->visibleUntukJabatanKaryawan($karyawan->kode_jabatan)
+        ->exists();
+    if (!$izinTujuan) {
+        return Redirect::back()->with(['warning' => 'Shift tujuan tidak diizinkan untuk jabatan karyawan ini.']);
+    }
+
     $kode_cabang = $karyawan->kode_cabang;
     $kode_dept = $karyawan->kode_dept;
     $tanggal = $request->tanggal;

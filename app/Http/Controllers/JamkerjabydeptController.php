@@ -33,7 +33,7 @@ class JamkerjabydeptController extends Controller
     {
         $data['cabang'] = Cabang::orderby('kode_cabang')->get();
         $data['departemen'] = Departemen::orderBy('kode_dept')->get();
-        $data['jamkerja'] = Jamkerja::orderBy('kode_jam_kerja')->get();
+        $data['jamkerja'] = collect();
         return view('jamkerjabydept.create', $data);
     }
 
@@ -56,6 +56,17 @@ class JamkerjabydeptController extends Controller
         if ($cekjamkerjabydept) {
             return Redirect::back()->with(messageError('Data Jam Kerja Sudah Ada'));
         }
+
+        foreach (array_filter($kode_jam_kerja ?? []) as $kjk) {
+            $ok = Jamkerja::query()
+                ->where('kode_jam_kerja', $kjk)
+                ->visibleUntukDepartemenCabang($kode_cabang, $kode_dept)
+                ->exists();
+            if (!$ok) {
+                return Redirect::back()->with(messageError('Ada jam kerja yang tidak diizinkan untuk departemen ini.'));
+            }
+        }
+
         DB::beginTransaction();
         try {
 
@@ -91,8 +102,21 @@ class JamkerjabydeptController extends Controller
             ->join('cabang', 'presensi_jamkerja_bydept.kode_cabang', '=', 'cabang.kode_cabang')
             ->join('departemen', 'presensi_jamkerja_bydept.kode_dept', '=', 'departemen.kode_dept')
             ->first();
-        $data['jamkerja'] = Jamkerja::orderBy('kode_jam_kerja')->get();
-        $data['detailjamkerjabydept'] = Detailsetjamkerjabydept::where('kode_jk_dept', $kode_jk_dept)->pluck('kode_jam_kerja', 'hari')->toArray();
+        $detailjamkerjabydept = Detailsetjamkerjabydept::where('kode_jk_dept', $kode_jk_dept)->pluck('kode_jam_kerja', 'hari')->toArray();
+        $data['detailjamkerjabydept'] = $detailjamkerjabydept;
+        $tambahanKode = array_values(array_filter($detailjamkerjabydept));
+        $jk = $data['jamkerjabydept'];
+        $data['jamkerja'] = Jamkerja::query()
+            ->where(function ($q) use ($jk, $tambahanKode) {
+                $q->where(function ($q2) use ($jk) {
+                    $q2->visibleUntukDepartemenCabang($jk->kode_cabang, $jk->kode_dept);
+                });
+                if (!empty($tambahanKode)) {
+                    $q->orWhereIn('presensi_jamkerja.kode_jam_kerja', $tambahanKode);
+                }
+            })
+            ->orderBy('kode_jam_kerja')
+            ->get();
         return view('jamkerjabydept.edit', $data);
     }
 
@@ -105,6 +129,16 @@ class JamkerjabydeptController extends Controller
 
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
+
+        foreach (array_filter($kode_jam_kerja ?? []) as $kjk) {
+            $ok = Jamkerja::query()
+                ->where('kode_jam_kerja', $kjk)
+                ->visibleUntukDepartemenCabang($kode_cabang, $kode_dept)
+                ->exists();
+            if (!$ok) {
+                return Redirect::back()->with(messageError('Ada jam kerja yang tidak diizinkan untuk departemen ini.'));
+            }
+        }
 
         DB::beginTransaction();
         try {

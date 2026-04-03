@@ -151,9 +151,11 @@
                 <ion-icon name="time-outline" class="input-icon"></ion-icon>
                 <select name="kode_jam_kerja_tujuan" id="kode_jam_kerja_tujuan" required>
                     <option value="" disabled selected></option>
-                    @foreach ($jamkerja as $d)
-                        <option value="{{ $d->kode_jam_kerja }}">{{ $d->nama_jam_kerja }} ({{ $d->jam_masuk }} - {{ $d->jam_pulang }})</option>
-                    @endforeach
+                    @if (!isset($karyawan) || count($karyawan) === 0)
+                        @foreach ($jamkerja as $d)
+                            <option value="{{ $d->kode_jam_kerja }}">{{ $d->nama_jam_kerja }} ({{ $d->jam_masuk }} - {{ $d->jam_pulang }})</option>
+                        @endforeach
+                    @endif
                 </select>
                 <label for="kode_jam_kerja_tujuan">Shift Tujuan</label>
             </div>
@@ -197,6 +199,35 @@
                 buttons: ['today', 'clear'],
                 position: 'bottom center'
             });
+
+            const nikSelectEl = document.getElementById('nik');
+            const shiftSelectEl = document.getElementById('kode_jam_kerja_tujuan');
+            if (nikSelectEl && shiftSelectEl) {
+                nikSelectEl.addEventListener('change', function() {
+                    const nik = this.value;
+                    if (!nik) {
+                        return;
+                    }
+                    const url = new URL(@json(route('jamkerja.opsiNik')));
+                    url.searchParams.set('nik', nik);
+                    fetch(url.toString(), { headers: { 'Accept': 'application/json' } })
+                        .then(function(r) { return r.json(); })
+                        .then(function(rows) {
+                            shiftSelectEl.innerHTML = '';
+                            const opt0 = document.createElement('option');
+                            opt0.value = '';
+                            opt0.disabled = true;
+                            opt0.selected = true;
+                            shiftSelectEl.appendChild(opt0);
+                            rows.forEach(function(d) {
+                                const o = document.createElement('option');
+                                o.value = d.kode_jam_kerja;
+                                o.textContent = d.nama_jam_kerja + ' (' + d.jam_masuk + ' - ' + d.jam_pulang + ')';
+                                shiftSelectEl.appendChild(o);
+                            });
+                        });
+                });
+            }
 
             const form = document.getElementById('formAjuan');
             form.addEventListener('submit', function(e) {

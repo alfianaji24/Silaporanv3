@@ -324,6 +324,8 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(JamkerjaController::class)->group(function () {
         Route::get('/jamkerja', 'index')->name('jamkerja.index')->can('jamkerja.index');
+        Route::get('/jamkerja/opsi/nik', 'opsiUntukNik')->name('jamkerja.opsiNik');
+        Route::get('/jamkerja/opsi/departemen', 'opsiUntukCabangDepartemen')->name('jamkerja.opsiDepartemen');
         Route::get('/jamkerja/create', 'create')->name('jamkerja.create')->can('jamkerja.create');
         Route::post('/jamkerja', 'store')->name('jamkerja.store')->can('jamkerja.create');
         Route::get('/jamkerja/{kode_jam_kerja}/edit', 'edit')->name('jamkerja.edit')->can('jamkerja.edit');

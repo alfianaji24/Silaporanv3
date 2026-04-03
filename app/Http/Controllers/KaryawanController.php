@@ -453,7 +453,10 @@ class KaryawanController extends Controller
             ->first();
         $data['list_bulan'] = config('global.list_bulan');
         $data['start_year'] = config('global.start_year');
-        $data['jamkerja'] = Jamkerja::orderBy('kode_jam_kerja')->get();
+        $data['jamkerja'] = Jamkerja::query()
+            ->visibleUntukJabatanKaryawan($data['karyawan']->kode_jabatan)
+            ->orderBy('kode_jam_kerja')
+            ->get();
         $data['jamkerjabyday'] = Setjamkerjabyday::where('nik', $nik)->pluck('kode_jam_kerja', 'hari')->toArray();
         // dd($data['jamkerjabyday']);
         return view('datamaster.karyawan.setjamkerja', $data);
@@ -500,6 +503,20 @@ class KaryawanController extends Controller
         $nik = Crypt::decrypt($nik);
         $hari = $request->hari;
         $kode_jam_kerja = $request->kode_jam_kerja;
+        $karyawanJk = Karyawan::where('nik', $nik)->first();
+        if ($karyawanJk) {
+            for ($i = 0; $i < count($hari); $i++) {
+                if (!empty($kode_jam_kerja[$i])) {
+                    $ok = Jamkerja::query()
+                        ->where('kode_jam_kerja', $kode_jam_kerja[$i])
+                        ->visibleUntukJabatanKaryawan($karyawanJk->kode_jabatan)
+                        ->exists();
+                    if (!$ok) {
+                        return Redirect::back()->with(messageError('Ada jam kerja yang tidak diizinkan untuk jabatan karyawan ini.'));
+                    }
+                }
+            }
+        }
         DB::beginTransaction();
         try {
             Setjamkerjabyday::where('nik', $nik)->delete();
@@ -525,6 +542,17 @@ class KaryawanController extends Controller
     {
         // Convert tanggal to proper format (YYYY-MM-DD) to avoid timezone issues
         $tanggal = Carbon::parse($request->tanggal)->format('Y-m-d');
+
+        $karyawanJk = Karyawan::where('nik', $request->nik)->first();
+        if ($karyawanJk) {
+            $ok = Jamkerja::query()
+                ->where('kode_jam_kerja', $request->kode_jam_kerja)
+                ->visibleUntukJabatanKaryawan($karyawanJk->kode_jabatan)
+                ->exists();
+            if (!$ok) {
+                return response()->json(['success' => false, 'message' => 'Jam kerja tidak diizinkan untuk jabatan karyawan ini.']);
+            }
+        }
 
         try {
             $cek = Setjamkerjabydate::where('nik', $request->nik)->where('tanggal', $tanggal)->first();
