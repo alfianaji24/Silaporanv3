@@ -9,6 +9,7 @@
     <x-input-with-icon icon="ti ti-user" label="Nama User" name="name" value="{{ $user->name }}" :readonly="$isKaryawan" />
     <x-input-with-icon icon="ti ti-user" label="Username" name="username" value="{{ $user->username }}" />
     <x-input-with-icon icon="ti ti-mail" label="Email" name="email" value="{{ $user->email }}" />
+    <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" value="{{ $user->phone }}" />
     <x-input-with-icon icon="ti ti-key" label="Password" name="password" type="password" />
     @if(!$isKaryawan)
         <x-select label="Role" name="role" :data="$roles" key="name" textShow="name" :selected="$user->roles->pluck('name')[0]" />

@@ -14,6 +14,14 @@ class Izinsakit extends Model
     protected $primaryKey = 'kode_izin_sakit';
     public $incrementing = false;
     
+    /**
+     * Relation to Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'nik', 'nik');
+    }
+    
     public function getNextApprovalLayer()
     {
         // Asumsi Feature Code untuk model ini adalah 'IZIN'

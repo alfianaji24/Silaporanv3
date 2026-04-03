@@ -3,6 +3,7 @@
     <x-input-with-icon icon="ti ti-user" label="Nama User" name="name" />
     <x-input-with-icon icon="ti ti-user" label="Username" name="username" />
     <x-input-with-icon icon="ti ti-mail" label="Email" name="email" />
+    <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" />
     <x-input-with-icon icon="ti ti-key" label="Password" name="password" type="password" />
     <x-select label="Role" name="role" :data="$roles" key="name" textShow="name" />
     

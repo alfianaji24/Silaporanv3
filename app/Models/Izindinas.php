@@ -15,6 +15,14 @@ class Izindinas extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    /**
+     * Relation to Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'nik', 'nik');
+    }
+
     public function approvals()
     {
         return $this->morphMany(Approval::class, 'approvable');

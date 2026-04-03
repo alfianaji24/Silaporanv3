@@ -14,6 +14,14 @@ class Izinabsen extends Model
     public $incrementing = false;
     protected $guarded = [];
 
+    /**
+     * Relation to Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'nik', 'nik');
+    }
+
     public function getNextApprovalLayer()
     {
         // Asumsi Feature Code untuk model ini adalah 'IZIN_ABSEN'

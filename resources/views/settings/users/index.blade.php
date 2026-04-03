@@ -102,6 +102,9 @@
                                                     <div class="text-muted small mb-1">
                                                         <i class="ti ti-mail me-1"></i> {{ $d->email }}
                                                     </div>
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="ti ti-phone me-1"></i> {{ $d->phone ?? '-' }}
+                                                    </div>
                                                     <div>
                                                         @foreach ($d->roles as $role)
                                                             <span class="badge bg-label-primary" style="font-size: 10px;">{{ ucwords($role->name) }}</span>

@@ -50,6 +50,30 @@ function getdocMarker($file)
     return $url;
 }
 
+// Normalisasi nomor HP untuk WhatsApp (menerima format 08xxxxxxxxx atau 628xxxxxxxxx)
+function normalizePhoneNumber($phoneNumber)
+{
+    if (empty($phoneNumber)) {
+        return null;
+    }
+
+    // Hapus semua karakter non-digit
+    $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
+
+    // Jika dimulai dengan 0, ganti dengan 62
+    if (substr($phoneNumber, 0, 1) === '0') {
+        $phoneNumber = '62' . substr($phoneNumber, 1);
+    }
+
+    // Jika sudah dimulai dengan 62, biarkan saja
+    if (substr($phoneNumber, 0, 2) === '62') {
+        return $phoneNumber;
+    }
+
+    // Jika tidak ada prefix yang valid, anggap sebagai nomor Indonesia dan tambahkan 62
+    return '62' . $phoneNumber;
+}
+
 
 function getfotoPelanggan($file)
 {

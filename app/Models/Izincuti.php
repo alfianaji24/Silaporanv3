@@ -14,6 +14,14 @@ class Izincuti extends Model
     protected $primaryKey = 'kode_izin_cuti';
     public $incrementing = false;
 
+    /**
+     * Relation to Karyawan
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'nik', 'nik');
+    }
+
     public function approvals()
     {
         return $this->morphMany(Approval::class, 'approvable');

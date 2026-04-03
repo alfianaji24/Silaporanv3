@@ -103,6 +103,7 @@ class UserController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => $request->password,
+                'phone' => $request->phone,
             ]);
 
             $user->assignRole($request->role);
@@ -151,13 +152,15 @@ class UserController extends Controller
                     'name' => $request->name,
                     'username' => $request->username,
                     'email' => $request->email,
-                    'password' => bcrypt($request->password)
+                    'password' => bcrypt($request->password),
+                    'phone' => $request->phone,
                 ]);
             } else {
                 User::where('id', $id)->update([
                     'name' => $request->name,
                     'username' => $request->username,
                     'email' => $request->email,
+                    'phone' => $request->phone,
                 ]);
             }
 

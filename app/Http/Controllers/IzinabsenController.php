@@ -181,7 +181,7 @@ class IzinabsenController extends Controller
         return view('izinabsen.edit', $data);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ApprovalService $approvalService)
     {
         $user = User::findorfail(auth()->user()->id);
         $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
@@ -258,7 +258,19 @@ class IzinabsenController extends Controller
             $izin->status = 0;
             $izin->approval_step = 1;
             $izin->save();
+            
+            // Load izin dengan relasi karyawan
+            $izin->load('karyawan');
+            
             DB::commit();
+            
+            // Kirim notifikasi ke karyawan yang mengajukan
+            if ($user) {
+                $user->notify(new \App\Notifications\PengajuanIzinNotification($izin, 'absen', 'karyawan'));
+            }
+            
+            // Kirim notifikasi ke user yang bisa approve
+            $this->sendApprovalNotification($izin, 'absen', $approvalService);
 
             if ($role == 'karyawan') {
                 return Redirect::route('pengajuanizin.index')->with(messageSuccess('Data Berhasil Disimpan'));
@@ -268,6 +280,48 @@ class IzinabsenController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return Redirect::back()->with(messageError($e->getMessage()));
+        }
+    }
+
+    /**
+     * Send approval notification to users who can approve this request
+     */
+    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService)
+    {
+        try {
+            $karyawan = $izin->karyawan ?? Karyawan::where('nik', $izin->nik)->first();
+            
+            if (!$karyawan) {
+                return;
+            }
+
+            // Dapatkan layer approval untuk tahap 1
+            $layer = $approvalService->getLayer('IZIN', 1, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
+            
+            if (!$layer) {
+                return;
+            }
+
+            // Cari semua user dengan role yang sesuai dan akses ke cabang/dept tersebut
+            $approvers = User::role($layer->role_name)
+                ->get()
+                ->filter(function ($user) use ($karyawan) {
+                    if ($user->isSuperAdmin()) {
+                        return true;
+                    }
+                    $userCabangs = $user->getCabangCodes();
+                    $userDepartemens = $user->getDepartemenCodes();
+                    
+                    return in_array($karyawan->kode_cabang, $userCabangs) && in_array($karyawan->kode_dept, $userDepartemens);
+                });
+
+            // Kirim notifikasi ke setiap approver
+            foreach ($approvers as $approver) {
+                $approver->notify(new \App\Notifications\PengajuanIzinNotification($izin, $tipe, 'atasan'));
+            }
+        } catch (\Exception $e) {
+            // Log saja, jangan stop proses
+            \Log::error('Error sending approval notification: ' . $e->getMessage());
         }
     }
 
