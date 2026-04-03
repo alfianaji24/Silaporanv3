@@ -60,10 +60,11 @@ use Spatie\Permission\Models\Role;
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
             $agent = new \Jenssegers\Agent\Agent();
-            if ($agent->isMobile()) {
-                return view('auth.login');
+            $isMobile = $agent->isMobile() && !$agent->isTablet();
+            if ($isMobile) {
+                return view('auth.loginmobile');
             }
-            return view('auth.loginuser');
+            return view('auth.login');
         }
         )->name('loginuser');
     });

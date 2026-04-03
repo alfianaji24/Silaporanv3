@@ -18,7 +18,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        return view('auth.loginusermobile');
+        // If accessed via /login route, show loginuser.blade.php (for karyawan)
+        if ($request->route()->getName() === 'login') {
+            return view('auth.loginuser');
+        }
+        
+        // Default to login.blade.php (for admin)
+        return view('auth.login');
     }
 
     /**
@@ -58,7 +64,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $wasKaryawan = Auth::user()?->hasRole('karyawan') ?? false;
+        $agent = new \Jenssegers\Agent\Agent();
+        $isMobile = $agent->isMobile();
+        $user = Auth::user();
+        $isAdmin = $user && !$user->hasRole('karyawan');
 
         Auth::guard('web')->logout();
 
@@ -66,8 +75,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return $wasKaryawan
-            ? redirect()->route('login')
-            : redirect()->route('loginuser');
+        // Admin logout -> redirect to root URL (/)
+        if ($isAdmin) {
+            return redirect('/');
+        }
+
+        // Karyawan logout -> redirect to /login
+        return redirect()->route('login');
     }
 }

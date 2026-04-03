@@ -89,6 +89,9 @@
             50% { transform: scale(1.1); opacity: 0.1; }
             100% { transform: scale(1); opacity: 0.2; }
         }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         .alert-cream  { background-color: #fff3cd; border: 1px solid #ffeeba; }
         .alert-danger  { background-color: #f8d7da; border: 1px solid #f5c6cb; }
         .alert-info    { background-color: #e3f2fd; border: 1px solid #b8daff; }
@@ -124,12 +127,9 @@
                         <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-[{{ $t['primary'] ?? '#2d5a4c' }}] text-[9px] font-bold flex items-center justify-center px-1 shadow-sm">{{ $pendingApprovalCount }}</span>
                     @endif
                 </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <a href="#" onclick="event.preventDefault(); this.closest('form').submit();" class="glass-icon">
-                        <ion-icon name="exit-outline" style="font-size:24px;"></ion-icon>
-                    </a>
-                </form>
+                <a href="{{ route('logout.get') }}" class="glass-icon" id="logout-btn" onclick="handleLogout(event)">
+                    <ion-icon name="exit-outline" style="font-size:24px;" id="logout-icon"></ion-icon>
+                </a>
             </div>
 
             {{-- User Row --}}
@@ -736,6 +736,27 @@
             e.preventDefault();
             window.location.href = "{{ route('facerecognition.karyawan.create') }}";
         });
+
+        // Logout Handler with Loading Animation
+        function handleLogout(event) {
+            event.preventDefault();
+            if (!confirm('Anda yakin ingin logout?')) {
+                return;
+            }
+            
+            const btn = document.getElementById('logout-btn');
+            const icon = document.getElementById('logout-icon');
+            
+            // Add loading spinner
+            btn.style.opacity = '0.6';
+            btn.style.pointerEvents = 'none';
+            icon.style.animation = 'spin 1s linear infinite';
+            
+            // Redirect to logout after a short delay
+            setTimeout(() => {
+                window.location.href = "{{ route('logout.get') }}";
+            }, 300);
+        }
     </script>
 </body>
 </html>

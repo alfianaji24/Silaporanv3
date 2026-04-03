@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="id" class="light-style" dir="ltr">
+<html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>{{ config('app.name') }}{{ !empty(optional($general_setting)->nama_perusahaan) ? ' | ' . $general_setting->nama_perusahaan : '' }}</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ config('app.name') }}{{ !empty($general_setting->nama_perusahaan) ? ' | ' . $general_setting->nama_perusahaan : '' }}</title>
 
     <!-- PWA Meta Tags -->
     <meta name="application-name" content="{{ config('app.name') }}">
@@ -14,7 +15,7 @@
     <meta name="description" content="Aplikasi Presensi GPS untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="{{ optional($general_setting)->theme_color_1 ?? '#696cff' }}">
+    <meta name="theme-color" content="#696cff">
 
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/assets/img/icons/pwa/icon-192x192.png">
@@ -24,177 +25,196 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('layouts.favicon')
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/tabler-icons.css') }}" />
 
+    <link rel="stylesheet" href="{{ asset('assets/login/css/style.css') }}" />
     <style>
         :root {
-            --primary: {{ optional($general_setting)->theme_color_1 ?? '#696cff' }};
-            --primary-hover: {{ optional($general_setting)->theme_color_2 ?? '#5f61e6' }};
+            /* Dynamic Theme Colors */
+            --theme-color-1: {{ $general_setting->theme_color_1 ?? '#053b22' }};
+            --theme-color-2: {{ $general_setting->theme_color_2 ?? '#0b6a3a' }};
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Public Sans', sans-serif; background: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 9rem 1.5rem; }
-        .login-container { width: 100%; max-width: 400px; }
 
-        .logo-section { text-align: center; margin-bottom: 1rem; }
-        .logo-section img { height: 98px; width: auto; margin-bottom: 0.5rem; }
-        .logo-section .brand { font-size: 2.5rem; font-weight: 700; color: #2d3748; }
-        .logo-section .brand span { color: var(--primary); }
+        .sign-btn {
+            background-color: var(--theme-color-1) !important;
+        }
 
-        .page-title { font-size: 1.75rem; font-weight: 700; color: #1a202c; text-align: center; margin-bottom: 1.75rem; }
+        .sign-btn:hover {
+            background-color: var(--theme-color-2) !important;
+        }
 
-        .form-group { margin-bottom: 1.25rem; }
-        .input-wrap { position: relative; display: flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 0.5rem; background: #fff; transition: border-color 0.2s; }
-        .input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(105, 108, 255, 0.2); }
-        .input-wrap .icon { padding: 0 1rem; color: #a0aec0; font-size: 1.25rem; }
-        .input-wrap input { flex: 1; border: none; outline: none; padding: 0.875rem 1rem; font-size: 1rem; background: transparent; }
-        .input-wrap input::placeholder { color: #a0aec0; }
-        .input-wrap .toggle-pwd { padding: 0 1rem; color: #a0aec0; cursor: pointer; font-size: 1.25rem; background: none; border: none; }
-        .input-wrap .toggle-pwd:hover { color: var(--primary); }
+        .sign-btn:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
 
-        .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem; }
-        .remember { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: #4a5568; cursor: pointer; }
-        .remember input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
-        .forgot-link { font-size: 0.875rem; color: var(--primary); text-decoration: none; font-weight: 500; }
-        .forgot-link:hover { text-decoration: underline; }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
 
-        .terms-text { font-size: 0.8125rem; color: #718096; margin-bottom: 0.5rem; line-height: 1.4; }
-        .terms-text a { color: var(--primary); text-decoration: none; }
-        .terms-text a:hover { text-decoration: underline; }
-        .terms-links { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 1.5rem; }
-        .terms-links a { font-size: 0.875rem; color: var(--primary); text-decoration: none; }
-        .terms-links a:hover { text-decoration: underline; }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-        .btn-masuk { width: 100%; padding: 0.875rem 1.5rem; background: var(--primary); color: #fff; border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-masuk:hover { background: var(--primary-hover); }
+        .bullets span.active {
+            background-color: var(--theme-color-1) !important;
+        }
 
-        .alt-options { margin-top: 1.5rem; text-align: center; font-size: 0.875rem; color: #718096; }
-        .alt-options a { color: var(--primary); text-decoration: none; font-weight: 500; }
-        .alt-options a:hover { text-decoration: underline; }
-        .alt-options > div { margin-bottom: 0.5rem; }
+        .carousel {
+            background: var(--theme-color-1) !important;
+        }
 
-        .alert { padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; }
-        .alert-danger { background: #fed7d7; color: #c53030; border: 1px solid #feb2b2; }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .text-group h2 {
+            color: #ffffff !important;
+        }
+
+        .logo h4 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 0.35rem;
+        }
+
+        .heading h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-top: 0.35rem;
+            text-align: center;
+        }
     </style>
+
 </head>
 
 <body>
-    <div class="login-container">
-        <div class="logo-section">
-            @if (!empty(optional($general_setting)->logo) && Storage::disk('public')->exists('logo/' . optional($general_setting)->logo))
-                <img src="{{ asset('storage/logo/' . optional($general_setting)->logo) }}" alt="Logo" />
-            @else
-                <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="Logo" />
-            @endif
-            <div class="brand">{{ config('app.name') }}</div>
+    <main>
+        <div class="box">
+            <div class="inner-box">
+                <div class="forms-wrap">
+                    <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="login_type" value="user">
+                        <div class="logo">
+                            @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
+                                <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Company Logo" style="height: auto; width: 80px; margin-bottom: 20px;" />
+                            @else
+                                <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="easyclass" />
+                            @endif
+                            <h4>{{ config('app.name') }}</h4>
+                        </div>
+                        <div class="heading">
+                            <h2>Masuk</h2>
+                        </div>
+
+                        @if (session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                @foreach ($errors->all() as $error)
+                                    {{ $error }}<br>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <div class="actual-form">
+                            <div class="input-wrap">
+                                <input type="text" minlength="4" class="input-field @error('id_user') is-invalid @enderror" name="id_user"
+                                    value="{{ old('id_user') }}" autocomplete="off" placeholder="Username / Email" required />
+                                {{-- @error('id_user')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror --}}
+                            </div>
+
+                            <div class="input-wrap">
+                                <input type="password" minlength="4" name="password" class="input-field @error('password') is-invalid @enderror"
+                                    autocomplete="off" placeholder="Password" required />
+                                {{-- @error('password')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror --}}
+                            </div>
+
+                            <div class="checkbox-wrap">
+                                <input type="checkbox" id="remember" name="remember" style="margin-right: 8px; width: 16px; height: 16px;">
+                                <label for="remember" style="color: #666; font-size: 14px; cursor: pointer; margin-left: 20px;">Remember Me</label>
+                            </div>
+
+                            <input type="submit" value="Sign In" class="sign-btn" id="btn-signin-submit" />
+
+                            <!-- <p class="text">
+                                Forgotten your password or you login datails?
+                                <a href="#">Get help</a> signing in
+                            </p> -->
+
+                        </div>
+                    </form>
+                </div>
+                <div class="carousel">
+                    <div class="images-wrapper">
+                        <img src="./img/image1.png" class="image img-1 show" alt="" />
+                        <img src="./img/image2.png" class="image img-2" alt="" />
+                        <img src="./img/image3.png" class="image img-3" alt="" />
+                        {{-- Tambah gambar: <img src="./img/image4.png" class="image img-4" alt="" /> --}}
+                    </div>
+                    <div class="text-slider">
+                        <div class="text-wrap">
+                            <div class="text-group">
+                                <h2>Absen Sat-Set, Kerja Jadi Nyaman!</h2>
+                                <h2>Disiplin Tanpa Beban, Prestasi Tanpa Batas.</h2>
+                                <h2>Kelola Kehadiranmu, Tingkatkan Kualitas Kerjamu.</h2>
+                                {{-- Tambah kalimat: <h2>Teks kalimat ke-4 disini.</h2> --}}
+                            </div>
+                        </div>
+                        <div class="bullets">
+                            <span data-value="1"></span>
+                            <span data-value="2"></span>
+                            <span data-value="3"></span>
+                            {{-- Tambah slide: <span data-value="4"></span> --}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <h1 class="page-title">Masuk</h1>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                @foreach ($errors->all() as $error)
-                    {{ $error }}<br>
-                @endforeach
-            </div>
-        @endif
-
-        <form action="{{ route('login') }}" method="POST">
-            @csrf
-            <input type="hidden" name="login_type" value="karyawan">
-            <div class="form-group">
-                <div class="input-wrap">
-                    <span class="icon"><i class="ti ti-mail"></i></span>
-                    <input type="text" name="id_user" value="{{ old('id_user') }}" placeholder="Email atau Username *" autocomplete="username" required autofocus />
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="input-wrap">
-                    <span class="icon"><i class="ti ti-lock"></i></span>
-                    <input type="password" name="password" id="password" placeholder="Kata Sandi *" autocomplete="current-password" required />
-                    <button type="button" class="toggle-pwd" onclick="togglePassword()" aria-label="Tampilkan sandi">
-                        <i class="ti ti-eye-off" id="toggleIcon"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="options-row">
-                <label class="remember">
-                    <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} />
-                    Ingat saya
-                </label>
-                @if (Route::has('register'))
-                <a href="#" id="lupakatasandi" class="forgot-link">Lupa Kata Sandi?</a>
-                @endif
-            </div>
-
-            <!-- <div style="text-align: center;">
-                <div class="terms-text" style="margin-bottom: 6px;">
-                    * Dengan masuk Saya Setuju dengan semua
-                </div>
-                <div class="terms-links">
-                    <a href="#" style="margin-right:10px;">Syarat dan Ketentuan</a>
-                    <a href="#">Kebijakan Privasi</a>
-                </div>
-            </div> -->
-
-            <button type="submit" class="btn-masuk">Masuk</button>
-        </form>
-
-        <div class="alt-options">
-            @if (Route::has('register'))
-            <div>Tidak punya akun? <a href="#" id="linkDaftar">Daftar</a></div>
-            @endif
-        </div>
-    </div>
-
+    <!-- SweetAlert -->
     <script src="{{ asset('assets/external/js/sweetalert2@11.js') }}"></script>
-    <script>
-        function togglePassword() {
-            const input = document.getElementById('password');
-            const icon = document.getElementById('toggleIcon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('ti-eye-off');
-                icon.classList.add('ti-eye');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('ti-eye');
-                icon.classList.add('ti-eye-off');
-            }
-        }
-
-        document.getElementById('linkDaftar')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: "Daftar Akun?",
-                text: "Silahkan Hubungi IT Support!!!",
-                icon: "info"
-            });
-        });
-
-        document.getElementById('lupakatasandi')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: "Lupa Passsword",
-                text: "Untuk saat ini fitur belum tersedia, silahkan hubungi IT Support!!!",
-                icon: "error"
-            });
-        });
-
-        @if (session('error'))
-        Swal.fire({
-            title: "Akses Ditolak",
-            text: "{{ session('error') }}",
-            icon: "error"
-        });
-        @endif
-    </script>
+    <!-- Javascript file -->
+    <script src="{{ asset('assets/login/scripts/app.js') }}"></script>
 
     <!-- Service Worker Registration -->
     <script>
@@ -211,7 +231,32 @@
         }
     </script>
 
-    <!-- PWA Install Prompt -->
+    <!-- SweetAlert untuk error login -->
+    @if (session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: "Akses Ditolak",
+                text: "{{ session('error') }}",
+                icon: "error"
+            });
+        });
+    </script>
+    @endif
+
+    <!-- Loading animation for login form -->
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const btn = document.getElementById('btn-signin-submit');
+            btn.disabled = true;
+            btn.value = 'Signing In...';
+            // Add spinner to button
+            btn.style.position = 'relative';
+            btn.innerHTML = '<div class="spinner" style="margin-right: 8px;"></div>Signing In...';
+        });
+    </script>
+
+    <!-- PWA Install Prompt - Only on Login Page -->
     @include('components.pwa-install-prompt')
 </body>
 
