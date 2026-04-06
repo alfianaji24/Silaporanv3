@@ -152,6 +152,73 @@
      $(".money").maskMoney();
  </script>
 
+ <!-- Global Logout Handler -->
+ <script>
+     function handleLogoutNav(event) {
+         event.preventDefault();
+            console.log('handleLogoutNav triggered - Swal available:', typeof Swal !== 'undefined');
+            
+            // Check if Swal is available
+            if (typeof Swal === 'undefined') {
+                console.error('SweetAlert2 not loaded, using confirm() fallback');
+                if (confirm("Anda Yakin Ingin Logout?")) {
+                    const logoutForm = document.getElementById('logoutForm') || 
+                                      document.getElementById('logoutFormNav1') || 
+                                      document.getElementById('logoutFormNav2');
+                    if (logoutForm) {
+                        logoutForm.submit();
+                    } else {
+                        window.location.href = "{{ route('logout.get') }}";
+                    }
+                }
+                return;
+            }
+            
+            Swal.fire({
+                title: "Anda Yakin?",
+                text: "Anda akan logout dari sistem.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, Logout!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                console.log('Swal result:', result);
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Logout Berhasil!",
+                        text: "Anda telah keluar dari sistem.",
+                        icon: "success",
+                        timer: 1500,
+                        timerProgressBar: false
+                    }).then(() => {
+                        console.log('Attempting to submit logout form');
+                        // Try to find and submit logout form
+                        const logoutForm = document.getElementById('logoutForm') || 
+                                          document.getElementById('logoutFormNav1') || 
+                                          document.getElementById('logoutFormNav2') ||
+                                          document.querySelector('form[method="POST"][action*="logout"]');
+                        
+                        if (logoutForm) {
+                            console.log('Form found, action:', logoutForm.action);
+                            logoutForm.submit();
+                        } else {
+                            console.warn('No logout form found, redirecting directly via GET');
+                            // Fallback: direct redirect to logout route
+                            window.location.href = "{{ route('logout.get') }}";
+                        }
+                    });
+                }
+            }).catch((error) => {
+                console.error('SweetAlert error:', error);
+                // Emergency fallback
+                const logoutForm = document.getElementById('logoutForm');
+                if (logoutForm) {
+                    logoutForm.submit();
+                } else {
+                    window.location.href = "{{ route('logout.get') }}";
+                }
  <script src="{{ asset('/assets/js/main.js') }}"></script>
 
 

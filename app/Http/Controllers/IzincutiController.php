@@ -411,6 +411,10 @@ class IzincutiController extends Controller
                  if ($nextRule && !$user->hasRole('super admin')) {
                     // Update to next step
                     Izincuti::where('kode_izin_cuti', $kode_izin_cuti)->update(['approval_step' => $nextLevel]);
+                    
+                    // Kirim notifikasi ke approver jenjang berikutnya
+                    $this->sendApprovalNotification($izincuti, 'cuti', $approvalService, $nextLevel);
+                    
                      DB::commit();
                     return Redirect::back()->with(messageSuccess('Berhasil disetujui (Tahap ' . $currentStep . '). Menunggu approval tahap selanjutnya.'));
                 } else {
@@ -677,7 +681,7 @@ class IzincutiController extends Controller
     /**
      * Send approval notification to users who can approve this request
      */
-    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService)
+    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService, $layer = 1)
     {
         try {
             $karyawan = $izin->karyawan ?? Karyawan::where('nik', $izin->nik)->first();
@@ -686,8 +690,8 @@ class IzincutiController extends Controller
                 return;
             }
 
-            // Dapatkan layer approval untuk tahap 1
-            $layer = $approvalService->getLayer('IZIN', 1, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
+            // Dapatkan layer approval untuk tahap yang diminta
+            $approvalLayer = $approvalService->getLayer('IZIN', $layer, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
             
             if (!$layer) {
                 return;

@@ -115,13 +115,9 @@ class ShortcutController extends Controller
             ->where('nik', $userkaryawan->nik)
             ->count();
 
-        // Cek akses approval delegasi
+        // Delegation approval feature disabled for this build.
         $data['hasApprovalAccess'] = false;
         $data['pendingApprovalCount'] = 0;
-        if ($userkaryawan->approval_admin_id) {
-            $data['hasApprovalAccess'] = true;
-            $data['pendingApprovalCount'] = \App\Http\Controllers\KaryawanApprovalController::getPendingCount(auth()->user()->id);
-        }
         return view('shortcut.index', $data);
     }
 

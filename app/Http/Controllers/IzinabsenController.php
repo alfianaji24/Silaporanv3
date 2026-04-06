@@ -286,7 +286,7 @@ class IzinabsenController extends Controller
     /**
      * Send approval notification to users who can approve this request
      */
-    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService)
+    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService, $layer = 1)
     {
         try {
             $karyawan = $izin->karyawan ?? Karyawan::where('nik', $izin->nik)->first();
@@ -295,8 +295,8 @@ class IzinabsenController extends Controller
                 return;
             }
 
-            // Dapatkan layer approval untuk tahap 1
-            $layer = $approvalService->getLayer('IZIN', 1, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
+            // Dapatkan layer approval untuk tahap yang diminta
+            $approvalLayer = $approvalService->getLayer('IZIN', $layer, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
             
             if (!$layer) {
                 return;
@@ -418,6 +418,10 @@ class IzinabsenController extends Controller
                      Izinabsen::where('kode_izin', $kode_izin)->update([
                         'approval_step' => $nextLevel
                     ]);
+                    
+                    // Kirim notifikasi ke approver jenjang berikutnya
+                    $this->sendApprovalNotification($izinabsen, 'absen', $approvalService, $nextLevel);
+                    
                     DB::commit();
                     return Redirect::back()->with(messageSuccess('Berhasil disetujui (Tahap ' . $currentStep . '). Menunggu approval tahap selanjutnya.'));
                 }

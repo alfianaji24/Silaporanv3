@@ -14,6 +14,31 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    /**
+     * Simpan nomor HP dalam format 08xxxxxxxxx (untuk konsistensi dengan notifikasi lainnya)
+     */
+    private function sanitizePhoneForStorage(?string $phone): ?string
+    {
+        if ($phone === null) {
+            return null;
+        }
+        $phone = trim($phone);
+        if ($phone === '') {
+            return null;
+        }
+
+        // Hilangkan semua karakter non-digit
+        $phone = preg_replace('/\D/', '', $phone);
+
+        // Jika dimulai dengan 62, ubah ke 0
+        if (str_starts_with($phone, '62')) {
+            $phone = '0' . substr($phone, 2);
+        }
+
+        // Jika sudah dimulai dengan 0, biarkan
+        return $phone;
+    }
+
     public function index(Request $request)
     {
         $userType = $request->user_type ?? 'biasa';
@@ -78,7 +103,8 @@ class UserController extends Controller
             'username' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            'phone' => 'nullable|regex:/^(\+62|62|0)[0-9]{8,12}$/',
+            // Array syntax agar aman untuk regex berisi `|`
+            'phone' => ['nullable', 'regex:/^(\+62|62|0)[0-9]{8,12}$/'],
             'role' => 'required'
         ], [
             'phone.regex' => 'Format nomor HP tidak valid. Gunakan format: 08xxxxxxxxx atau 628xxxxxxxxx'
@@ -103,7 +129,7 @@ class UserController extends Controller
         try {
             $phone = null;
             if (strtolower($request->role) !== 'karyawan') {
-                $phone = isset($request->phone) ? normalizePhoneNumber($request->phone) : null;
+                $phone = $this->sanitizePhoneForStorage($request->phone);
             }
 
             $user = User::create([
@@ -151,7 +177,8 @@ class UserController extends Controller
             'name' => 'required',
             'username' => 'required',
             'email' => 'required|email',
-            'phone' => 'nullable|regex:/^(\+62|62|0)[0-9]{8,12}$/',
+            // Pakai array syntax supaya karakter `|` di dalam regex tidak dianggap separator validator.
+            'phone' => ['nullable', 'regex:/^(\+62|62|0)[0-9]{8,12}$/'],
         ], [
             'phone.regex' => 'Format nomor HP tidak valid. Gunakan format: 08xxxxxxxxx atau 628xxxxxxxxx'
         ]);
@@ -160,7 +187,7 @@ class UserController extends Controller
             $roleName = isset($request->role) ? strtolower($request->role) : strtolower($user->roles->pluck('name')->first() ?? '');
             $phone = null;
             if ($roleName !== 'karyawan') {
-                $phone = isset($request->phone) ? normalizePhoneNumber($request->phone) : null;
+                $phone = $this->sanitizePhoneForStorage($request->phone);
             }
 
             if (isset($request->password)) {

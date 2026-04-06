@@ -243,9 +243,9 @@
                         </a>
                     </li> --}}
                     <li>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" id="logoutForm">
                             @csrf
-                            <button type="submit" class="dropdown-item d-flex align-items-center"
+                            <button type="button" class="dropdown-item d-flex align-items-center" onclick="handleLogoutNav(event)"
                                 style="border: none; background: none; padding: 0.65rem 1rem; width: 100%; text-align: left;">
                                 <i class="ti ti-logout me-2 ti-sm"></i>
                                 <span class="align-middle">Log Out</span>

@@ -149,7 +149,11 @@ class PresensiController extends Controller
             if ($presensi != null) {
                 return redirect('/presensi/create?kode_jam_kerja=' . $presensi->kode_jam_kerja);
             }
-            $data['jamkerja'] = Jamkerja::orderBy('jam_masuk')->get();
+            // Saat unlock, daftar jam kerja hanya boleh yang sesuai jabatan karyawan
+            $data['jamkerja'] = Jamkerja::query()
+                ->visibleUntukJabatanKaryawan($karyawan->kode_jabatan)
+                ->orderBy('jam_masuk')
+                ->get();
             return view('presensi.pilih_jam_kerja', $data);
         }
 
@@ -236,7 +240,12 @@ class PresensiController extends Controller
                 }
             }
         } else {
-            $jamkerja = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
+            // Ketika pengguna memilih jam kerja manual (unlock), batasi agar hanya jam kerja
+            // yang memang tersedia untuk jabatan karyawan tersebut yang boleh dipakai.
+            $jamkerja = Jamkerja::query()
+                ->visibleUntukJabatanKaryawan($karyawan->kode_jabatan)
+                ->where('kode_jam_kerja', $kode_jam_kerja)
+                ->first();
         }
 
         // dd($jamkerja);

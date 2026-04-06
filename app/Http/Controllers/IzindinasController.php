@@ -327,6 +327,9 @@ class IzindinasController extends Controller
                  if ($nextRule && !$user->hasRole('super admin')) {
                     // Update to next step
                     Izindinas::where('kode_izin_dinas', $kode_izin_dinas)->update(['approval_step' => $nextLevel]);
+                    
+                    // Kirim notifikasi ke approver jenjang berikutnya
+                    $this->sendApprovalNotification($izindinas, 'dinas', $approvalService, $nextLevel);
                 } else {
                      // Final Approval
                     Izindinas::where('kode_izin_dinas', $kode_izin_dinas)->update([
@@ -533,7 +536,7 @@ class IzindinasController extends Controller
     /**
      * Send approval notification to users who can approve this request
      */
-    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService)
+    private function sendApprovalNotification($izin, $tipe, ApprovalService $approvalService, $layer = 1)
     {
         try {
             $karyawan = $izin->karyawan ?? Karyawan::where('nik', $izin->nik)->first();
@@ -542,8 +545,8 @@ class IzindinasController extends Controller
                 return;
             }
 
-            // Dapatkan layer approval untuk tahap 1
-            $layer = $approvalService->getLayer('IZIN', 1, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
+            // Dapatkan layer approval untuk tahap yang diminta
+            $approvalLayer = $approvalService->getLayer('IZIN', $layer, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
             
             if (!$layer) {
                 return;

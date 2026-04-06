@@ -13,6 +13,7 @@
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="{{ asset('assets/external/js/sweetalert2@11.js') }}"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -89,9 +90,6 @@
             50% { transform: scale(1.1); opacity: 0.1; }
             100% { transform: scale(1); opacity: 0.2; }
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         .alert-cream  { background-color: #fff3cd; border: 1px solid #ffeeba; }
         .alert-danger  { background-color: #f8d7da; border: 1px solid #f5c6cb; }
         .alert-info    { background-color: #e3f2fd; border: 1px solid #b8daff; }
@@ -120,13 +118,7 @@
         {{-- ===== HERO SECTION ===== --}}
         <div class="hero-bg px-5 pt-6 pb-14 text-white overflow-hidden relative">
             {{-- Top Icons --}}
-            <div class="flex justify-between items-center mb-3 relative z-10">
-                <a href="{{ route('karyawan-approval.index') }}" class="glass-icon relative">
-                    <ion-icon name="notifications-outline" style="font-size:24px;"></ion-icon>
-                    @if (isset($pendingApprovalCount) && $pendingApprovalCount > 0)
-                        <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-[{{ $t['primary'] ?? '#2d5a4c' }}] text-[9px] font-bold flex items-center justify-center px-1 shadow-sm">{{ $pendingApprovalCount }}</span>
-                    @endif
-                </a>
+            <div class="flex justify-end items-center mb-3 relative z-10 gap-3">
                 <a href="{{ route('logout.get') }}" class="glass-icon" id="logout-btn" onclick="handleLogout(event)">
                     <ion-icon name="exit-outline" style="font-size:24px;" id="logout-icon"></ion-icon>
                 </a>
@@ -737,25 +729,38 @@
             window.location.href = "{{ route('facerecognition.karyawan.create') }}";
         });
 
-        // Logout Handler with Loading Animation
+        // Logout Handler with SweetAlert2 confirmation
         function handleLogout(event) {
             event.preventDefault();
-            if (!confirm('Anda yakin ingin logout?')) {
-                return;
-            }
-            
-            const btn = document.getElementById('logout-btn');
-            const icon = document.getElementById('logout-icon');
-            
-            // Add loading spinner
-            btn.style.opacity = '0.6';
-            btn.style.pointerEvents = 'none';
-            icon.style.animation = 'spin 1s linear infinite';
-            
-            // Redirect to logout after a short delay
-            setTimeout(() => {
-                window.location.href = "{{ route('logout.get') }}";
-            }, 300);
+
+            Swal.fire({
+                title: 'Anda Yakin?',
+                text: 'Anda akan logout dari sistem.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout!',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const btn = document.getElementById('logout-btn');
+                    const icon = document.getElementById('logout-icon');
+
+                    btn.style.opacity = '0.6';
+                    btn.style.pointerEvents = 'none';
+
+                    Swal.fire({
+                        title: 'Logout Berhasil!',
+                        text: 'Anda telah keluar dari sistem.',
+                        icon: 'success',
+                        timer: 1000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "{{ route('logout.get') }}";
+                    });
+                }
+            });
         }
     </script>
 </body>
