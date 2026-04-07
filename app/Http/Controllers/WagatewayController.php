@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWaMessage;
 use App\Models\Pengaturanumum;
 use App\Models\Device;
 use App\Models\Message;
@@ -525,10 +526,40 @@ class WagatewayController extends Controller
         }
     }
 
-    public function messages()
+    public function messages(Request $request)
     {
-        $messages = Message::orderBy('created_at', 'desc')->paginate(20);
-        return view('wagateway.messages', compact('messages'));
+        $query = Message::orderBy('created_at', 'desc');
+        $filter = $request->query('filter') ?? 'success'; // Default ke 'success'
+        
+        if ($filter === 'failed') {
+            $query->where('status', 'failed');
+        } elseif ($filter === 'success') {
+            $query->where('status', 'success');
+        } elseif ($filter === 'pending') {
+            $query->where('status', 'pending');
+        }
+        // Jika filter === 'all', tampilkan semua pesan
+        
+        $messages = $query->paginate(20)->withQueryString();
+        return view('wagateway.messages', compact('messages', 'filter'));
+    }
+
+    public function resendMessage(Request $request, $id)
+    {
+        $message = Message::findOrFail($id);
+
+        if ($message->status === 'success') {
+            return back()->with('error', 'Pesan ini sudah berhasil dikirim.');
+        }
+
+        $message->status = 'pending';
+        $message->permanent_failed = false;
+        $message->error_message = null;
+        $message->save();
+
+        dispatch(new SendWaMessage($message->penerima, $message->pesan, false, $message->id));
+
+        return back()->with('success', 'Permintaan kirim ulang telah disimpan. Silakan tunggu worker memproses.');
     }
 
     public function fetchGroups(Request $request)

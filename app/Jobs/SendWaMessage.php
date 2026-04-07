@@ -20,17 +20,35 @@ class SendWaMessage implements ShouldQueue
     /**
      * Jumlah percobaan sebelum job dianggap gagal.
      */
-    public int $tries = 3;
+    public int $tries = 1;
+
+    public ?int $messageLogId = null;
 
     protected string $phoneNumber;
     protected string $message;
     protected bool $birthday;
 
-    public function __construct(string $phoneNumber, string $message, bool $birthday = false)
+    public function __construct(string $phoneNumber, string $message, bool $birthday = false, ?int $messageLogId = null)
     {
         $this->phoneNumber = $phoneNumber;
         $this->message = $message;
         $this->birthday = $birthday;
+        $this->messageLogId = $messageLogId;
+
+        if (!$this->messageLogId) {
+            $messageLog = Message::create([
+                'pengirim' => '-',
+                'penerima' => $phoneNumber,
+                'pesan' => $message,
+                'status' => 'pending',
+                'message_id' => null,
+                'error_message' => null,
+                'attempts' => 0,
+                'permanent_failed' => false,
+            ]);
+
+            $this->messageLogId = $messageLog->id;
+        }
     }
 
     public function handle(): void
@@ -71,18 +89,12 @@ class SendWaMessage implements ShouldQueue
                 'phoneNumber' => $this->phoneNumber,
                 'id_group_wa' => $generalsetting->id_group_wa,
             ]);
-            return;
-        }
-
-        $logMessageRow = function (array $attrs): void {
-            try {
-                Message::create($attrs);
-            } catch (\Throwable $e) {
-                Log::error('SendWaMessage: gagal simpan ke tabel messages', [
-                    'error' => $e->getMessage(),
-                ]);
+            $messageLog = Message::find($this->messageLogId);
+            if ($messageLog) {
+                $this->updateMessageLogFailure($messageLog, 'Nomor penerima kosong');
             }
-        };
+            throw new \RuntimeException('SendWaMessage: Nomor penerima kosong');
+        }
 
         if ($providerWa === 'fe') {
             $curl = curl_init();
@@ -124,15 +136,12 @@ class SendWaMessage implements ShouldQueue
             ]);
 
             if ($errno || $httpCode >= 400) {
-                $logMessageRow([
-                    'pengirim' => 'fonnte',
-                    'penerima' => $penerima,
-                    'pesan' => $this->message,
-                    'status' => 'failed',
-                    'message_id' => null,
-                    'error_message' => ($err ?: ('HTTP ' . $httpCode)) . (is_string($response) && $response !== '' ? ' | ' . $response : ''),
-                ]);
-                throw new \RuntimeException('SendWaMessage Fonnte gagal: ' . ($err ?: ('HTTP ' . $httpCode)));
+                $errorMessage = ($err ?: ('HTTP ' . $httpCode)) . (is_string($response) && $response !== '' ? ' | ' . $response : '');
+                $messageLog = Message::find($this->messageLogId);
+                if ($messageLog) {
+                    $this->updateMessageLogFailure($messageLog, $errorMessage);
+                }
+                throw new \RuntimeException('SendWaMessage Fonnte gagal: ' . $errorMessage);
             }
             $messageId = null;
             if (is_string($response) && $response !== '') {
@@ -144,14 +153,16 @@ class SendWaMessage implements ShouldQueue
                     }
                 }
             }
-            $logMessageRow([
-                'pengirim' => 'fonnte',
-                'penerima' => $penerima,
-                'pesan' => $this->message,
-                'status' => 'success',
-                'message_id' => $messageId,
-                'error_message' => null,
-            ]);
+            $messageLog = Message::find($this->messageLogId);
+            if ($messageLog) {
+                $messageLog->pengirim = 'fonnte';
+                $messageLog->status = 'success';
+                $messageLog->message_id = $messageId;
+                $messageLog->error_message = null;
+                $messageLog->permanent_failed = false;
+                $messageLog->last_attempt_at = now();
+                $messageLog->save();
+            }
             return;
         }
 
@@ -165,15 +176,11 @@ class SendWaMessage implements ShouldQueue
         $sender = Device::where('status', 1)->first();
         if (!$sender) {
             Log::warning('SendWaMessage: Device sender aktif tidak ditemukan');
-            $logMessageRow([
-                'pengirim' => '-',
-                'penerima' => $penerima,
-                'pesan' => $this->message,
-                'status' => 'failed',
-                'message_id' => null,
-                'error_message' => 'Device sender aktif tidak ditemukan (devices.status=1)',
-            ]);
-            return;
+            $messageLog = Message::find($this->messageLogId);
+            if ($messageLog) {
+                $this->updateMessageLogFailure($messageLog, 'Device sender aktif tidak ditemukan (devices.status=1)');
+            }
+            throw new \RuntimeException('SendWaMessage: Device sender aktif tidak ditemukan');
         }
 
         $payload = [
@@ -205,14 +212,16 @@ class SendWaMessage implements ShouldQueue
 
         if ($response->successful()) {
             $responseData = $response->json();
-            $logMessageRow([
-                'pengirim' => $sender->number,
-                'penerima' => $penerima,
-                'pesan' => $this->message,
-                'status' => 'success',
-                'message_id' => is_array($responseData) ? ($responseData['message_id'] ?? null) : null,
-                'error_message' => null,
-            ]);
+            $messageLog = Message::find($this->messageLogId);
+            if ($messageLog) {
+                $messageLog->pengirim = $sender->number;
+                $messageLog->status = 'success';
+                $messageLog->message_id = is_array($responseData) ? ($responseData['message_id'] ?? null) : null;
+                $messageLog->error_message = null;
+                $messageLog->permanent_failed = false;
+                $messageLog->last_attempt_at = now();
+                $messageLog->save();
+            }
             return;
         }
 
@@ -221,14 +230,23 @@ class SendWaMessage implements ShouldQueue
         $errText = is_array($errorResponse)
             ? ($errorResponse['message'] ?? json_encode($errorResponse, JSON_UNESCAPED_UNICODE))
             : $response->body();
-        $logMessageRow([
-            'pengirim' => $sender->number,
-            'penerima' => $penerima,
-            'pesan' => $this->message,
-            'status' => 'failed',
-            'message_id' => null,
-            'error_message' => $errText !== '' ? $errText : "HTTP {$statusCode}",
-        ]);
+        $errorMessage = $errText !== '' ? $errText : "HTTP {$statusCode}";
+        $messageLog = Message::find($this->messageLogId);
+        if ($messageLog) {
+            $this->updateMessageLogFailure($messageLog, $errorMessage);
+        }
         throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
+    }
+
+    protected function updateMessageLogFailure(Message $messageLog, string $errorMessage): void
+    {
+        $messageLog->attempts += 1;
+        $messageLog->last_attempt_at = now();
+        $messageLog->status = 'failed';
+        $messageLog->error_message = $errorMessage;
+        if ($messageLog->attempts >= 1) {
+            $messageLog->permanent_failed = true;
+        }
+        $messageLog->save();
     }
 }

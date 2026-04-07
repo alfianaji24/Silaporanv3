@@ -625,6 +625,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:super admin')->controller(WagatewayController::class)->group(function () {
         Route::get('/wagateway', 'index')->name('wagateway.index');
         Route::get('/wagateway/messages', 'messages')->name('wagateway.messages');
+        Route::post('/wagateway/messages/{id}/resend', 'resendMessage')->name('wagateway.messages.resend');
         Route::post('/wagateway/add-device', 'addDevice')->name('wagateway.add-device');
         Route::post('/wagateway/toggle-device-status/{id}', 'toggleDeviceStatus')->name('wagateway.toggle-device-status');
         Route::post('/wagateway/generate-qr', 'generateQR')->name('wagateway.generate-qr');

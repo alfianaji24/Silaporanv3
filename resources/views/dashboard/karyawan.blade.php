@@ -128,7 +128,7 @@
             <div class="flex justify-between items-start mb-0 relative z-10">
                 {{-- Left: Name --}}
                 <div class="fade-in" style="animation-delay:.05s">
-                    <h3 style="font-size:20px; font-weight:800; line-height:1.1;">{{ $karyawan->nama_karyawan }}👋</h3>
+                    <h3 style="font-size:20px; font-weight:800; line-height:1.1;">{{ $karyawan->nama_karyawan }}</h3>
                     <span style="font-size:13px; font-weight:400; opacity:.8; display:block; margin-top:2px;">{{ $karyawan->nama_jabatan }} ({{ $karyawan->nama_dept }})</span>
                 </div>
                 {{-- Right: Avatar --}}

@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\CheckFailedMessagesJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -23,6 +24,11 @@ class Kernel extends ConsoleKernel
 
         // Kirim ucapan ulang tahun otomatis setiap hari jam 08:00
         $schedule->command('send:birthday-whatsapp')->dailyAt('08:00')->appendOutputTo(storage_path('logs/birthday-scheduler.log'));
+
+        // Cek pesan gagal terkirim setiap 1 jam
+        $schedule->job(new CheckFailedMessagesJob)
+            ->hourly()
+            ->appendOutputTo(storage_path('logs/check-failed-messages-scheduler.log'));
     }
 
     /**

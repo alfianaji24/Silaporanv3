@@ -15,7 +15,10 @@ class Message extends Model
         'pesan',
         'status',
         'message_id',
-        'error_message'
+        'error_message',
+        'attempts',
+        'last_attempt_at',
+        'permanent_failed'
     ];
 
     protected $casts = [

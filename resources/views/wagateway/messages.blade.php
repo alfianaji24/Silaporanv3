@@ -7,9 +7,35 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title">Riwayat Pesan WhatsApp</h5>
-                        <div class="card-tools">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div>
+                            <h5 class="card-title mb-0">Riwayat Pesan WhatsApp</h5>
+                            <small class="text-muted">
+                                Mode: 
+                                @if($filter === 'success')
+                                    Berhasil Terkirim
+                                @elseif($filter === 'failed')
+                                    Gagal Terkirim
+                                @elseif($filter === 'pending')
+                                    Menunggu Diproses
+                                @else
+                                    Semua Pesan
+                                @endif
+                            </small>
+                        </div>
+                        <div class="card-tools d-flex gap-2">
+                            <a href="{{ route('wagateway.messages', ['filter' => 'all']) }}" class="btn btn-sm btn-secondary {{ $filter === 'all' ? 'active' : '' }}">
+                                Semua Pesan
+                            </a>
+                            <a href="{{ route('wagateway.messages', ['filter' => 'failed']) }}" class="btn btn-sm btn-danger {{ $filter === 'failed' ? 'active' : '' }}">
+                                Gagal Terkirim
+                            </a>
+                            <a href="{{ route('wagateway.messages', ['filter' => 'pending']) }}" class="btn btn-sm btn-warning {{ $filter === 'pending' ? 'active' : '' }}">
+                                Menunggu
+                            </a>
+                            <a href="{{ route('wagateway.messages', ['filter' => 'success']) }}" class="btn btn-sm btn-success {{ $filter === 'success' ? 'active' : '' }}">
+                                Berhasil Terkirim
+                            </a>
                             <a href="{{ route('wagateway.index') }}" class="btn btn-sm btn-primary">
                                 <i class="ti ti-arrow-left"></i> Kembali ke WA Gateway
                             </a>
@@ -25,8 +51,12 @@
                                         <th>Penerima</th>
                                         <th>Pesan</th>
                                         <th>Status</th>
-                                        <th>Message ID</th>
-                                        <th>Error</th>
+                                        @if($filter !== 'success' && $filter !== 'pending')
+                                            <th>Percobaan</th>
+                                            <th>Message ID</th>
+                                            <th>Error</th>
+                                            <th>Aksi</th>
+                                        @endif
                                         <th>Tanggal</th>
                                     </tr>
                                 </thead>
@@ -44,7 +74,16 @@
                                                 <div class="message-content" style="max-width: 200px;">
                                                     @if (strlen($message->pesan) > 50)
                                                         <span class="message-preview">{{ substr($message->pesan, 0, 50) }}...</span>
-                                                        <button class="btn btn-sm btn-link p-0 ms-1" onclick="showFullMessage({{ $message->id }})">
+                                                        <button class="btn btn-sm btn-link p-0 ms-1" onclick="showFullMessage(this)"
+                                                            data-pengirim="{{ $message->pengirim }}"
+                                                            data-penerima="{{ $message->penerima }}"
+                                                            data-pesan="{{ $message->pesan }}"
+                                                            data-status="{{ $message->status }}{{ $message->permanent_failed ? ' (permanent)' : '' }}"
+                                                            data-messageid="{{ $message->message_id }}"
+                                                            data-error="{{ $message->error_message }}"
+                                                            data-tanggal="{{ $message->created_at->format('d/m/Y H:i:s') }}"
+                                                            data-attempts="{{ $message->attempts ?? 0 }}"
+                                                        >
                                                             <i class="ti ti-eye"></i>
                                                         </button>
                                                     @else
@@ -57,28 +96,53 @@
                                                     <span class="badge bg-success">
                                                         <i class="ti ti-check-circle"></i> Berhasil
                                                     </span>
+                                                @elseif ($message->status === 'failed')
+                                                    @if ($message->permanent_failed)
+                                                        <span class="badge bg-danger">
+                                                            <i class="ti ti-alert-circle"></i> Gagal Permanen
+                                                        </span>
+                                                    @else
+                                                        <span class="badge bg-warning text-dark">
+                                                            <i class="ti ti-alert-circle"></i> Gagal
+                                                        </span>
+                                                    @endif
                                                 @else
-                                                    <span class="badge bg-danger">
-                                                        <i class="ti ti-x-circle"></i> Gagal
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="ti ti-clock"></i> Menunggu
                                                     </span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                @if ($message->message_id)
-                                                    <code class="text-success">{{ $message->message_id }}</code>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($message->error_message)
-                                                    <span class="text-danger" style="max-width: 150px; display: inline-block;">
-                                                        {{ substr($message->error_message, 0, 30) }}...
-                                                    </span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
-                                            </td>
+                                            @if($filter !== 'success' && $filter !== 'pending')
+                                                <td>
+                                                    {{ $message->attempts ?? 0 }}
+                                                </td>
+                                                <td>
+                                                    @if ($message->message_id)
+                                                        <code class="text-success">{{ $message->message_id }}</code>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($message->error_message)
+                                                        <span class="text-danger" style="max-width: 150px; display: inline-block;">
+                                                            {{ substr($message->error_message, 0, 30) }}...
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($message->status === 'failed')
+                                                        <form action="{{ route('wagateway.messages.resend', $message->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="btn btn-sm btn-warning">Kirim Ulang</button>
+                                                        </form>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            @endif
                                             <td>
                                                 <small class="text-muted">
                                                     {{ $message->created_at->format('d/m/Y H:i:s') }}
@@ -87,7 +151,17 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="text-center">Belum ada pesan yang dikirim</td>
+                                            <td colspan="{{ ($filter === 'success' || $filter === 'pending') ? 6 : 10 }}" class="text-center">
+                                                @if($filter === 'success')
+                                                    Belum ada pesan yang berhasil dikirim
+                                                @elseif($filter === 'failed')
+                                                    Belum ada pesan yang gagal dikirim
+                                                @elseif($filter === 'pending')
+                                                    Belum ada pesan yang menunggu diproses
+                                                @else
+                                                    Belum ada pesan yang dikirim
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -123,15 +197,21 @@
                             <span class="badge bg-secondary" id="modalPenerima"></span>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <strong>Pesan:</strong><br>
-                        <div class="border p-3 rounded bg-light" id="modalPesan"></div>
-                    </div>
                     <div class="row mb-3">
                         <div class="col-6">
                             <strong>Status:</strong><br>
                             <span id="modalStatus"></span>
                         </div>
+                        <div class="col-6">
+                            <strong>Percobaan:</strong><br>
+                            <span id="modalAttempts"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Pesan:</strong><br>
+                        <div class="border p-3 rounded bg-light" id="modalPesan"></div>
+                    </div>
+                    <div class="row mb-3">
                         <div class="col-6">
                             <strong>Tanggal:</strong><br>
                             <span id="modalTanggal"></span>
@@ -156,27 +236,23 @@
 
 @push('myscript')
     <script>
-        function showFullMessage(messageId) {
-            // Ambil data pesan dari tabel
-            const row = event.target.closest('tr');
-            const cells = row.querySelectorAll('td');
+        function showFullMessage(button) {
+            const pengirim = button.dataset.pengirim || '';
+            const penerima = button.dataset.penerima || '';
+            const pesan = button.dataset.pesan || '';
+            const status = button.dataset.status || '';
+            const messageIdValue = button.dataset.messageid || '';
+            const error = button.dataset.error || '';
+            const tanggal = button.dataset.tanggal || '';
+            const attempts = button.dataset.attempts || '0';
 
-            const pengirim = cells[1].querySelector('.badge').textContent.trim();
-            const penerima = cells[2].querySelector('.badge').textContent.trim();
-            const pesan = cells[3].querySelector('.message-preview').textContent.trim();
-            const status = cells[4].querySelector('.badge').textContent.trim();
-            const messageIdValue = cells[5].querySelector('code') ? cells[5].querySelector('code').textContent.trim() : '';
-            const error = cells[6].textContent.trim();
-            const tanggal = cells[7].textContent.trim();
-
-            // Isi modal
             document.getElementById('modalPengirim').textContent = pengirim;
             document.getElementById('modalPenerima').textContent = penerima;
             document.getElementById('modalPesan').textContent = pesan;
-            document.getElementById('modalStatus').innerHTML = cells[4].innerHTML;
+            document.getElementById('modalStatus').textContent = status;
+            document.getElementById('modalAttempts').textContent = attempts;
             document.getElementById('modalTanggal').textContent = tanggal;
 
-            // Tampilkan/sembunyikan section berdasarkan data
             if (messageIdValue && messageIdValue !== '-') {
                 document.getElementById('modalMessageId').textContent = messageIdValue;
                 document.getElementById('messageIdSection').style.display = 'block';
@@ -191,7 +267,6 @@
                 document.getElementById('errorSection').style.display = 'none';
             }
 
-            // Tampilkan modal
             $('#messageModal').modal('show');
         }
     </script>
