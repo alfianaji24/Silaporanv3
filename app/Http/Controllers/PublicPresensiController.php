@@ -22,18 +22,11 @@ class PublicPresensiController extends Controller
     public function index()
     {
         $generalsetting = Pengaturanumum::where('id', 1)->first();
-        $scheme = $generalsetting->mobile_theme_scheme ?? 'green';
+        $scheme = $generalsetting->mobile_theme_scheme ?? config('themes.default', 'green');
         
-        $colors = [
-            'green' => ['primary' => '#32745e', 'rgb' => '50, 116, 94', 'secondary' => '#3ab58c', 'bg_gradient' => 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)'],
-            'blue' => ['primary' => '#0d47a1', 'rgb' => '13, 71, 161', 'secondary' => '#1976d2', 'bg_gradient' => 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'],
-            'red' => ['primary' => '#b71c1c', 'rgb' => '183, 28, 28', 'secondary' => '#d32f2f', 'bg_gradient' => 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%)'],
-            'purple' => ['primary' => '#4a148c', 'rgb' => '74, 20, 140', 'secondary' => '#7b1fa2', 'bg_gradient' => 'linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%)'],
-            'orange' => ['primary' => '#e65100', 'rgb' => '230, 81, 0', 'secondary' => '#f57c00', 'bg_gradient' => 'linear-gradient(135deg, #7c2d12 0%, #9a3412 100%)'],
-            'dark' => ['primary' => '#bb86fc', 'rgb' => '187, 134, 252', 'secondary' => '#cf6679', 'bg_gradient' => 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)'],
-        ];
-
-        $active_colors = $colors[$scheme] ?? $colors['green'];
+        // Get themes from config/themes.php
+        $themeSchemes = config('themes.schemes', []);
+        $active_colors = $themeSchemes[$scheme] ?? $themeSchemes[config('themes.default', 'green')] ?? [];
 
         return view('presensi.public_kiosk', [
             'generalsetting' => $generalsetting,

@@ -1,42 +1,17 @@
 @php
-    $scheme = $general_setting->mobile_theme_scheme ?? 'green';
+    $scheme = $general_setting->mobile_theme_scheme ?? config('themes.default', 'green');
     
-    // Forced Light Mode Colors
-    $colors = [
-        'green' => [
-            'primary' => '#32745e',
-            'primary_light' => '#58907D',
-            'bg_body' => '#f0fdf9',
-        ],
-        'blue' => [
-            'primary' => '#0d47a1',
-            'primary_light' => '#1976d2',
-            'bg_body' => '#eff6ff',
-        ],
-        'red' => [
-            'primary' => '#b71c1c',
-            'primary_light' => '#d32f2f',
-            'bg_body' => '#fef2f2',
-        ],
-        'purple' => [
-            'primary' => '#4a148c',
-            'primary_light' => '#7b1fa2',
-            'bg_body' => '#faf5ff',
-        ],
-        'orange' => [
-            'primary' => '#e65100',
-            'primary_light' => '#f57c00',
-            'bg_body' => '#fff8f1',
-        ],
-        'dark' => [
-            'primary' => '#bb86fc',
-            'primary_light' => '#9a6bdb',
-            'bg_body' => '#121212',
-        ],
+    // Get theme colors from config/themes.php
+    $themeSchemes = config('themes.schemes', []);
+    
+    // Extract only primary, primary_light, and bg_body for backward compatibility
+    $themeData = $themeSchemes[$scheme] ?? $themeSchemes[config('themes.default', 'green')] ?? [];
+    $t = [
+        'primary' => $themeData['primary'] ?? '#32745e',
+        'primary_light' => $themeData['primary_light'] ?? '#58907D',
+        'bg_body' => $themeData['bg_body'] ?? '#f0fdf9',
     ];
 
-    // Default to green if scheme is invalid
-    $t = $colors[$scheme] ?? $colors['green'];
     $isDark = false;
 
     // Share variables globally

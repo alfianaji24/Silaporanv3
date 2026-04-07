@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Karyawan;
 use App\Models\User;
 use App\Models\Userkaryawan;
+use App\Models\Pengaturanumum;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,11 +23,20 @@ class ProfileController extends Controller
         $karyawan = Karyawan::where('nik', $user_karyawan->nik)->first();
         $data['karyawan'] = $karyawan;
         $data['user'] = $user;
+        
+        // Get theme from config/themes.php dynamically
+        $generalSetting = Pengaturanumum::first();
+        $scheme = $generalSetting->mobile_theme_scheme ?? config('themes.default', 'green');
+        $themeSchemes = config('themes.schemes', []);
+        $themeData = $themeSchemes[$scheme] ?? $themeSchemes[config('themes.default', 'green')] ?? [];
+        
+        // Extract only primary, primary_light, and bg_body for backward compatibility
         $data['t'] = [
-            'primary' => '#2d5a4c',
-            'primary_light' => '#53c69c',
-            'bg_body' => '#e8f0ed'
+            'primary' => $themeData['primary'] ?? '#32745e',
+            'primary_light' => $themeData['primary_light'] ?? '#58907D',
+            'bg_body' => $themeData['bg_body'] ?? '#f0fdf9'
         ];
+        
         return view('profile.index', $data);
     }
 

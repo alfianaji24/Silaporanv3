@@ -277,12 +277,12 @@
                                 <div class="form-group mb-3">
                                     <label for="mobile_theme_scheme" class="form-label" style="font-weight: 600">Tema Aplikasi Mobile</label>
                                     <select name="mobile_theme_scheme" id="mobile_theme_scheme" class="form-select">
-                                        <option value="green" @selected(($setting->mobile_theme_scheme ?? 'green') == 'green')>Green (Default)</option>
-                                        <option value="blue" @selected(($setting->mobile_theme_scheme ?? 'green') == 'blue')>Blue (Ocean)</option>
-                                        <option value="red" @selected(($setting->mobile_theme_scheme ?? 'green') == 'red')>Red (Passion)</option>
-                                        <option value="orange" @selected(($setting->mobile_theme_scheme ?? 'green') == 'orange')>Orange (Sunset)</option>
-                                        <option value="purple" @selected(($setting->mobile_theme_scheme ?? 'green') == 'purple')>Purple (Royal)</option>
-                                        <option value="dark" @selected(($setting->mobile_theme_scheme ?? 'green') == 'dark')>Dark (Night)</option>
+                                        @foreach(config('themes.schemes', []) as $themeKey => $themeData)
+                                            <option value="{{ $themeKey }}" 
+                                                @selected(($setting->mobile_theme_scheme ?? config('themes.default', 'green')) == $themeKey)>
+                                                {{ $themeData['name'] ?? ucfirst($themeKey) }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>

@@ -38,7 +38,7 @@ class GeneralsettingController extends Controller
             'nama_hrd' => 'nullable|string',
             'theme_color_1' => 'nullable|string|max:20',
             'theme_color_2' => 'nullable|string|max:20',
-            'mobile_theme_scheme' => 'nullable|in:green,blue,red,purple,orange,dark',
+            'mobile_theme_scheme' => 'nullable|in:' . implode(',', array_keys(config('themes.schemes', []))),
             'session_time' => 'nullable|integer|min:1',
         ]);
 

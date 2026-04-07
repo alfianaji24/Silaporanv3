@@ -11,7 +11,7 @@
 @push('mystyle')
     <style>
         body {
-            background: #e6fcf5 !important;
+            background: {{ $t['bg_body'] ?? '#f0fdf9' }} !important;
         }
 
         .form-container {
@@ -22,7 +22,7 @@
             position: relative;
             margin-bottom: 12px;
             background: transparent !important;
-            border: 1px solid #32745e;
+            border: 1px solid {{ $t['primary'] ?? '#32745e' }};
             border-radius: 12px;
             overflow: hidden;
             transition: all 0.2s ease;
@@ -33,7 +33,7 @@
             left: 14px;
             top: 11px;
             font-size: 20px;
-            color: #32745e;
+            color: {{ $t['primary'] ?? '#32745e' }};
             z-index: 10;
             pointer-events: none;
         }
@@ -45,7 +45,7 @@
             padding: 18px 14px 2px 42px !important;
             font-size: 14px;
             font-weight: 500;
-            color: #2a6350;
+            color: {{ $t['primary'] ?? '#32745e' }};
             background: transparent !important;
             border: none !important;
             outline: none !important;
@@ -64,7 +64,7 @@
             top: 11px;
             left: 42px;
             font-size: 14px;
-            color: #32745e;
+            color: {{ $t['primary'] ?? '#32745e' }};
             opacity: 0.8;
             pointer-events: none;
             transition: all 0.2s ease-in-out;
@@ -80,19 +80,19 @@
             left: 42px;
             font-size: 10px;
             font-weight: 600;
-            color: #32745e;
+            color: {{ $t['primary'] ?? '#32745e' }};
         }
 
         /* Custom File Upload (Dashed Box) matching Izin Absen style */
         .custom-file-upload {
-            border: 1.5px dashed #32745e;
+            border: 1.5px dashed {{ $t['primary'] ?? '#32745e' }};
             border-radius: 12px;
             padding: 20px;
             text-align: center;
             cursor: pointer;
             margin-bottom: 12px;
             transition: all 0.3s ease;
-            background: rgba(50, 116, 94, 0.03);
+            background: rgba(0, 0, 0, 0.02);
             position: relative;
             display: flex;
             flex-direction: column;
@@ -102,8 +102,8 @@
         }
 
         .custom-file-upload:hover {
-            background: rgba(50, 116, 94, 0.08);
-            border-color: #2a6350;
+            background: rgba(0, 0, 0, 0.05);
+            border-color: {{ $t['primary_light'] ?? '#58907D' }};
         }
 
         .custom-file-upload input[type="file"] {
@@ -113,37 +113,15 @@
         .custom-file-upload label {
             cursor: pointer;
             display: block;
-            color: #32745e;
+            color: {{ $t['primary'] ?? '#32745e' }};
             margin: 0;
             width: 100%;
-        }
-
-        .custom-file-upload ion-icon {
-            font-size: 38px;
-            margin-bottom: 8px;
-            color: #32745e;
-        }
-
-        .custom-file-upload span {
-            font-size: 15px;
-            font-weight: 600;
-            opacity: 0.9;
-        }
-
-        .file-name {
-            font-size: 12px;
-            color: #2a6350;
-            margin-top: 8px;
-            font-weight: 500;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .btn-submit-modern {
             width: 100%;
             height: 48px;
-            background: #32745e;
+            background: {{ $t['primary'] ?? '#32745e' }};
             color: #ffffff;
             border: none;
             border-radius: 12px;
@@ -159,7 +137,7 @@
 
         .btn-submit-modern:active {
             transform: scale(0.97);
-            background: #2a6350;
+            background: {{ $t['primary_light'] ?? '#58907D' }};
         }
     </style>
 @endpush
@@ -183,7 +161,7 @@
 
             <div class="form-label-group">
                 <ion-icon name="calculator-outline" class="input-icon"></ion-icon>
-                <input type="text" name="jml_hari" id="jml_hari" placeholder=" " readonly>
+                <input type="text" name="jml_hari" id="jml_hari" placeholder=" " readonly style="pointer-events: none; cursor: default;">
                 <label for="jml_hari">Jumlah Hari</label>
             </div>
 
@@ -205,7 +183,7 @@
 
             <button type="submit" class="btn-submit-modern" id="btnSimpan">
                 <ion-icon name="paper-plane-outline"></ion-icon>
-                <span>Kirim Izin Sakit</span>
+                <span>Kirim</span>
             </button>
         </form>
     </div>

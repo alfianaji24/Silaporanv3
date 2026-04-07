@@ -10,6 +10,7 @@ use App\Models\Izinabsen;
 use App\Models\Izincuti;
 use App\Models\Izinsakit;
 use App\Models\Karyawan;
+use App\Models\Pengaturanumum;
 use App\Models\Presensi;
 use App\Models\Setjamkerjabydate;
 use App\Models\Setjamkerjabyday;
@@ -90,6 +91,19 @@ class IzinsakitController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+        
+        // Get theme from config/themes.php dynamically
+        $generalSetting = Pengaturanumum::first();
+        $scheme = $generalSetting->mobile_theme_scheme ?? config('themes.default', 'green');
+        $themeSchemes = config('themes.schemes', []);
+        $themeData = $themeSchemes[$scheme] ?? $themeSchemes[config('themes.default', 'green')] ?? [];
+        
+        // Extract only primary, primary_light, and bg_body for backward compatibility
+        $data['t'] = [
+            'primary' => $themeData['primary'] ?? '#32745e',
+            'primary_light' => $themeData['primary_light'] ?? '#58907D',
+            'bg_body' => $themeData['bg_body'] ?? '#f0fdf9'
+        ];
         
         $qkaryawan = Karyawan::query();
         $qkaryawan->select('karyawan.nik', 'karyawan.nama_karyawan');

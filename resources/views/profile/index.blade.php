@@ -11,7 +11,7 @@
 @push('mystyle')
     <style>
         body {
-            background: {{ $c['bg_body'] ?? '#e6fcf5' }} !important;
+            background: {{ $t['bg_body'] ?? '#f0fdf9' }} !important;
         }
 
         .form-container {
@@ -45,7 +45,7 @@
             padding: 18px 14px 2px 42px !important;
             font-size: 14px;
             font-weight: 500;
-            color: {{ $t['primary'] ?? '#2a6350' }};
+            color: {{ $t['primary'] ?? '#32745e' }};
             background: transparent !important;
             border: none !important;
             outline: none !important;
@@ -96,8 +96,8 @@
             height: 110px;
             border-radius: 50%;
             padding: 3px;
-            background: linear-gradient(135deg, #32745e, #53c69c);
-            box-shadow: 0 8px 20px rgba(50, 116, 94, 0.2);
+            background: linear-gradient(135deg, {{ $t['primary'] ?? '#32745e' }}, {{ $t['primary_light'] ?? '#58907D' }});
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .profile-photo-box img,
@@ -106,7 +106,7 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #e6fcf5;
+            border: 3px solid {{ $t['bg_body'] ?? '#f0fdf9' }};
         }
 
         .profile-photo-box .photo-placeholder {
@@ -123,7 +123,7 @@
             cursor: pointer;
             margin-bottom: 12px;
             transition: all 0.3s ease;
-            background: rgba(50, 116, 94, 0.05);
+            background: rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -132,7 +132,7 @@
         }
 
         .custom-file-upload:active {
-            background: rgba(50, 116, 94, 0.1);
+            background: rgba(0, 0, 0, 0.05);
             transform: scale(0.98);
         }
 
@@ -154,7 +154,7 @@
 
         .file-name {
             font-size: 11px;
-            color: {{ $t['primary'] ?? '#2a6350' }};
+            color: {{ $t['primary'] ?? '#32745e' }};
             margin-top: 4px;
             font-weight: 500;
             max-width: 200px;
@@ -182,7 +182,15 @@
 
         .btn-submit-modern:active {
             transform: scale(0.97);
-            background: {{ $t['primary_light'] ?? '#2a6350' }};
+            background: {{ $t['primary_light'] ?? '#58907D' }};
+        }
+
+        .checkbox-primary {
+            accent-color: {{ $t['primary'] ?? '#32745e' }};
+        }
+
+        .text-primary {
+            color: {{ $t['primary'] ?? '#32745e' }};
         }
     </style>
 @endpush
@@ -255,8 +263,8 @@
 
             <div class="px-2 mb-4">
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" class="w-4 h-4 accent-[{{ $t['primary'] ?? '#32745e' }}]" id="show-password" onclick="togglePassword()">
-                    <label class="text-sm font-semibold text-[{{ $t['primary'] ?? '#32745e' }}] cursor-pointer" for="show-password">Tampilkan Password</label>
+                    <input type="checkbox" class="w-4 h-4 checkbox-primary" id="show-password" onclick="togglePassword()">
+                    <label class="text-sm font-semibold text-primary cursor-pointer" for="show-password">Tampilkan Password</label>
                 </div>
             </div>
 
