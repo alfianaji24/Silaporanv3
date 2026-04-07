@@ -511,21 +511,25 @@ class PresensiController extends Controller
                         //Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                         if ($generalsetting->notifikasi_wa == 1) {
                             try {
+                                $is_terlambat = $jam_presensi_carbon->gt($jam_masuk_carbon);
+                                $terlambat_menit = $is_terlambat ? $jam_presensi_carbon->diffInMinutes($jam_masuk_carbon) : 0;
+
+                                $message = "📢 INFO ABSEN MASUK\n\n"
+                                    . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                    . "🕒 Waktu: {$jam_presensi}\n";
+
+                                if ($is_terlambat) {
+                                    $message .= "⏰ Terlambat: {$terlambat_menit} menit\n";
+                                }
+
+                                $message .= "\nTelah Berhasil Tercatat\n"
+                                    . "Selamat Bekerja!";
+
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "📢 INFO ABSEN MASUK\n\n"
-                                            . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                            . "🕒 Waktu: {$jam_presensi}\n\n"
-                                            . "Telah Berhasil Tercatat\n"
-                                            . "Selamat Bekerja!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
-                                    $message = "📢 INFO ABSEN MASUK\n\n"
-                                        . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                        . "🕒 Waktu: {$jam_presensi}\n\n"
-                                        . "Telah Berhasil Tercatat\n"
-                                        . "Selamat Bekerja!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {

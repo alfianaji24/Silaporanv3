@@ -164,10 +164,18 @@ class PresensiController extends Controller
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                     if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                         try {
+                            $is_terlambat = strtotime($jam_presensi) > strtotime($jam_masuk);
+                            $terlambat_menit = $is_terlambat ? floor((strtotime($jam_presensi) - strtotime($jam_masuk)) / 60) : 0;
+
                             $message = "📢 INFO ABSEN MASUK\n\n"
                                 . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
-                                . "Telah Berhasil Tercatat\n"
+                                . "🕒 Waktu: {$jam_presensi}\n";
+
+                            if ($is_terlambat) {
+                                $message .= "⏰ Terlambat: {$terlambat_menit} menit\n";
+                            }
+
+                            $message .= "\nTelah Berhasil Tercatat\n"
                                 . "Selamat Bekerja!";
 
                             $this->sendwa($karyawan->no_hp, $message);
