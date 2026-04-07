@@ -28,10 +28,15 @@
             'primary_light' => '#f57c00',
             'bg_body' => '#fff8f1',
         ],
+        'dark' => [
+            'primary' => '#bb86fc',
+            'primary_light' => '#9a6bdb',
+            'bg_body' => '#121212',
+        ],
     ];
 
-    // Default to green if scheme is dark or invalid
-    $t = (isset($colors[$scheme]) && $scheme !== 'dark') ? $colors[$scheme] : $colors['green'];
+    // Default to green if scheme is invalid
+    $t = $colors[$scheme] ?? $colors['green'];
     $isDark = false;
 
     // Share variables globally

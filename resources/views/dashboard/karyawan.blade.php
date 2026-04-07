@@ -132,7 +132,7 @@
                     <span style="font-size:13px; font-weight:400; opacity:.8; display:block; margin-top:2px;">{{ $karyawan->nama_jabatan }} ({{ $karyawan->nama_dept }})</span>
                 </div>
                 {{-- Right: Avatar --}}
-                <a href="{{ route('profile.index') }}" class="fade-in group" style="animation-delay:.1s">
+                <div class="fade-in group" style="animation-delay:.1s">
                     <div class="avatar-wrapper">
                         <div class="avatar-pulse"></div>
                         <div class="avatar-inner">
@@ -143,7 +143,7 @@
                             @endif
                         </div>
                     </div>
-                </a>
+                </div>
             </div>
 
             {{-- Clock --}}

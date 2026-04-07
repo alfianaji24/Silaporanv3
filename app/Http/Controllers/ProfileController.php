@@ -22,6 +22,11 @@ class ProfileController extends Controller
         $karyawan = Karyawan::where('nik', $user_karyawan->nik)->first();
         $data['karyawan'] = $karyawan;
         $data['user'] = $user;
+        $data['t'] = [
+            'primary' => '#2d5a4c',
+            'primary_light' => '#53c69c',
+            'bg_body' => '#e8f0ed'
+        ];
         return view('profile.index', $data);
     }
 
@@ -30,6 +35,16 @@ class ProfileController extends Controller
         $user = User::find(Auth::user()->id);
         $user_karyawan = Userkaryawan::where('id_user', $user->id)->first();
         $karyawan = Karyawan::where('nik', $user_karyawan->nik)->first();
+
+        $request->validate([
+            'nama_karyawan' => 'required',
+            'no_ktp' => 'required',
+            'no_hp' => 'required',
+            'alamat' => 'required',
+            'username' => 'required|unique:users,username,' . $user->id,
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
+        ]);
 
         try {
             $data_foto = [];
@@ -59,11 +74,18 @@ class ProfileController extends Controller
                 Storage::delete($destination_foto_path . "/" . $karyawan->foto);
                 $request->file('foto')->storeAs($destination_foto_path, $foto_name);
             }
-            User::where('id', $user->id)->update([
+
+            $user_data = [
                 'name' => $request->nama_karyawan,
                 'email' => $request->email,
                 'username' => $request->username,
-            ]);
+            ];
+
+            if ($request->filled('password')) {
+                $user_data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+            }
+
+            User::where('id', $user->id)->update($user_data);
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan'));
         } catch (\Exception $e) {
             return Redirect::back()->with(messageError($e->getMessage()));

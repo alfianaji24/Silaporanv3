@@ -41,6 +41,7 @@ class Globalprovider extends ServiceProvider
                 'red'    => ['primary' => '#b71c1c', 'primary_light' => '#d32f2f', 'bg_body' => '#fef2f2'],
                 'purple' => ['primary' => '#4a148c', 'primary_light' => '#7b1fa2', 'bg_body' => '#faf5ff'],
                 'orange' => ['primary' => '#e65100', 'primary_light' => '#f57c00', 'bg_body' => '#fff8f1'],
+                'dark'   => ['primary' => '#bb86fc', 'primary_light' => '#9a6bdb', 'bg_body' => '#121212'],
             ];
             $t = $themeColors[$scheme] ?? $themeColors['green'];
             $isDark = false;

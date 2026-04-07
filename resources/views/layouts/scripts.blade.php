@@ -219,7 +219,9 @@
                 } else {
                     window.location.href = "{{ route('logout.get') }}";
                 }
- <script src="{{ asset('/assets/js/main.js') }}"></script>
+            });
+        </script>
+        <script src="{{ asset('/assets/js/main.js') }}"></script>
 
 
 

@@ -516,7 +516,7 @@
                              <div>Role</div>
                          </a>
                      </li>
-                     <li class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}"">
+                     <li class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}">
                          <a href="{{ route('permissions.index') }}" class="menu-link">
                              <div>Permission</div>
                          </a>
