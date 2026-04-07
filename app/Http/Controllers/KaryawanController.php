@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Imports\KaryawanImport;
 use App\Exports\TemplateKaryawanExport;
 use App\Exports\KaryawanExport;
@@ -192,11 +193,13 @@ class KaryawanController extends Controller
                     'foto' => $foto
                 ];
             }
+            $namaKaryawan = Str::title(strtolower($request->nama_karyawan));
+
             $data_karyawan = [
                 'nik' => $nikAuto,
                 'nik_show' => $request->nik_show,
                 'no_ktp' => $request->no_ktp,
-                'nama_karyawan' => $request->nama_karyawan,
+                'nama_karyawan' => $namaKaryawan,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'alamat' => $request->alamat,
@@ -300,11 +303,13 @@ class KaryawanController extends Controller
                 ];
             }
 
+            $namaKaryawan = Str::title(strtolower($request->nama_karyawan));
+
             $data_karyawan = [
                 // 'nik' tidak diubah di update
                 'nik_show' => $request->nik_show,
                 'no_ktp' => $request->no_ktp,
-                'nama_karyawan' => $request->nama_karyawan,
+                'nama_karyawan' => $namaKaryawan,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
                 'alamat' => $request->alamat,
@@ -328,7 +333,7 @@ class KaryawanController extends Controller
                 $user_karyawan = Userkaryawan::where('nik', $nik)->first();
                 if ($user_karyawan) {
                     User::where('id', $user_karyawan->id_user)->update([
-                        'name' => $request->nama_karyawan
+                        'name' => $namaKaryawan
                     ]);
                 }
 

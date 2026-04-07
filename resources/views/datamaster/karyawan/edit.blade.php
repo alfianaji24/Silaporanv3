@@ -51,11 +51,10 @@
     </div>
     <x-select-label label="Kantor Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang"
         selected="{{ $karyawan->kode_cabang }}" />
-    <x-select-label label="Departemen" name="kode_dept" :data="$departemen" selected="{{ $karyawan->kode_dept }}" key="kode_dept" textShow="nama_dept"
-        upperCase="true" />
+    <x-select-label label="Departemen" name="kode_dept" :data="$departemen" selected="{{ $karyawan->kode_dept }}" key="kode_dept" textShow="nama_dept" />
     </div>
     <x-select-label label="Jabatan" name="kode_jabatan" :data="$jabatan" selected="{{ $karyawan->kode_jabatan }}" key="kode_jabatan"
-        textShow="nama_jabatan" upperCase="true" />
+        textShow="nama_jabatan" />
     <x-input-with-icon-label icon="ti ti-calendar" datepicker="flatpickr-date" label="Tanggal Masuk" name="tanggal_masuk"
         value="{{ $karyawan->tanggal_masuk }}" />
     <div class="form-group mb-3">

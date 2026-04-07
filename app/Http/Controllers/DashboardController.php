@@ -14,6 +14,8 @@ use App\Models\Presensi;
 use App\Models\Pengumuman;
 use App\Models\User;
 use App\Models\Userkaryawan;
+use App\Models\Cuti;
+use App\Models\Approveizincuti;
 use App\Models\Pengaturanumum;
 use App\Jobs\SendWaMessage;
 use Carbon\Carbon;
@@ -136,6 +138,34 @@ class DashboardController extends Controller
                 ->first();
 
             $data['notif_sp'] = $notif_sp;
+
+            // Total terlambat bulan ini
+            $currentMonth = Carbon::now(config('app.timezone'))->month;
+            $currentYear = Carbon::now(config('app.timezone'))->year;
+            $totalLateSeconds = Presensi::join('presensi_jamkerja', 'presensi.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('presensi.nik', $userkaryawan->nik)
+                ->whereRaw('MONTH(presensi.tanggal) = ?', [$currentMonth])
+                ->whereRaw('YEAR(presensi.tanggal) = ?', [$currentYear])
+                ->whereNotNull('presensi.jam_in')
+                ->whereRaw('TIME(presensi.jam_in) > presensi_jamkerja.jam_masuk')
+                ->selectRaw('SUM(TIME_TO_SEC(TIMEDIFF(TIME(presensi.jam_in), presensi_jamkerja.jam_masuk))) as totalLateSeconds')
+                ->value('totalLateSeconds');
+
+            $totalLateSeconds = max(0, (int) $totalLateSeconds);
+            $hours = floor($totalLateSeconds / 3600);
+            $minutes = floor(($totalLateSeconds % 3600) / 60);
+            $data['terlambat_bulan_ini'] = sprintf('%02d:%02d', $hours, $minutes);
+
+            // Sisa cuti tahunan tahun berjalan
+            $cutiTahunan = Cuti::where('kode_cuti', 'C01')->first();
+            $data['sisa_cuti_tahunan'] = 0;
+            if ($cutiTahunan) {
+                $cutiDipakai = Approveizincuti::join('presensi', 'presensi_izincuti_approve.id_presensi', '=', 'presensi.id')
+                    ->where('presensi.nik', $userkaryawan->nik)
+                    ->whereYear('presensi.tanggal', $currentYear)
+                    ->count();
+                $data['sisa_cuti_tahunan'] = max(0, $cutiTahunan->jumlah_hari - $cutiDipakai);
+            }
 
             // Cek Pengumuman Aktif (Ambil yang terakhir dibuat)
             $data['pengumuman'] = Pengumuman::orderBy('created_at', 'desc')->first();

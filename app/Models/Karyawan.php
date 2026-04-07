@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Karyawan extends Model
 {
@@ -17,6 +19,13 @@ class Karyawan extends Model
     protected $casts = [
         'kode_cabang_array' => 'array',
     ];
+
+    protected function namaKaryawan(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => Str::title(Str::lower($value))
+        );
+    }
 
     function getRekapstatuskaryawan($request = null)
     {

@@ -7,7 +7,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>@yield('titlepage')</title>
+    <title>
+        @if(View::hasSection('titlepage'))
+            @yield('titlepage')
+        @elseif(View::hasSection('title'))
+            @yield('title')
+        @else
+            {{ config('app.name', 'Laravel') }}
+        @endif
+    </title>
 
     <meta name="description" content="" />
 

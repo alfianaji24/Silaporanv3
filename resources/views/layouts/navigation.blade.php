@@ -41,11 +41,9 @@
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}" id="logoutFormNav1">
                             @csrf
-
-                            <x-dropdown-link href="#"
-                                    onclick="event.preventDefault(); handleLogoutNav(event);">
+                            <button type="submit" class="dropdown-item w-100 text-start" style="border: none; background: none; padding: 0.5rem 1rem;">
                                 {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            </button>
                         </form>
                     </x-slot>
                 </x-dropdown>
@@ -86,11 +84,9 @@
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}" id="logoutFormNav2">
                     @csrf
-
-                    <x-responsive-nav-link href="#"
-                            onclick="event.preventDefault(); handleLogoutNav(event);">
+                    <button type="submit" class="block w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                         {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    </button>
                 </form>
             </div>
         </div>

@@ -228,7 +228,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <span class="fw-medium d-block">{{ Auth::user()->name }}</span>
-                                    <small class="text-muted">Admin</small>
+                                    <small class="text-muted text-uppercase">{{ Auth::user()->getRoleNames()->first() ?? 'User' }}</small>
                                 </div>
                             </div>
                         </a>
@@ -245,7 +245,7 @@
                     <li>
                         <form method="POST" action="{{ route('logout') }}" id="logoutForm">
                             @csrf
-                            <button type="button" class="dropdown-item d-flex align-items-center" onclick="handleLogoutNav(event)"
+                            <button type="submit" class="dropdown-item d-flex align-items-center"
                                 style="border: none; background: none; padding: 0.65rem 1rem; width: 100%; text-align: left;">
                                 <i class="ti ti-logout me-2 ti-sm"></i>
                                 <span class="align-middle">Log Out</span>

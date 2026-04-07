@@ -304,6 +304,35 @@
             </div>
         </div>
 
+        {{-- ===== MONTHLY STATUS CARDS ===== --}}
+        <div class="px-5 mt-3 fade-in" style="animation-delay:.27s">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white rounded-[15px] p-4 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p style="font-size:12px; color:#666; margin:0;">Rekap Terlambat</p>
+                            <h3 style="font-size:24px; font-weight:800; color:#666; margin:0;">{{ $terlambat_bulan_ini ?? 0 }}</h3>
+                        </div>
+                        <div class="w-[42px] h-[42px] rounded-full flex items-center justify-center bg-[#fef2f2]">
+                            <ion-icon name="time-outline" style="font-size:24px; color:#dc2626;"></ion-icon>
+                        </div>
+                    </div>
+                    <p style="font-size:12px; color:#666; line-height:1.4; margin:0;">Jumlah waktu keterlambat pada bulan {{ $bulan_skrg }}.</p>
+                </div>
+                <div class="bg-white rounded-[15px] p-4 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p style="font-size:12px; color:#666; margin:0;">Sisa Cuti Tahunan</p>
+                            <h3 style="font-size:24px; font-weight:800; color:#666; margin:0;">{{ $sisa_cuti_tahunan ?? 0 }}</h3>
+                        </div>
+                        <div class="w-[42px] h-[42px] rounded-full flex items-center justify-center bg-[#ecfdf5]">
+                            <ion-icon name="leaf-outline" style="font-size:24px; color:#16a34a;"></ion-icon>
+                        </div>
+                    </div>
+                    <p style="font-size:12px; color:#666; line-height:1.4; margin:0;">Sisa cuti tahunan yang bisa dipakai pada tahun berjalan.</p>
+                </div>
+            </div>
+        </div>
 
         @php
             $scheme = $general_setting->mobile_theme_scheme ?? 'green';
