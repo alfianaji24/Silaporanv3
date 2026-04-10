@@ -555,12 +555,6 @@
                      <div>WA Gateway</div>
                  </a>
             </li>
-            <li class="menu-item {{ request()->is(['ip-blacklist', 'ip-blacklist/*']) ? 'active' : '' }}">
-                <a href="{{ route('ip-blacklist.dashboard') }}" class="menu-link">
-                    <i class="menu-icon tf-icons ti ti-shield-lock"></i>
-                    <div>IP Blacklist</div>
-                </a>
-            </li>
          @endif
      </ul>
  </aside>
