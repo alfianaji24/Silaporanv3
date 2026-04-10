@@ -78,22 +78,10 @@ class IPBlacklistMiddleware
             return true;
         }
 
-        // Check against external threat intelligence APIs (optional)
-        // You can integrate with services like:
-        // - AbuseIPDB
-        // - VirusTotal
-        // - Spamhaus
-        // - Custom threat intelligence feeds
-        
-        // Example: Check against AbuseIPDB (you'd need API key)
-        // if ($this->checkAbuseIPDB($ip)) {
-        //     return true;
-        // }
-
         // Check against database table
-        // if ($this->checkDatabaseBlacklist($ip)) {
-        //     return true;
-        // }
+        if ($this->checkDatabaseBlacklist($ip)) {
+            return true;
+        }
 
         return false;
     }
@@ -130,6 +118,32 @@ class IPBlacklistMiddleware
         ];
 
         \Log::info('IP Access: ' . json_encode($logData));
+    }
+
+    /**
+     * Check IP against database blacklist
+     */
+    private function checkDatabaseBlacklist(string $ip): bool
+    {
+        try {
+            // Check if IP exists in ip_blacklists table
+            $blacklisted = \App\Models\IPBlacklist::where('ip_address', $ip)
+                ->where('status', 'active')
+                ->exists();
+            
+            if ($blacklisted) {
+                \Log::warning('IP Blocked from Database', ['ip' => $ip]);
+                return true;
+            }
+            
+            return false;
+        } catch (\Exception $e) {
+            \Log::error('Error checking IP blacklist database', [
+                'ip' => $ip,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
     }
 
     /**

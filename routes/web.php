@@ -95,11 +95,11 @@ Route::middleware('ip.blacklist')->controller(DownloadController::class)->group(
     Route::get('/download/apk', 'downloadApk')->name('download.apk');
 });
 
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified', 'ip.blacklist'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'ip.blacklist'])->group(function () {
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
