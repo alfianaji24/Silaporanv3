@@ -125,7 +125,7 @@
 
         <!-- Footer -->
         <div class="text-center mt-6 text-sm text-gray-500">
-            <p>© {{ date('Y') }} Silaporan - Sistem Informasi Laporan Karyawan</p>
+            <p>© {{ date('Y') }} Silaporan - Sistem Informasi Laporan Absensi Pegawai Non ASN</p>
             <p class="mt-1">Protected by Advanced Security System</p>
         </div>
     </div>

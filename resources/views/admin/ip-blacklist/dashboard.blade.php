@@ -1,9 +1,7 @@
 @extends('layouts.app')
-
 @section('title', 'IP Blacklist Dashboard')
-
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-fluid flex-grow-1 container-p-y">
     <!-- Header -->
     <div class="row">
         <div class="col-12">
@@ -29,17 +27,17 @@
 
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card bg-primary text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ $stats['total_blocked'] }}</h3>
-                            <p class="mb-0 text-white-80">Total Blocked IPs</p>
+                        <div class="flex-grow-1">
+                            <h2 class="mb-1">{{ $stats['total_blocked'] }}</h2>
+                            <p class="mb-0 text-white-80 fs-6">Total Blocked IPs</p>
                         </div>
-                        <div class="avatar avatar-xl">
-                            <div class="avatar-initial bg-white bg-opacity-20 rounded-2">
-                                <i class="ti ti-shield-alt fs-3"></i>
+                        <div class="avatar avatar-xxl">
+                            <div class="avatar-initial bg-white bg-opacity-20 rounded-3">
+                                <i class="ti ti-shield-alt fs-2"></i>
                             </div>
                         </div>
                     </div>
@@ -52,17 +50,17 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card bg-success text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ $stats['active_blocked'] }}</h3>
-                            <p class="mb-0 text-white-80">Active Blocks</p>
+                        <div class="flex-grow-1">
+                            <h2 class="mb-1">{{ $stats['active_blocked'] }}</h2>
+                            <p class="mb-0 text-white-80 fs-6">Active Blocks</p>
                         </div>
-                        <div class="avatar avatar-xl">
-                            <div class="avatar-initial bg-white bg-opacity-20 rounded-2">
-                                <i class="ti ti-player-play fs-3"></i>
+                        <div class="avatar avatar-xxl">
+                            <div class="avatar-initial bg-white bg-opacity-20 rounded-3">
+                                <i class="ti ti-player-play fs-2"></i>
                             </div>
                         </div>
                     </div>
@@ -75,17 +73,17 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning text-white">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card bg-warning text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ $stats['high_threat'] }}</h3>
-                            <p class="mb-0 text-white-80">High Threat (7+)</p>
+                        <div class="flex-grow-1">
+                            <h2 class="mb-1">{{ $stats['high_threat'] }}</h2>
+                            <p class="mb-0 text-white-80 fs-6">High Threat (7+)</p>
                         </div>
-                        <div class="avatar avatar-xl">
-                            <div class="avatar-initial bg-white bg-opacity-20 rounded-2">
-                                <i class="ti ti-alert-triangle fs-3"></i>
+                        <div class="avatar avatar-xxl">
+                            <div class="avatar-initial bg-white bg-opacity-20 rounded-3">
+                                <i class="ti ti-alert-triangle fs-2"></i>
                             </div>
                         </div>
                     </div>
@@ -98,17 +96,17 @@
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="card bg-danger text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">{{ $stats['blocked_today'] }}</h3>
-                            <p class="mb-0 text-white-80">Blocked Today</p>
+                        <div class="flex-grow-1">
+                            <h2 class="mb-1">{{ $stats['blocked_today'] }}</h2>
+                            <p class="mb-0 text-white-80 fs-6">Blocked Today</p>
                         </div>
-                        <div class="avatar avatar-xl">
-                            <div class="avatar-initial bg-white bg-opacity-20 rounded-2">
-                                <i class="ti ti-calendar-event fs-3"></i>
+                        <div class="avatar avatar-xxl">
+                            <div class="avatar-initial bg-white bg-opacity-20 rounded-3">
+                                <i class="ti ti-calendar-event fs-2"></i>
                             </div>
                         </div>
                     </div>
@@ -127,29 +125,29 @@
         <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="mb-0">
+                    <h4 class="mb-0">
                         <i class="ti ti-chart-bar me-2"></i>Weekly Statistics
-                    </h5>
+                    </h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6 text-center mb-3">
-                            <div class="bg-light-primary rounded-3 p-3">
-                                <h3 class="text-primary mb-1">{{ $stats['blocked_this_week'] }}</h3>
+                        <div class="col-6 text-center mb-4">
+                            <div class="bg-light-primary rounded-3 p-4">
+                                <h2 class="text-primary mb-2">{{ $stats['blocked_this_week'] }}</h2>
                                 <p class="mb-0 text-muted">This Week</p>
                             </div>
                         </div>
-                        <div class="col-6 text-center mb-3">
-                            <div class="bg-light-warning rounded-3 p-3">
-                                <h3 class="text-warning mb-1">{{ $stats['expired_blocked'] }}</h3>
+                        <div class="col-6 text-center mb-4">
+                            <div class="bg-light-warning rounded-3 p-4">
+                                <h2 class="text-warning mb-2">{{ $stats['expired_blocked'] }}</h2>
                                 <p class="mb-0 text-muted">Expired Blocks</p>
                             </div>
                         </div>
                     </div>
-                    <div class="progress" style="height: 8px;">
+                    <div class="progress mb-2" style="height: 12px;">
                         <div class="progress-bar bg-primary" style="width: {{ $stats['blocked_this_week'] * 10 }}%"></div>
                     </div>
-                    <small class="text-muted">Weekly activity level</small>
+                    <h6 class="text-muted">Weekly activity level</h6>
                 </div>
             </div>
         </div>
@@ -157,23 +155,23 @@
         <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header">
-                    <h5 class="mb-0">
+                    <h4 class="mb-0">
                         <i class="ti ti-settings me-2"></i>Quick Actions
-                    </h5>
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIPModal">
-                            <i class="ti ti-plus me-1"></i>Add New IP
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addIPModal">
+                            <i class="ti ti-plus me-2"></i>Add New IP
                         </button>
-                        <a href="{{ route('ip-blacklist.index') }}" class="btn btn-info">
-                            <i class="ti ti-list me-1"></i>View All IPs
+                        <a href="{{ route('ip-blacklist.index') }}" class="btn btn-info btn-lg">
+                            <i class="ti ti-list me-2"></i>View All IPs
                         </a>
-                        <button type="button" class="btn btn-warning" onclick="cleanExpiredIPs()">
-                            <i class="ti ti-trash me-1"></i>Clean Expired IPs
+                        <button type="button" class="btn btn-warning btn-lg" onclick="cleanExpiredIPs()">
+                            <i class="ti ti-trash me-2"></i>Clean Expired IPs
                         </button>
-                        <button type="button" class="btn btn-success" onclick="exportData()">
-                            <i class="ti ti-download me-1"></i>Export Data
+                        <button type="button" class="btn btn-success btn-lg" onclick="exportData()">
+                            <i class="ti ti-download me-2"></i>Export Data
                         </button>
                     </div>
                 </div>
@@ -187,58 +185,58 @@
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
+                        <h4 class="mb-0">
                             <i class="ti ti-clock me-2"></i>Recent Blocks
-                        </h5>
-                        <span class="badge bg-label-primary">{{ $recentBlocks->count() }} items</span>
+                        </h4>
+                        <span class="badge bg-label-primary fs-6">{{ $recentBlocks->count() }} items</span>
                     </div>
                 </div>
                 <div class="card-body">
                     @if($recentBlocks->count() > 0)
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>IP Address</th>
-                                        <th>Reason</th>
-                                        <th>Source</th>
-                                        <th>Threat Level</th>
-                                        <th>Blocked At</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th class="fw-bold">IP Address</th>
+                                        <th class="fw-bold">Reason</th>
+                                        <th class="fw-bold">Source</th>
+                                        <th class="fw-bold">Threat Level</th>
+                                        <th class="fw-bold">Blocked At</th>
+                                        <th class="fw-bold">Status</th>
+                                        <th class="fw-bold">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($recentBlocks as $block)
                                         <tr>
                                             <td>
-                                                <code class="bg-light rounded px-2 py-1">{{ $block->ip_address }}</code>
+                                                <code class="bg-light rounded px-3 py-2 fs-6">{{ $block->ip_address }}</code>
                                             </td>
-                                            <td>{{ $block->reason ?? '-' }}</td>
+                                            <td class="fw-medium">{{ $block->reason ?? '-' }}</td>
                                             <td>
-                                                <span class="badge bg-label-{{ $block->source == 'manual' ? 'primary' : 'warning' }}">
+                                                <span class="badge bg-label-{{ $block->source == 'manual' ? 'primary' : 'warning' }} fs-6">
                                                     {{ $block->source ?? 'unknown' }}
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="progress me-2" style="width: 60px; height: 6px;">
+                                                    <div class="progress me-3" style="width: 80px; height: 8px;">
                                                         <div class="progress-bar bg-{{ 
                                                             $block->threat_level >= 7 ? 'danger' : 
                                                             ($block->threat_level >= 5 ? 'warning' : 'success') 
                                                         }}" style="width: {{ $block->threat_level * 10 }}%"></div>
                                                     </div>
-                                                    <small>{{ $block->threat_level }}/10</small>
+                                                    <span class="fw-medium">{{ $block->threat_level }}/10</span>
                                                 </div>
                                             </td>
                                             <td>
-                                                <small>{{ \Carbon\Carbon::parse($block->blocked_at)->format('d M Y, H:i') }}</small>
+                                                <span class="fw-medium">{{ \Carbon\Carbon::parse($block->blocked_at)->format('d M Y, H:i') }}</span>
                                             </td>
                                             <td>
                                                 @if($block->is_active)
-                                                    <span class="badge bg-label-success">Active</span>
+                                                    <span class="badge bg-label-success fs-6">Active</span>
                                                 @else
-                                                    <span class="badge bg-label-secondary">Inactive</span>
+                                                    <span class="badge bg-label-secondary fs-6">Inactive</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -262,16 +260,16 @@
                             </table>
                         </div>
                     @else
-                        <div class="text-center py-4">
-                            <div class="avatar avatar-xl">
-                                <div class="avatar-initial bg-label-secondary rounded-2">
-                                    <i class="ti ti-shield-x fs-3"></i>
+                        <div class="text-center py-5">
+                            <div class="avatar avatar-xxl">
+                                <div class="avatar-initial bg-label-secondary rounded-3">
+                                    <i class="ti ti-shield-x fs-1"></i>
                                 </div>
                             </div>
-                            <h5 class="mt-3">No Recent Blocks</h5>
-                            <p class="text-muted">No IP addresses have been blocked recently</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addIPModal">
-                                <i class="ti ti-plus me-1"></i>Add First IP
+                            <h4 class="mt-4">No Recent Blocks</h4>
+                            <p class="text-muted fs-5">No IP addresses have been blocked recently</p>
+                            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addIPModal">
+                                <i class="ti ti-plus me-2"></i>Add First IP
                             </button>
                         </div>
                     @endif

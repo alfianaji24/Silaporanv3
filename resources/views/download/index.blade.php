@@ -15,7 +15,7 @@
                 <img src="{{ asset('assets/login/images/logo_silaporan.png') }}" alt="Silaporan Logo" class="mx-auto h-20 w-auto">
             </div>
             <h1 class="text-4xl font-bold text-gray-800 mb-4">Silaporan</h1>
-            <p class="text-xl text-gray-600 mb-2">Sistem Informasi Laporan Karyawan</p>
+            <p class="text-xl text-gray-600 mb-2">Sistem Informasi Laporan Absensi Pegawai Non ASN</p>
             <p class="text-lg text-blue-600 font-semibold">Download Aplikasi Resmi</p>
         </div>
 
@@ -187,7 +187,7 @@
 
         <!-- Footer -->
         <div class="text-center mt-12 text-gray-600">
-            <p class="text-sm">© {{ date('Y') }} Silaporan - Sistem Informasi Laporan Karyawan</p>
+            <p class="text-sm">© {{ date('Y') }} Silaporan - Sistem Informasi Laporan Absensi Pegawai Non ASN</p>
             <p class="text-xs mt-2">Halaman download resmi • Jangan download dari sumber lain untuk keamanan data Anda</p>
         </div>
     </div>

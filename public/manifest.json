@@ -1,7 +1,7 @@
 {
-    "name": "SiLaporan - Sistem Informasi Laporan Karyawan",
+    "name": "SiLaporan - Sistem Informasi Laporan Absensi Pegawai Non ASN",
     "short_name": "SiLaporan",
-    "description": "Aplikasi Sistem Informasi Laporan Karyawan untuk presensi, cuti, izin, dan laporan",
+    "description": "Aplikasi Sistem Informasi Laporan Absensi Pegawai Non ASN untuk presensi, cuti, izin, dan laporan",
     "start_url": "https://silaporan.puskesmasbalaraja.com/",
     "display": "standalone",
     "background_color": "#ffffff",
