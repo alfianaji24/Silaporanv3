@@ -126,12 +126,28 @@ class IPBlacklistMiddleware
     private function checkDatabaseBlacklist(string $ip): bool
     {
         try {
-            // Check if IP exists in ip_blacklists table
-            $blacklisted = \App\Models\IPBlacklist::where('ip_address', $ip)
-                ->where('status', 'active')
-                ->exists();
+            \Log::info('Checking IP Blacklist', ['ip' => $ip]);
             
-            if ($blacklisted) {
+            // Check if IP exists in ip_blacklists table and is not expired
+            $blacklisted = \App\Models\IPBlacklist::where('ip_address', $ip)
+                ->where('is_active', true)
+                ->where(function($query) {
+                    $query->whereNull('expires_at')
+                          ->orWhere('expires_at', '>', now());
+                })
+                ->first();
+            
+            $isBlocked = $blacklisted ? true : false;
+            
+            \Log::info('IP Blacklist Check Result', [
+                'ip' => $ip, 
+                'blacklisted' => $isBlocked,
+                'expires_at' => $blacklisted ? $blacklisted->expires_at : null,
+                'is_expired' => $blacklisted && $blacklisted->expires_at && $blacklisted->expires_at <= now(),
+                'total_blacklisted' => \App\Models\IPBlacklist::count()
+            ]);
+            
+            if ($isBlocked) {
                 \Log::warning('IP Blocked from Database', ['ip' => $ip]);
                 return true;
             }

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Akses Dibatasi - Silaporan</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -68,21 +69,21 @@
                     </div>
 
                     <div>
-                        <label for="requestEmail" class="block text-sm font-medium text-gray-700 mb-2">
-                            Email Anda (untuk konfirmasi):
-                        </label>
-                        <input type="email" id="requestEmail" name="email" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="nama@email.com">
-                    </div>
-
-                    <div>
                         <label for="requestName" class="block text-sm font-medium text-gray-700 mb-2">
                             Nama Lengkap:
                         </label>
                         <input type="text" id="requestName" name="name" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             placeholder="Nama lengkap Anda">
+                    </div>
+
+                    <div>
+                        <label for="requestEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Anda (untuk konfirmasi):
+                        </label>
+                        <input type="email" id="requestEmail" name="email" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="nama@email.com">
                     </div>
 
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
@@ -161,44 +162,95 @@
             submitBtn.textContent = 'Mengirim...';
             submitBtn.disabled = true;
 
-            // Send request to server (simulated - in real implementation, this would be an API call)
-            console.log('IP Unblock Request:', data);
+            // Send request to server
+            console.log('Sending request to server:', data);
             
-            // Simulate API call
-            setTimeout(() => {
-                // Show success message
-                const successDiv = document.createElement('div');
-                successDiv.className = 'bg-green-100 border border-green-300 rounded-lg p-4 mb-4';
-                successDiv.innerHTML = `
-                    <h3 class="font-semibold text-green-800 mb-2">✅ Permintaan Terkirim</h3>
-                    <p class="text-sm text-green-700">
-                        Permintaan penghapusan blokir untuk IP <strong>${data.ip}</strong> telah dikirim ke IT Support.
-                        Kami akan memproses permintaan Anda dalam waktu 1x24 jam.
+            fetch('/request-unblock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    ip_address: data.ip,
+                    requester_name: data.name,
+                    requester_email: data.email,
+                    reason: data.reason
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return response.json();
+            })
+            .then(result => {
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    // Show success message
+                    const successDiv = document.createElement('div');
+                    successDiv.className = 'bg-green-100 border border-green-300 rounded-lg p-4 mb-4';
+                    successDiv.innerHTML = `
+                        <h3 class="font-semibold text-green-800 mb-2">✅ Permintaan Terkirim</h3>
+                        <p class="text-sm text-green-700">
+                            Permintaan penghapusan blokir untuk IP <strong>${data.ip}</strong> telah dikirim ke IT Support.
+                            Kami akan memproses permintaan Anda dalam waktu 1x24 jam.
+                        </p>
+                        <p class="text-sm text-green-700 mt-2">
+                            <strong>No. Tiket:</strong> #${result.request_id}<br>
+                            <strong>Email konfirmasi:</strong> ${data.email}
+                        </p>
+                    `;
+                    
+                    // Replace form with success message
+                    this.parentElement.replaceWith(successDiv);
+                } else {
+                    // Show error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bg-red-100 border border-red-300 rounded-lg p-4 mb-4';
+                    errorDiv.innerHTML = `
+                        <h3 class="font-semibold text-red-800 mb-2">❌ Gagal Mengirim Permintaan</h3>
+                        <p class="text-sm text-red-700">
+                            ${result.message || 'Terjadi kesalahan saat mengirim permintaan. Silakan coba lagi.'}
+                        </p>
+                        <button onclick="location.reload()" class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-1 px-3 rounded">
+                            Coba Lagi
+                        </button>
+                    `;
+                    
+                    // Replace form with error message
+                    this.parentElement.replaceWith(errorDiv);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Show error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'bg-red-100 border border-red-300 rounded-lg p-4 mb-4';
+                errorDiv.innerHTML = `
+                    <h3 class="font-semibold text-red-800 mb-2">❌ Kesalahan Jaringan</h3>
+                    <p class="text-sm text-red-700">
+                        Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda dan coba lagi.
                     </p>
-                    <p class="text-sm text-green-700 mt-2">
-                        <strong>No. Tiket:</strong> #${Date.now()}<br>
-                        <strong>Email konfirmasi:</strong> ${data.email}
-                    </p>
+                    <button onclick="location.reload()" class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-1 px-3 rounded">
+                        Coba Lagi
+                    </button>
                 `;
                 
-                // Replace form with success message
-                this.parentElement.replaceWith(successDiv);
-                
-                // Log the request for admin review
-                const logData = {
-                    type: 'ip_unblock_request',
-                    ip: data.ip,
-                    email: data.email,
-                    name: data.name,
-                    reason: data.reason,
-                    timestamp: data.timestamp,
-                    domain: data.domain
-                };
-                
-                // In real implementation, this would be sent to server
-                console.log('Request logged for admin review:', logData);
-                
-            }, 1500);
+                // Replace form with error message
+                this.parentElement.replaceWith(errorDiv);
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
         });
 
         // Disable right click
