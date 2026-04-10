@@ -499,13 +499,13 @@
              </li>
          @endif
          @if (auth()->user()->hasRole(['super admin']))
-             <li
-                 class="menu-item {{ request()->is(['roles', 'roles/*', 'permissiongroups', 'permissiongroups/*', 'permissions', 'permissions/*', 'users', 'users/*', 'bersihkanfoto', 'bersihkanfoto/*', 'resetdata', 'resetdata/*']) ? 'open' : '' }} ">
-                 <a href="javascript:void(0);" class="menu-link menu-toggle">
-                     <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
-                     <div>Utilities</div>
-                 </a>
-                 <ul class="menu-sub">
+            <li
+                class="menu-item {{ request()->is(['roles', 'roles/*', 'permissiongroups', 'permissiongroups/*', 'permissions', 'permissions/*', 'users', 'users/*', 'bersihkanfoto', 'bersihkanfoto/*', 'resetdata', 'resetdata/*', 'ip-blacklist', 'ip-blacklist/*']) ? 'open' : '' }} ">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons ti ti-adjustments-alt"></i>
+                    <div>Utilities</div>
+                </a>
+                <ul class="menu-sub">
                      <li class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
                          <a href="{{ route('users.index') }}" class="menu-link">
                              <div>User</div>
@@ -535,19 +535,31 @@
                          </li>
                      @endcan
                      <li class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
-                         <a href="{{ route('resetdata.index') }}" class="menu-link">
-                             <div>Reset Data</div>
-                         </a>
-                     </li>
-                 </ul>
-             </li>
-         @endif
+                        <a href="{{ route('resetdata.index') }}" class="menu-link">
+                            <div>Reset Data</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->is(['ip-blacklist', 'ip-blacklist/*']) ? 'active' : '' }}">
+                        <a href="{{ route('ip-blacklist.dashboard') }}" class="menu-link">
+                            <i class="menu-icon tf-icons ti ti-shield-lock"></i>
+                            <div>IP Blacklist</div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
          @if (auth()->user()->hasRole(['super admin']))
              <li class="menu-item {{ request()->is(['wagateway', 'wagateway/*']) ? 'active' : '' }}">
                  <a href="{{ route('wagateway.index') }}" class="menu-link">
                      <i class="menu-icon tf-icons ti ti-brand-whatsapp"></i>
                      <div>WA Gateway</div>
                  </a>
+            </li>
+            <li class="menu-item {{ request()->is(['ip-blacklist', 'ip-blacklist/*']) ? 'active' : '' }}">
+                <a href="{{ route('ip-blacklist.dashboard') }}" class="menu-link">
+                    <i class="menu-icon tf-icons ti ti-shield-lock"></i>
+                    <div>IP Blacklist</div>
+                </a>
             </li>
          @endif
      </ul>

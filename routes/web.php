@@ -54,10 +54,12 @@ use App\Http\Controllers\AktivitasKaryawanController;
 use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
+use App\Http\Controllers\DownloadController;
+use App\Http\Controllers\IPBlacklistController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'ip.blacklist'])->group(function () {
     Route::get('/', function () {
             $agent = new \Jenssegers\Agent\Agent();
             $isMobile = $agent->isMobile() && !$agent->isTablet();
@@ -87,6 +89,12 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
     Route::post('/public/presensi/store', 'store')->name('public.presensi.store');
 });
 
+// Public Download Application Routes (No Auth Required)
+Route::middleware('ip.blacklist')->controller(DownloadController::class)->group(function () {
+    Route::get('/download', 'index')->name('download.index');
+    Route::get('/download/apk', 'downloadApk')->name('download.apk');
+});
+
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
@@ -96,6 +104,17 @@ Route::middleware('auth')->group(function () {
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    
+    // IP Blacklist Management (Super Admin Only)
+    Route::middleware(['role:super admin'])->controller(IPBlacklistController::class)->group(function () {
+        Route::get('/ip-blacklist', 'index')->name('ip-blacklist.index');
+        Route::get('/ip-blacklist/dashboard', 'dashboard')->name('ip-blacklist.dashboard');
+        Route::post('/ip-blacklist', 'store')->name('ip-blacklist.store');
+        Route::put('/ip-blacklist/{id}', 'update')->name('ip-blacklist.update');
+        Route::post('/ip-blacklist/{id}/toggle', 'toggle')->name('ip-blacklist.toggle');
+        Route::delete('/ip-blacklist/{id}', 'destroy')->name('ip-blacklist.destroy');
+    });
 
     //Setings
     //Role
