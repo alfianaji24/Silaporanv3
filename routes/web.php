@@ -97,9 +97,7 @@ Route::middleware('ip.blacklist')->controller(DownloadController::class)->group(
     Route::get('/download/apk', 'downloadApk')->name('download.apk');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified', 'ip.blacklist', 'session.validate'])->name('dashboard');
+// Route dashboard moved to DashboardController group below
 
 Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function () {
 
@@ -151,8 +149,8 @@ Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function 
         }
         );
 
-        Route::controller(DashboardController::class)->group(function () {
-            Route::get('/dashboard', 'index')->name('dashboard.index');
+        Route::middleware(['verified'])->controller(DashboardController::class)->group(function () {
+            Route::get('/dashboard', 'index')->name('dashboard');
             Route::post('/dashboard/kirim-ucapan-birthday', 'kirimUcapanBirthday')->name('dashboard.kirim.ucapan.birthday');
         }
         );
