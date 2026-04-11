@@ -79,7 +79,7 @@ class AuthenticatedSessionController extends Controller
                     $request->session()->regenerateToken();
 
                     return redirect()->route('loginuser')
-                        ->with('error', "Akun Anda sedang aktif di perangkat lain. Device: {$deviceInfo}, IP: {$ipAddress}, Login: {$loginTime}. Silakan logout terlebih dahulu dari perangkat lain atau hubungi admin support.");
+                        ->with('error', "🚫 AKUN SEDANG AKTIF DI PERANGKAT LAIN!\n\nDevice: {$deviceInfo}\nIP: {$ipAddress}\nLogin: {$loginTime}\n\nSilakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk force logout.");
                 }
 
                 // Create new session for karyawan

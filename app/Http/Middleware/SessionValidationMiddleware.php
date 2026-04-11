@@ -44,7 +44,7 @@ class SessionValidationMiddleware
                 $request->session()->regenerateToken();
 
                 return redirect()->route('login')
-                    ->with('error', 'Session Anda telah berakhir atau login di perangkat lain. Silakan login kembali.');
+                    ->with('error', '⏰ Session Anda telah berakhir karena tidak aktif terlalu lama. Silakan login kembali.');
             }
 
             // Update last activity
