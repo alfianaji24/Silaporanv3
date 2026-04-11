@@ -60,13 +60,16 @@ class AuthenticatedSessionController extends Controller
         // Session management based on user role
         try {
             if ($user->hasRole('karyawan')) {
-                // Check if user already has active session
+                // Check if user already has active session (but allow Flutter WebView reconnection)
+                $userAgent = $request->userAgent();
+                $isFlutterWebView = strpos($userAgent, 'wv') !== false && strpos($userAgent, 'Chrome') !== false;
+                
                 $existingSession = \App\Models\UserSession::where('user_id', $user->id)
                     ->active()
                     ->first();
 
-                if ($existingSession) {
-                    // User already logged in on another device, block login
+                if ($existingSession && !$isFlutterWebView) {
+                    // User already logged in on another device, block login (except Flutter WebView)
                     $deviceInfo = $existingSession->device_type ?? 'Unknown';
                     if ($existingSession->browser) {
                         $deviceInfo .= ' - ' . $existingSession->browser;
@@ -82,8 +85,19 @@ class AuthenticatedSessionController extends Controller
                         ->with('error', "🚫 AKUN SEDANG AKTIF DI PERANGKAT LAIN!\n\nDevice: {$deviceInfo}\nIP: {$ipAddress}\nLogin: {$loginTime}\n\nSilakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk force logout.");
                 }
 
-                // Create new session for karyawan
-                \App\Models\UserSession::createSession($user, $request);
+                // For Flutter WebView, update existing session or create new one
+                if ($isFlutterWebView && $existingSession) {
+                    // Update existing session for Flutter WebView reconnection
+                    $existingSession->update([
+                        'session_id' => session()->getId(),
+                        'ip_address' => \App\Models\UserSession::getClientIP($request),
+                        'user_agent' => $request->userAgent(),
+                        'last_activity' => now(),
+                    ]);
+                } else {
+                    // Create new session for karyawan
+                    \App\Models\UserSession::createSession($user, $request);
+                }
             } else {
                 // Admin session management (multiple devices allowed)
                 \App\Models\UserSession::createSession($user, $request);

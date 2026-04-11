@@ -28,8 +28,12 @@ class SessionValidationMiddleware
             return $next($request);
         }
 
-        // Skip session validation for login/logout routes to prevent CSRF issues
-        if ($request->is('login') || $request->is('logout') || $request->isMethod('POST')) {
+        // Skip session validation for login/logout routes and Flutter WebView to prevent CSRF issues
+        $userAgent = $request->userAgent();
+        $isFlutterWebView = strpos($userAgent, 'wv') !== false && strpos($userAgent, 'Chrome') !== false;
+        
+        if ($request->is('login') || $request->is('logout') || 
+            $request->isMethod('POST') || $isFlutterWebView) {
             return $next($request);
         }
 
