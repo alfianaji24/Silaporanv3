@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-3 justify-center" data-aos="fade-up" data-aos-delay="1000">
-                    <a href="{{ route('login') }}"
+                    <a href="{{ route('loginuser') }}"
                         class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-purple-900 transition duration-300 ease-in-out transform hover:scale-105">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -171,7 +171,7 @@
             
             if (countdown <= 0) {
                 clearInterval(timer);
-                window.location.href = '{{ route('login') }}';
+                window.location.href = '{{ route('loginuser') }}';
             }
         }, 1000);
 

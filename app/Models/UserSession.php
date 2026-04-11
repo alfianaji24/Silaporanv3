@@ -146,6 +146,18 @@ class UserSession extends Model
 
     private static function getDeviceType($agent)
     {
+        $userAgent = $agent->getUserAgent();
+        
+        // Detect Flutter WebView
+        if (strpos($userAgent, 'wv') !== false && strpos($userAgent, 'flutter') !== false) {
+            return 'Flutter WebView';
+        }
+        
+        // Detect other WebView
+        if (strpos($userAgent, 'wv') !== false) {
+            return 'Mobile WebView';
+        }
+        
         if ($agent->isMobile()) {
             return 'Mobile';
         } elseif ($agent->isTablet()) {

@@ -134,6 +134,12 @@ Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function 
         Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
     });
 
+    // Flutter WebView API Routes
+    Route::middleware('auth')->controller(SessionManagementController::class)->group(function () {
+        Route::get('/api/session/check', 'checkSession')->name('api.session.check');
+        Route::post('/api/session/logout', 'logoutFlutter')->name('api.session.logout');
+    });
+
     //Setings
     //Role
 

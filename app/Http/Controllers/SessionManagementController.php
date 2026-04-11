@@ -129,4 +129,94 @@ class SessionManagementController extends Controller
             "Berhasil menghapus {$deleted} session lama yang tidak aktif."
         );
     }
+
+    /**
+     * API endpoint for Flutter WebView session check
+     */
+    public function checkSession(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not authenticated',
+                'redirect' => route('login')
+            ], 401);
+        }
+
+        $user = Auth::user();
+        $sessionId = session()->getId();
+
+        // Check if session is still active
+        $userSession = UserSession::where('user_id', $user->id)
+            ->where('session_id', $sessionId)
+            ->active()
+            ->first();
+
+        if (!$userSession) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Session expired or login from another device',
+                'redirect' => route('login'),
+                'reason' => $user->hasRole('karyawan') ? 'single_device_violation' : 'session_expired'
+            ], 401);
+        }
+
+        // Update last activity
+        $userSession->update(['last_activity' => now()]);
+
+        return response()->json([
+            'status' => 'success',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->roles->pluck('name')->first(),
+            ],
+            'session' => [
+                'device_type' => $userSession->device_type,
+                'ip_address' => $userSession->ip_address,
+                'login_time' => $userSession->login_time->format('Y-m-d H:i:s'),
+                'last_activity' => $userSession->last_activity->diffForHumans(),
+            ]
+        ]);
+    }
+
+    /**
+     * API endpoint for Flutter WebView logout
+     */
+    public function logoutFlutter(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Not authenticated'
+            ], 401);
+        }
+
+        $user = Auth::user();
+        $sessionId = session()->getId();
+
+        // Update session status
+        UserSession::where('user_id', $user->id)
+            ->where('session_id', $sessionId)
+            ->active()
+            ->update([
+                'is_active' => false,
+                'logout_time' => now(),
+            ]);
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Logged out successfully',
+            'redirect' => route('login')
+        ]);
+    }
 }

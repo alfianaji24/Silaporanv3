@@ -28,6 +28,11 @@ class SessionValidationMiddleware
             return $next($request);
         }
 
+        // Skip session validation for login/logout routes to prevent CSRF issues
+        if ($request->is('login') || $request->is('logout') || $request->isMethod('POST')) {
+            return $next($request);
+        }
+
         $sessionId = session()->getId();
 
         // Check if session is still active in database (only for karyawan)
