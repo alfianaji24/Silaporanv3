@@ -93,6 +93,7 @@ class ProfileController extends Controller
 
             if ($request->filled('password')) {
                 $user_data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+                $user_data['password_change_required'] = false;
             }
 
             User::where('id', $user->id)->update($user_data);
@@ -125,6 +126,7 @@ class ProfileController extends Controller
 
             if ($request->filled('password')) {
                 $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+                $data['password_change_required'] = false;
             }
 
             User::where('id', $user->id)->update($data);

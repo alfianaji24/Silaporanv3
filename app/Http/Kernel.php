@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\PreventPageCache::class,
+            \App\Http\Middleware\ForcePasswordChange::class,
         ],
 
         'api' => [
@@ -69,5 +70,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         'ip.blacklist' => \App\Http\Middleware\IPBlacklistMiddleware::class,
+        'session.validate' => \App\Http\Middleware\SessionValidationMiddleware::class,
     ];
 }

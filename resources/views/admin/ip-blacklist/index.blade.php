@@ -15,7 +15,7 @@
                         <a href="{{ route('ip-blacklist.dashboard') }}" class="btn btn-info btn-sm">
                             <i class="fas fa-chart-bar"></i> Dashboard
                         </a>
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addIPModal">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addIPModal">
                             <i class="fas fa-plus"></i> Add IP
                         </button>
                     </div>
@@ -70,19 +70,7 @@
                     </form>
 
                     <!-- Static IPs (from middleware) -->
-                    <div class="alert alert-info">
-                        <h6><i class="fas fa-info-circle"></i> Static Blacklisted IPs (from middleware):</h6>
-                        <div class="row">
-                            @foreach($staticIPs as $ip)
-                                <div class="col-md-3 mb-2">
-                                    <span class="badge badge-danger">{{ $ip }}</span>
-                                    <small class="text-muted"> (Hardcoded)</small>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- Database Blacklisted IPs Table -->
+                                        <!-- Database Blacklisted IPs Table -->
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped">
                             <thead>
@@ -139,12 +127,16 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#editIPModal{{ $ip->id }}">
+                                                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#editIPModal{{ $ip->id }}">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <a href="{{ route('ip-blacklist.toggle', $ip->id) }}" class="btn btn-{{ $ip->is_active ? 'warning' : 'success' }}">
-                                                        <i class="fas fa-{{ $ip->is_active ? 'pause' : 'play' }}"></i>
-                                                    </a>
+                                                    <form action="{{ route('ip-blacklist.toggle', $ip->id) }}" method="POST" style="display: inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-{{ $ip->is_active ? 'warning' : 'success' }}" 
+                                                                onclick="return confirm('Are you sure you want to {{ $ip->is_active ? 'deactivate' : 'activate' }} this IP?')">
+                                                            <i class="fas fa-{{ $ip->is_active ? 'pause' : 'play' }}"></i>
+                                                        </button>
+                                                    </form>
                                                     <form action="{{ route('ip-blacklist.destroy', $ip->id) }}" method="POST" style="display: inline;">
                                                         @csrf
                                                         @method('DELETE')
@@ -157,38 +149,38 @@
                                         </tr>
 
                                         <!-- Edit Modal -->
-                                        <div class="modal fade" id="editIPModal{{ $ip->id }}" tabindex="-1">
+                                        <div class="modal fade" id="editIPModal{{ $ip->id }}" tabindex="-1" data-bs-backdrop="static">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
                                                         <h5 class="modal-title">Edit IP: {{ $ip->ip_address }}</h5>
-                                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <form action="{{ route('ip-blacklist.update', $ip->id) }}" method="POST">
                                                         @csrf
                                                         @method('PUT')
                                                         <div class="modal-body">
-                                                            <div class="form-group">
-                                                                <label>Reason</label>
-                                                                <input type="text" name="reason" class="form-control" value="{{ $ip->reason }}">
+                                                            <div class="mb-3">
+                                                                <label for="reason_{{ $ip->id }}" class="form-label">Reason</label>
+                                                                <input type="text" id="reason_{{ $ip->id }}" name="reason" class="form-control" value="{{ $ip->reason }}">
                                                             </div>
-                                                            <div class="form-group">
-                                                                <label>Threat Level (1-10)</label>
-                                                                <input type="number" name="threat_level" class="form-control" value="{{ $ip->threat_level }}" min="1" max="10">
+                                                            <div class="mb-3">
+                                                                <label for="threat_level_{{ $ip->id }}" class="form-label">Threat Level (1-10)</label>
+                                                                <input type="number" id="threat_level_{{ $ip->id }}" name="threat_level" class="form-control" value="{{ $ip->threat_level }}" min="1" max="10">
                                                             </div>
-                                                            <div class="form-group">
-                                                                <label>Expires At</label>
-                                                                <input type="datetime-local" name="expires_at" class="form-control" 
+                                                            <div class="mb-3">
+                                                                <label for="expires_at_{{ $ip->id }}" class="form-label">Expires At</label>
+                                                                <input type="datetime-local" id="expires_at_{{ $ip->id }}" name="expires_at" class="form-control" 
                                                                     value="{{ $ip->expires_at ? \Carbon\Carbon::parse($ip->expires_at)->format('Y-m-d\TH:i') : '' }}">
-                                                                <small class="text-muted">Leave empty for permanent block</small>
+                                                                <div class="form-text">Leave empty for permanent block</div>
                                                             </div>
-                                                            <div class="form-group">
-                                                                <label>Notes</label>
-                                                                <textarea name="notes" class="form-control" rows="3">{{ $ip->notes }}</textarea>
+                                                            <div class="mb-3">
+                                                                <label for="notes_{{ $ip->id }}" class="form-label">Notes</label>
+                                                                <textarea id="notes_{{ $ip->id }}" name="notes" class="form-control" rows="3">{{ $ip->notes }}</textarea>
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                                                             <button type="submit" class="btn btn-primary">Update</button>
                                                         </div>
                                                     </form>
@@ -216,41 +208,41 @@
 </div>
 
 <!-- Add IP Modal -->
-<div class="modal fade" id="addIPModal" tabindex="-1">
+<div class="modal fade" id="addIPModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Add IP to Blacklist</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ route('ip-blacklist.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>IP Address *</label>
-                        <input type="text" name="ip_address" class="form-control" required placeholder="192.168.1.100">
+                    <div class="mb-3">
+                        <label for="ip_address" class="form-label">IP Address *</label>
+                        <input type="text" id="ip_address" name="ip_address" class="form-control" required placeholder="192.168.1.100">
                     </div>
-                    <div class="form-group">
-                        <label>Reason</label>
-                        <input type="text" name="reason" class="form-control" placeholder="Suspicious activity">
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason</label>
+                        <input type="text" id="reason" name="reason" class="form-control" placeholder="Suspicious activity">
                     </div>
-                    <div class="form-group">
-                        <label>Threat Level (1-10)</label>
-                        <input type="number" name="threat_level" class="form-control" value="5" min="1" max="10">
-                        <small class="text-muted">1 = Low, 10 = Critical</small>
+                    <div class="mb-3">
+                        <label for="threat_level" class="form-label">Threat Level (1-10)</label>
+                        <input type="number" id="threat_level" name="threat_level" class="form-control" value="5" min="1" max="10">
+                        <div class="form-text">1 = Low, 10 = Critical</div>
                     </div>
-                    <div class="form-group">
-                        <label>Expires At</label>
-                        <input type="datetime-local" name="expires_at" class="form-control">
-                        <small class="text-muted">Leave empty for permanent block</small>
+                    <div class="mb-3">
+                        <label for="expires_at" class="form-label">Expires At</label>
+                        <input type="datetime-local" id="expires_at" name="expires_at" class="form-control">
+                        <div class="form-text">Leave empty for permanent block</div>
                     </div>
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Add to Blacklist</button>
                 </div>
             </form>

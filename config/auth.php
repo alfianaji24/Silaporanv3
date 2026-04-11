@@ -40,6 +40,16 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'users',
+            'session' => 'admin_session', // Custom session for admin
+        ],
+        'karyawan' => [
+            'driver' => 'session',
+            'provider' => 'users',
+            'session' => 'karyawan_session', // Custom session for karyawan
+        ],
     ],
 
     /*

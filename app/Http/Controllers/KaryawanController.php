@@ -30,6 +30,78 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class KaryawanController extends Controller
 {
+    /**
+     * Generate username from employee name
+     * Example: "Adinda Zakiyatun Nauvali" -> "adinda.nauvali"
+     * Example: "Saman" -> "saman"
+     * If username exists, append number (e.g., "adinda.nauvali2")
+     */
+    private function generateUsername($namaKaryawan)
+    {
+        // Remove special characters and convert to lowercase
+        $cleanName = strtolower(preg_replace('/[^a-zA-Z\s]/', '', $namaKaryawan));
+        
+        // Split name into words
+        $words = explode(' ', trim($cleanName));
+        $words = array_filter($words); // Remove empty elements
+        
+        if (count($words) == 0) {
+            return 'user';
+        }
+        
+        if (count($words) == 1) {
+            // Single word name
+            $baseUsername = $words[0];
+        } else {
+            // Multiple words: take first word and last word
+            $baseUsername = $words[0] . '.' . end($words);
+        }
+        
+        // Check if username exists, if so append number
+        $username = $baseUsername;
+        $counter = 1;
+        
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+        
+        return $username;
+    }
+
+    /**
+     * Generate email from employee name (first name only)
+     * Example: "Adinda Zakiyatun Nauvali" -> "adinda@domain.com"
+     * If email exists, append number (e.g., "adinda2@domain.com")
+     */
+    private function generateEmail($namaKaryawan, $domainEmail)
+    {
+        // Remove special characters and convert to lowercase
+        $cleanName = strtolower(preg_replace('/[^a-zA-Z\s]/', '', $namaKaryawan));
+        
+        // Split name into words
+        $words = explode(' ', trim($cleanName));
+        $words = array_filter($words); // Remove empty elements
+        
+        if (count($words) == 0) {
+            $baseEmail = 'user';
+        } else {
+            // Take first word only
+            $baseEmail = $words[0];
+        }
+        
+        // Check if email exists, if so append number
+        $email = $baseEmail . '@' . $domainEmail;
+        $counter = 1;
+        
+        while (User::where('email', $email)->exists()) {
+            $email = $baseEmail . $counter . '@' . $domainEmail;
+            $counter++;
+        }
+        
+        return $email;
+    }
+
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -215,7 +287,7 @@ class KaryawanController extends Controller
                 'lock_location' => 1,
                 'status_aktif_karyawan' => 1,
                 'rfid_uid' => $request->rfid_uid,
-                'password' => Hash::make('12345')
+                'password' => Hash::make('12345678')
             ];
             $data = array_merge($data_karyawan, $data_foto);
             $simpan = Karyawan::create($data);
@@ -628,9 +700,10 @@ class KaryawanController extends Controller
             //code...
             $user = User::create([
                 'name' => $karyawan->nama_karyawan,
-                'username' => $karyawan->nik,
-                'password' => Hash::make($karyawan->nik),
-                'email' => strtolower(removeTitik($karyawan->nik)) . '@' . $generalsetting->domain_email,
+                'username' => $this->generateUsername($karyawan->nama_karyawan),
+                'password' => Hash::make('12345678'),
+                'email' => $this->generateEmail($karyawan->nama_karyawan, $generalsetting->domain_email),
+                'password_change_required' => true,
             ]);
 
             Userkaryawan::create([
@@ -671,9 +744,10 @@ class KaryawanController extends Controller
                 if (!$existingUser) {
                     $user = User::create([
                         'name' => $k->nama_karyawan,
-                        'username' => $k->nik,
-                        'password' => Hash::make($k->nik),
-                        'email' => strtolower(removeTitik($k->nik)) . '@' . $generalsetting->domain_email,
+                        'username' => $this->generateUsername($k->nama_karyawan),
+                        'password' => Hash::make('12345678'),
+                        'email' => $this->generateEmail($k->nama_karyawan, $generalsetting->domain_email),
+                        'password_change_required' => true,
                     ]);
 
                     Userkaryawan::create([

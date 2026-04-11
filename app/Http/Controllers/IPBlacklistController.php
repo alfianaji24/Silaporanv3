@@ -35,10 +35,9 @@ class IPBlacklistController extends Controller
 
         $blacklistedIPs = $query->paginate(20);
 
-        // Get static IPs from middleware
+        // Get static IPs from middleware (empty for now)
         $staticIPs = [
-            '192.168.1.100',
-            '10.0.0.50'
+            // No static IPs configured
         ];
 
         // Get recent access logs

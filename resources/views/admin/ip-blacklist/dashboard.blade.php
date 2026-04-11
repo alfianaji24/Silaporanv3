@@ -161,9 +161,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-3">
-                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addIPModal">
-                            <i class="ti ti-plus me-2"></i>Add New IP
-                        </button>
                         <a href="{{ route('ip-blacklist.index') }}" class="btn btn-info btn-lg">
                             <i class="ti ti-list me-2"></i>View All IPs
                         </a>
@@ -268,9 +265,9 @@
                             </div>
                             <h4 class="mt-4">No Recent Blocks</h4>
                             <p class="text-muted fs-5">No IP addresses have been blocked recently</p>
-                            <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addIPModal">
-                                <i class="ti ti-plus me-2"></i>Add First IP
-                            </button>
+                            <a href="{{ route('ip-blacklist.index') }}" class="btn btn-primary btn-lg">
+                                <i class="ti ti-list me-2"></i>Manage IPs
+                            </a>
                         </div>
                     @endif
                 </div>

@@ -47,6 +47,7 @@ use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\FacerecognitionpresensiController;
+use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\IconGeneratorController;
 use App\Http\Controllers\BersihkanfotoController;
 use App\Http\Controllers\TrackingPresensiController;
@@ -97,9 +98,9 @@ Route::middleware('ip.blacklist')->controller(DownloadController::class)->group(
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified', 'ip.blacklist'])->name('dashboard');
+})->middleware(['auth', 'verified', 'ip.blacklist', 'session.validate'])->name('dashboard');
 
-Route::middleware(['auth', 'ip.blacklist'])->group(function () {
+Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function () {
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -122,6 +123,15 @@ Route::middleware(['auth', 'ip.blacklist'])->group(function () {
 
     // Public route for unblock requests (no auth required)
     Route::post('/request-unblock', [IPBlacklistController::class, 'storeUnblockRequest'])->name('ip-blacklist.request-unblock');
+
+    // Session Management (Admin Only)
+    Route::middleware(['role:super admin|admin'])->controller(SessionManagementController::class)->group(function () {
+        Route::get('/sessions', 'index')->name('sessions.index');
+        Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
+        Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
+        Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
+        Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
+    });
 
     //Setings
     //Role
@@ -776,6 +786,12 @@ try {
 catch (\Exception $e) {
     echo "Error";
 }
+});
+
+// Routes for forced password change (must be accessible when password_change_required is true)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/force-password-change', [ForcePasswordChangeController::class, 'showChangeForm'])->name('force.password.change');
+    Route::post('/force-password-change', [ForcePasswordChangeController::class, 'changePassword'])->name('force.password.update');
 });
 
 Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admin as it doesn't exist. Permissions handle access control.

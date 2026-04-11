@@ -54,6 +54,48 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
+        // Log login information
+        $this->logUserLogin($request, $user);
+
+        // Session management based on user role
+        try {
+            if ($user->hasRole('karyawan')) {
+                // Check if user already has active session
+                $existingSession = \App\Models\UserSession::where('user_id', $user->id)
+                    ->active()
+                    ->first();
+
+                if ($existingSession) {
+                    // User already logged in on another device, block login
+                    $deviceInfo = $existingSession->device_type ?? 'Unknown';
+                    if ($existingSession->browser) {
+                        $deviceInfo .= ' - ' . $existingSession->browser;
+                    }
+                    $loginTime = $existingSession->login_time ? $existingSession->login_time->format('d M Y H:i') : 'Unknown';
+                    $ipAddress = $existingSession->ip_address ?? 'Unknown';
+
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+
+                    return redirect()->route('loginuser')
+                        ->with('error', "Akun Anda sedang aktif di perangkat lain. Device: {$deviceInfo}, IP: {$ipAddress}, Login: {$loginTime}. Silakan logout terlebih dahulu dari perangkat lain atau hubungi admin support.");
+                }
+
+                // Create new session for karyawan
+                \App\Models\UserSession::createSession($user, $request);
+            } else {
+                // Admin session management (multiple devices allowed)
+                \App\Models\UserSession::createSession($user, $request);
+            }
+        } catch (\Exception $e) {
+            // Log error but continue with login
+            \Log::error('Session management error', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(RouteServiceProvider::HOME);
@@ -68,8 +110,28 @@ class AuthenticatedSessionController extends Controller
         $isMobile = $agent->isMobile();
         $user = Auth::user();
         $isAdmin = $user && !$user->hasRole('karyawan');
+        $sessionId = session()->getId();
 
         Auth::guard('web')->logout();
+
+        // Update session status in database
+        if ($user) {
+            try {
+                \App\Models\UserSession::where('user_id', $user->id)
+                    ->where('session_id', $sessionId)
+                    ->active()
+                    ->update([
+                        'is_active' => false,
+                        'logout_time' => now(),
+                    ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to update session on logout', [
+                    'user_id' => $user->id,
+                    'session_id' => $sessionId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
 
         $request->session()->invalidate();
 
@@ -82,5 +144,115 @@ class AuthenticatedSessionController extends Controller
 
         // Karyawan logout -> redirect to /login
         return redirect()->route('login');
+    }
+
+    /**
+     * Log user login information including IP and device details
+     */
+    private function logUserLogin(Request $request, $user): void
+    {
+        $agent = new Agent();
+        
+        // Get client IP address (similar to IPBlacklistMiddleware)
+        $clientIP = $this->getClientIP($request);
+        
+        // Get device information
+        $deviceInfo = [
+            'ip_address' => $clientIP,
+            'user_agent' => $request->userAgent(),
+            'device_type' => $this->getDeviceType($agent),
+            'platform' => $agent->platform() ?: 'Unknown',
+            'browser' => $agent->browser() ?: 'Unknown',
+            'browser_version' => $agent->version($agent->browser()) ?: 'Unknown',
+            'is_mobile' => $agent->isMobile(),
+            'is_tablet' => $agent->isTablet(),
+            'is_desktop' => $agent->isDesktop(),
+            'languages' => $request->getLanguages(),
+            'login_time' => now()->toISOString(),
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $user->hasRole('karyawan') ? 'karyawan' : 'admin/staff',
+        ];
+
+        // Log to Laravel log
+        \Log::info('User Login', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_role' => $deviceInfo['user_role'],
+            'ip_address' => $clientIP,
+            'device_type' => $deviceInfo['device_type'],
+            'platform' => $deviceInfo['platform'],
+            'browser' => $deviceInfo['browser'] . ' ' . $deviceInfo['browser_version'],
+            'login_time' => $deviceInfo['login_time'],
+        ]);
+
+        // Save to database
+        try {
+            \App\Models\UserLoginLog::create([
+                'user_id' => $user->id,
+                'ip_address' => $clientIP,
+                'user_agent' => $request->userAgent(),
+                'device_type' => $deviceInfo['device_type'],
+                'platform' => $deviceInfo['platform'],
+                'browser' => $deviceInfo['browser'],
+                'browser_version' => $deviceInfo['browser_version'],
+                'is_mobile' => $deviceInfo['is_mobile'],
+                'is_tablet' => $deviceInfo['is_tablet'],
+                'is_desktop' => $deviceInfo['is_desktop'],
+                'languages' => $deviceInfo['languages'],
+                'login_time' => now(),
+                'session_id' => session()->getId(),
+                'is_successful' => true,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to save login log to database', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get client real IP address (similar to IPBlacklistMiddleware)
+     */
+    private function getClientIP(Request $request): string
+    {
+        $ipHeaders = [
+            'CF-Connecting-IP',    // Cloudflare
+            'X-Forwarded-For',     // General proxy
+            'X-Real-IP',           // Nginx
+            'X-Client-IP',         // Some proxies
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_REAL_IP',
+            'REMOTE_ADDR'
+        ];
+
+        foreach ($ipHeaders as $header) {
+            $ip = $request->header($header);
+            if ($ip && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                if (strpos($ip, ',') !== false) {
+                    $ip = trim(explode(',', $ip)[0]);
+                }
+                return $ip;
+            }
+        }
+
+        return $request->ip();
+    }
+
+    /**
+     * Get device type description
+     */
+    private function getDeviceType(Agent $agent): string
+    {
+        if ($agent->isMobile()) {
+            return 'Mobile';
+        } elseif ($agent->isTablet()) {
+            return 'Tablet';
+        } elseif ($agent->isDesktop()) {
+            return 'Desktop';
+        } else {
+            return 'Unknown';
+        }
     }
 }

@@ -12,10 +12,8 @@ class IPBlacklistMiddleware
      * List of blacklisted IPs (can be from database, config, or external API)
      */
     private $blacklistedIPs = [
-        // Example blacklisted IPs - you can populate this from database or external service
-        '192.168.1.100',
-        '10.0.0.50',
-        // Add more IPs as needed
+        // Static blacklist - add critical IPs here if needed
+        // Example: '192.168.1.100'
     ];
 
     /**
