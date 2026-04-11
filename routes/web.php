@@ -40,7 +40,7 @@ use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiistirahatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReimbursementController;
-use App\Http\Controllers\SessionManagementController;
+// use App\Http\Controllers\SessionManagementController; // TEMPORARILY DISABLED
 use App\Http\Controllers\SlipgajiController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\KaryawanApprovalController;
@@ -123,20 +123,20 @@ Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function 
     // Public route for unblock requests (no auth required)
     Route::post('/request-unblock', [IPBlacklistController::class, 'storeUnblockRequest'])->name('ip-blacklist.request-unblock');
 
-    // Session Management (Admin Only)
-    Route::middleware(['role:super admin|admin'])->controller(SessionManagementController::class)->group(function () {
-        Route::get('/sessions', 'index')->name('sessions.index');
-        Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
-        Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
-        Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
-        Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
-    });
+    // Session Management (Admin Only) - TEMPORARILY DISABLED
+    // Route::middleware(['role:super admin|admin'])->controller(SessionManagementController::class)->group(function () {
+    //     Route::get('/sessions', 'index')->name('sessions.index');
+    //     Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
+    //     Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
+    //     Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
+    //     Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
+    // });
 
-    // Flutter WebView API Routes
-    Route::middleware('auth')->controller(SessionManagementController::class)->group(function () {
-        Route::get('/api/session/check', 'checkSession')->name('api.session.check');
-        Route::post('/api/session/logout', 'logoutFlutter')->name('api.session.logout');
-    });
+    // Flutter WebView API Routes - TEMPORARILY DISABLED
+    // Route::middleware('auth')->controller(SessionManagementController::class)->group(function () {
+    //     Route::get('/api/session/check', 'checkSession')->name('api.session.check');
+    //     Route::post('/api/session/logout', 'logoutFlutter')->name('api.session.logout');
+    // });
 
     //Setings
     //Role

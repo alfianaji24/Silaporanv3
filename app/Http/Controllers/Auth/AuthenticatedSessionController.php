@@ -33,6 +33,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Log start of login process
+        \Log::info('LOGIN PROCESS STARTED', [
+            'email' => $request->email,
+            'method' => $request->method(),
+            'url' => $request->fullUrl()
+        ]);
+
         $request->authenticate();
 
         $loginType = $request->input('login_type', 'user');
@@ -57,16 +64,43 @@ class AuthenticatedSessionController extends Controller
         // Log login information
         $this->logUserLogin($request, $user);
 
+        \Log::info('AFTER LOG USER LOGIN', [
+            'user_id' => $user->id,
+            'proceeding_to_session_management' => true
+        ]);
+
         // Session management based on user role
+        \Log::info('ENTERING SESSION MANAGEMENT', [
+            'user_id' => $user->id,
+            'user_role' => $user->roles->pluck('name')->first()
+        ]);
+
         try {
+            \Log::info('CHECKING USER ROLE', [
+                'user_id' => $user->id,
+                'is_karyawan' => $user->hasRole('karyawan')
+            ]);
+
             if ($user->hasRole('karyawan')) {
                 // Check if user already has active session (but allow Flutter WebView reconnection)
                 $userAgent = $request->userAgent();
                 $isFlutterWebView = strpos($userAgent, 'wv') !== false && strpos($userAgent, 'Chrome') !== false;
                 
+                \Log::info('CHECKING ACTIVE SESSION', [
+                    'user_id' => $user->id,
+                    'is_flutter_webview' => $isFlutterWebView
+                ]);
+
                 $existingSession = \App\Models\UserSession::where('user_id', $user->id)
                     ->active()
                     ->first();
+
+                \Log::info('ACTIVE SESSION CHECK RESULT', [
+                    'user_id' => $user->id,
+                    'existing_session_found' => $existingSession ? $existingSession->id : null,
+                    'is_flutter_webview' => $isFlutterWebView,
+                    'will_block_login' => $existingSession && !$isFlutterWebView
+                ]);
 
                 if ($existingSession && !$isFlutterWebView) {
                     // User already logged in on another device, block login (except Flutter WebView)
@@ -77,11 +111,18 @@ class AuthenticatedSessionController extends Controller
                     $loginTime = $existingSession->login_time ? $existingSession->login_time->format('d M Y H:i') : 'Unknown';
                     $ipAddress = $existingSession->ip_address ?? 'Unknown';
 
+                    \Log::info('BLOCKING LOGIN - ACTIVE SESSION FOUND', [
+                        'user_id' => $user->id,
+                        'existing_session_id' => $existingSession->id,
+                        'device_info' => $deviceInfo,
+                        'ip_address' => $ipAddress
+                    ]);
+
                     Auth::logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
-                    return redirect()->route('login')
+                    return redirect()->route('loginuser')
                         ->with('error', "🚫 AKUN SEDANG AKTIF DI PERANGKAT LAIN!\n\nDevice: {$deviceInfo}\nIP: {$ipAddress}\nLogin: {$loginTime}\n\nSilakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk force logout.");
                 }
 
@@ -110,7 +151,18 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
+        \Log::info('ABOUT TO REGENERATE SESSION', [
+            'user_id' => $user->id,
+            'before_session_id' => session()->getId()
+        ]);
+
         $request->session()->regenerate();
+
+        // Simple debug log
+        \Log::info('LOGIN DEBUG: About to redirect', [
+            'user_id' => $user->id,
+            'route' => 'dashboard'
+        ]);
 
         // Direct redirect to dashboard to avoid intended URL issues
         return redirect()->route('dashboard');
