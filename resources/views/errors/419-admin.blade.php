@@ -96,7 +96,7 @@
                     Maaf, sesi Anda telah berakhir. Silakan login kembali untuk melanjutkan.
                 </p>
 
-                <a href="{{ route('loginuser') }}"
+                <a href="{{ route('login') }}"
                     class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#32745e] to-[#1a4a3a] text-white font-semibold rounded-lg shadow-lg hover:from-[#1a4a3a] hover:to-[#32745e] transition duration-300 ease-in-out transform hover:scale-105"
                     data-aos="fade-up" data-aos-delay="800">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
