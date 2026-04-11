@@ -41,12 +41,25 @@ class SessionValidationMiddleware
 
         // Check if session is still active in database (only for karyawan)
         try {
+            \Log::info('Session validation check', [
+                'user_id' => $user->id,
+                'session_id' => $sessionId,
+                'url' => $request->fullUrl(),
+                'method' => $request->method()
+            ]);
+
             $userSession = \App\Models\UserSession::where('user_id', $user->id)
                 ->where('session_id', $sessionId)
                 ->active()
                 ->first();
 
             if (!$userSession) {
+                \Log::warning('Session not found in database', [
+                    'user_id' => $user->id,
+                    'session_id' => $sessionId,
+                    'existing_sessions' => \App\Models\UserSession::where('user_id', $user->id)->get()->toArray()
+                ]);
+
                 // Session not found or inactive, force logout
                 Auth::logout();
                 $request->session()->invalidate();

@@ -19,10 +19,10 @@ class Prevent419Errors
         } catch (TokenMismatchException $e) {
             // Redirect to login with specific message
             if (auth()->check() && auth()->user()->hasRole('karyawan')) {
-                return redirect()->route('login')
+                return redirect()->route('loginuser')
                     ->with('warning', 'Sesi Anda telah berakhir. Silakan login kembali.');
             } else {
-                return redirect()->route('loginuser')
+                return redirect()->route('login')
                     ->with('warning', 'Sesi Anda telah berakhir. Silakan login kembali.');
             }
         }
