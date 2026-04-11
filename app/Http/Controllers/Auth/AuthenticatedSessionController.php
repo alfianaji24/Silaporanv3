@@ -78,7 +78,7 @@ class AuthenticatedSessionController extends Controller
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
-                    return redirect()->route('loginuser')
+                    return redirect()->route('login')
                         ->with('error', "🚫 AKUN SEDANG AKTIF DI PERANGKAT LAIN!\n\nDevice: {$deviceInfo}\nIP: {$ipAddress}\nLogin: {$loginTime}\n\nSilakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk force logout.");
                 }
 

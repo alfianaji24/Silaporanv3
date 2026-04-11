@@ -43,7 +43,7 @@ class SessionValidationMiddleware
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                return redirect()->route('login')
+                return redirect()->route('loginuser')
                     ->with('error', '⏰ Session Anda telah berakhir karena tidak aktif terlalu lama. Silakan login kembali.');
             }
 
