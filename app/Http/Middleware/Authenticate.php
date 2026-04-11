@@ -27,6 +27,19 @@ class Authenticate extends Middleware
             session()->flash('message', 'Sesi Anda telah berakhir. Silakan login kembali.');
         }
 
-        return route('loginuser');
+        // For karyawan, redirect to loginuser route
+        // For admin, redirect to login route
+        // Since we can't check role here (user not authenticated), 
+        // we'll use the URL to determine the appropriate route
+        $currentUrl = $request->fullUrl();
+        
+        // If accessing karyawan-specific URLs or from mobile, use loginuser
+        if (strpos($currentUrl, '/login') !== false || 
+            $request->userAgent() && strpos($request->userAgent(), 'Mobile') !== false) {
+            return route('loginuser');
+        }
+        
+        // Default to admin login
+        return route('login');
     }
 }
