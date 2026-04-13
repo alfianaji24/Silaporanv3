@@ -845,7 +845,7 @@
 
                 <div class="form-group" style="position: relative;">
                     <label>Password Baru</label>
-                    <input type="password" id="new_password" class="swal2-input" placeholder="Minimal 6 karakter">
+                    <input type="password" id="new_password" class="swal2-input" placeholder="Minimal 8 karakter">
                     <button type="button" class="eye-btn" onclick="togglePassword('new_password')">
                         <i class="ti ti-eye" id="new_password_icon"></i>
                     </button>
@@ -895,8 +895,8 @@
                         return false;
                     }
                     
-                    if (newPassword.length < 6) {
-                        Swal.showValidationMessage(`Password minimal 6 karakter!`);
+                    if (newPassword.length < 8) {
+                        Swal.showValidationMessage(`Password minimal 8 karakter!`);
                         return false;
                     }
                     
@@ -959,8 +959,8 @@
             let feedback = [];
             
             // Length check
-            if (password.length >= 6) strength += 25;
-            else feedback.push('minimal 6 karakter');
+            if (password.length >= 8) strength += 25;
+            else feedback.push('minimal 8 karakter');
             
             // Contains letter
             if (/[a-zA-Z]/.test(password)) strength += 25;
