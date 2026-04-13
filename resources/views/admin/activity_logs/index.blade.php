@@ -33,7 +33,7 @@
 <div class="row">
     <div class="col-lg-12 col-sm-12 col-xs-12">
         <div class="card">
-            <div class="card-header">
+            <!-- <div class="card-header">
                 <h5 class="card-title mb-0">Activity Logs</h5>
                 <div class="card-actions">
                     <a href="{{ route('activity.logs.export', request()->query()) }}" class="btn btn-success">
@@ -46,7 +46,7 @@
                         <i class="ti ti-chart-bar me-2"></i> Statistics
                     </button>
                 </div>
-            </div>
+            </div> -->
             <div class="card-body">
                 <!-- Filter Form -->
                 <form action="{{ route('activity.logs.index') }}" method="GET" class="mb-4">
