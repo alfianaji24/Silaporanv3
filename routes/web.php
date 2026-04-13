@@ -56,6 +56,7 @@ use App\Http\Controllers\AktivitasKaryawanController;
 use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
+use App\Http\Controllers\ForcePasswordChangeController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -109,6 +110,12 @@ Route::middleware('auth')->group(function () {
             Route::post('/profile/updateprofile', 'updateprofile')->name('profile.updateprofile');
         }
         );
+
+        // Force Password Change Routes
+        Route::controller(ForcePasswordChangeController::class)->group(function () {
+            Route::get('/force-password-change', 'showChangeForm')->name('force.password.change');
+            Route::post('/force-password-update', 'changePassword')->name('force.password.update');
+        });
 
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/dashboard', 'index')->name('dashboard.index');

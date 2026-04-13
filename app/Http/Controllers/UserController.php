@@ -39,6 +39,57 @@ class UserController extends Controller
         return $phone;
     }
 
+    /**
+     * Generate username dari nama (nama depan + nama belakang)
+     */
+    private function generateUsername(string $name): string
+    {
+        // Pecah nama menjadi kata-kata
+        $words = explode(' ', trim($name));
+        
+        if (count($words) === 1) {
+            // Jika hanya satu kata, gunakan nama itu saja
+            $username = strtolower($words[0]);
+        } else {
+            // Jika lebih dari satu kata, ambil kata pertama dan terakhir
+            $firstName = strtolower($words[0]);
+            $lastName = strtolower(end($words));
+            
+            // Hapus karakter khusus
+            $firstName = preg_replace('/[^a-z0-9]/', '', $firstName);
+            $lastName = preg_replace('/[^a-z0-9]/', '', $lastName);
+            
+            $username = $firstName . '.' . $lastName;
+        }
+        
+        // Hapus karakter khusus untuk username (kecuali titik)
+        $username = preg_replace('/[^a-z0-9.]/', '', $username);
+        
+        return $username;
+    }
+
+    /**
+     * Generate email dari nama (nama depan saja)
+     */
+    private function generateEmail(string $name): string
+    {
+        // Ambil nama depan saja
+        $words = explode(' ', trim($name));
+        $firstName = $words[0];
+        
+        // Konversi ke lowercase dan hapus karakter khusus
+        $email = strtolower($firstName);
+        $email = preg_replace('/[^a-z0-9]/', '', $email);
+        
+        // Ambil domain dari general setting
+        $generalSetting = \App\Models\Pengaturanumum::first();
+        $domain = $generalSetting ? $generalSetting->domain_email : 'gmail.com';
+        
+        $email = $email . '@' . $domain;
+        
+        return $email;
+    }
+
     public function index(Request $request)
     {
         $userType = $request->user_type ?? 'biasa';
@@ -100,8 +151,6 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'username' => 'required',
-            'email' => 'required|email',
             'password' => 'required',
             // Array syntax agar aman untuk regex berisi `|`
             'phone' => ['nullable', 'regex:/^(\+62|62|0)[0-9]{8,12}$/'],
@@ -109,6 +158,36 @@ class UserController extends Controller
         ], [
             'phone.regex' => 'Format nomor HP tidak valid. Gunakan format: 08xxxxxxxxx atau 628xxxxxxxxx'
         ]);
+
+        // Generate username dan email otomatis untuk karyawan
+        if (strtolower($request->role) === 'karyawan') {
+            $username = $this->generateUsername($request->name);
+            $email = $this->generateEmail($request->name);
+            
+            // Cek apakah username sudah ada
+            $originalUsername = $username;
+            $counter = 1;
+            while (User::where('username', $username)->exists()) {
+                $username = $originalUsername . $counter;
+                $counter++;
+            }
+            
+            // Cek apakah email sudah ada
+            $originalEmail = $email;
+            $emailCounter = 1;
+            while (User::where('email', $email)->exists()) {
+                $email = $originalEmail . $emailCounter . '@gmail.com';
+                $emailCounter++;
+            }
+        } else {
+            // Untuk role lain, gunakan input manual
+            $request->validate([
+                'username' => 'required',
+                'email' => 'required|email',
+            ]);
+            $username = $request->username;
+            $email = $request->email;
+        }
 
         // Validasi untuk role selain super admin
         $roleName = strtolower($request->role);
@@ -134,8 +213,8 @@ class UserController extends Controller
 
             $user = User::create([
                 'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
+                'username' => $username,
+                'email' => $email,
                 'password' => $request->password,
                 'phone' => $phone,
             ]);

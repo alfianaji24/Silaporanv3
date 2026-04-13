@@ -1,8 +1,22 @@
 <form action="{{ route('users.store') }}" id="formcreateUser" method="POST">
     @csrf
     <x-input-with-icon icon="ti ti-user" label="Nama User" name="name" />
-    <x-input-with-icon icon="ti ti-user" label="Username" name="username" />
-    <x-input-with-icon icon="ti ti-mail" label="Email" name="email" />
+    
+    <!-- Username dan Email Field -->
+    <div id="username-email-fields">
+        <x-input-with-icon icon="ti ti-user" label="Username" name="username" />
+        <x-input-with-icon icon="ti ti-mail" label="Email" name="email" />
+    </div>
+    
+    <!-- Info untuk Karyawan -->
+    <div id="karyawan-info" style="display: none;" class="alert alert-info">
+        <i class="ti ti-info-circle me-2"></i>
+        <strong>Informasi Generate Otomatis:</strong><br>
+        • <strong>Username:</strong> Nama depan + . + nama belakang (contoh: "Alfian Aji Wahyudi" → "alfian.wahyudi")<br>
+        • <strong>Email:</strong> Nama depan saja + domain perusahaan (contoh: "Alfian Aji Wahyudi" → "alfian@domain_perusahaan.com")<br>
+        • <strong>Satu kata:</strong> Jika nama hanya satu kata, username dan email menggunakan nama tersebut (contoh: "Saman" → "saman", "saman@domain_perusahaan.com")<br>
+        • <strong>Domain:</strong> Menggunakan domain email yang diatur di Pengaturan Umum
+    </div>
     <div class="form-group" id="phone-group">
         <x-input-with-icon icon="ti ti-phone" label="Nomor HP" name="phone" />
         <small class="form-text text-muted">Masukkan nomor HP (08.. atau 628..) hanya untuk user admin/atasan. Karyawan otomatis ambil dari data Karyawan.</small>
@@ -104,21 +118,59 @@
             const isKaryawan = selectedRole === 'karyawan';
             const cabangGroup = document.getElementById('cabang-access-group');
             const departemenGroup = document.getElementById('departemen-access-group');
+            const usernameEmailFields = document.getElementById('username-email-fields');
+            const karyawanInfo = document.getElementById('karyawan-info');
+            const phoneGroup = document.getElementById('phone-group');
 
             if (isSuperAdmin) {
                 // Hide access groups for Super Admin
                 if (cabangGroup) cabangGroup.style.display = 'none';
                 if (departemenGroup) departemenGroup.style.display = 'none';
                 
+                // Show username/email fields for Super Admin
+                if (usernameEmailFields) usernameEmailFields.style.display = 'block';
+                if (karyawanInfo) karyawanInfo.style.display = 'none';
+                if (phoneGroup) phoneGroup.style.display = 'block';
+                
                 // Hide error messages
                 const cabangError = document.getElementById('cabang-error');
                 const departemenError = document.getElementById('departemen-error');
                 if (cabangError) cabangError.style.display = 'none';
                 if (departemenError) departemenError.style.display = 'none';
+            } else if (isKaryawan) {
+                // Show access groups for Karyawan
+                if (cabangGroup) cabangGroup.style.display = 'block';
+                if (departemenGroup) departemenGroup.style.display = 'block';
+                
+                // Hide username/email fields and show info for Karyawan
+                if (usernameEmailFields) usernameEmailFields.style.display = 'none';
+                if (karyawanInfo) karyawanInfo.style.display = 'block';
+                if (phoneGroup) phoneGroup.style.display = 'none';
+
+                // Ensure checkboxes are enabled
+                cabangCheckboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                });
+                departemenCheckboxes.forEach(checkbox => {
+                    checkbox.disabled = false;
+                });
+
+                // Update help text for Karyawan
+                if (cabangHelpText) {
+                    cabangHelpText.textContent = 'Pilih cabang yang dapat diakses oleh karyawan ini (minimal 1)';
+                }
+                if (departemenHelpText) {
+                    departemenHelpText.textContent = 'Pilih departemen yang dapat diakses oleh karyawan ini (minimal 1)';
+                }
             } else {
                 // Show access groups for other roles
                 if (cabangGroup) cabangGroup.style.display = 'block';
                 if (departemenGroup) departemenGroup.style.display = 'block';
+                
+                // Show username/email fields for other roles
+                if (usernameEmailFields) usernameEmailFields.style.display = 'block';
+                if (karyawanInfo) karyawanInfo.style.display = 'none';
+                if (phoneGroup) phoneGroup.style.display = 'block';
 
                 // Ensure checkboxes are enabled and unchecked (resets)
                 cabangCheckboxes.forEach(checkbox => {

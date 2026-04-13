@@ -30,6 +30,57 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class KaryawanController extends Controller
 {
+    /**
+     * Generate username dari nama (nama depan + nama belakang)
+     */
+    private function generateUsernameFromName(string $name): string
+    {
+        // Pecah nama menjadi kata-kata
+        $words = explode(' ', trim($name));
+        
+        if (count($words) === 1) {
+            // Jika hanya satu kata, gunakan nama itu saja
+            $username = strtolower($words[0]);
+        } else {
+            // Jika lebih dari satu kata, ambil kata pertama dan terakhir
+            $firstName = strtolower($words[0]);
+            $lastName = strtolower(end($words));
+            
+            // Hapus karakter khusus
+            $firstName = preg_replace('/[^a-z0-9]/', '', $firstName);
+            $lastName = preg_replace('/[^a-z0-9]/', '', $lastName);
+            
+            $username = $firstName . '.' . $lastName;
+        }
+        
+        // Hapus karakter khusus untuk username (kecuali titik)
+        $username = preg_replace('/[^a-z0-9.]/', '', $username);
+        
+        return $username;
+    }
+
+    /**
+     * Generate email dari nama (nama depan saja)
+     */
+    private function generateEmailFromName(string $name): string
+    {
+        // Ambil nama depan saja
+        $words = explode(' ', trim($name));
+        $firstName = $words[0];
+        
+        // Konversi ke lowercase dan hapus karakter khusus
+        $email = strtolower($firstName);
+        $email = preg_replace('/[^a-z0-9]/', '', $email);
+        
+        // Ambil domain dari general setting
+        $generalSetting = Pengaturanumum::first();
+        $domain = $generalSetting ? $generalSetting->domain_email : 'gmail.com';
+        
+        $email = $email . '@' . $domain;
+        
+        return $email;
+    }
+
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -354,7 +405,6 @@ class KaryawanController extends Controller
         }
     }
 
-
     public function lockunlocklocation($nik)
     {
         $nik = Crypt::decrypt($nik);
@@ -393,31 +443,6 @@ class KaryawanController extends Controller
         } catch (\Exception $e) {
             return Redirect::back()->with(messageError($e->getMessage()));
         }
-    }
-
-    public function show($nik)
-    {
-        $nik = Crypt::decrypt($nik);
-        $karyawan = Karyawan::where('nik', $nik)
-            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
-            ->join('status_kawin', 'karyawan.kode_status_kawin', '=', 'status_kawin.kode_status_kawin')
-
-            ->first();
-        $user_karyawan = Userkaryawan::where('nik', $nik)->first();
-        $user = $user_karyawan ? User::where('id', $user_karyawan->id_user)->first() : null;
-        $karyawan_wajah = Facerecognition::where('nik', $nik)->get();
-        $mutasi = MutasiKaryawan::with(['cabangLama', 'cabangBaru', 'deptLama', 'deptBaru', 'jabatanLama', 'jabatanBaru'])
-            ->where('nik', $nik)
-            ->orderBy('tanggal_mutasi', 'desc')
-            ->get();
-
-        $data['karyawan'] = $karyawan;
-        $data['user'] = $user;
-        $data['karyawan_wajah'] = $karyawan_wajah;
-        $data['mutasi'] = $mutasi;
-        return view('datamaster.karyawan.show', $data);
     }
 
 
@@ -626,11 +651,32 @@ class KaryawanController extends Controller
         DB::beginTransaction();
         try {
             //code...
+            // Generate username dan email dari nama karyawan
+            $username = $this->generateUsernameFromName($karyawan->nama_karyawan);
+            $email = $this->generateEmailFromName($karyawan->nama_karyawan);
+            
+            // Cek apakah username sudah ada
+            $originalUsername = $username;
+            $counter = 1;
+            while (User::where('username', $username)->exists()) {
+                $username = $originalUsername . $counter;
+                $counter++;
+            }
+            
+            // Cek apakah email sudah ada
+            $originalEmail = $email;
+            $emailCounter = 1;
+            while (User::where('email', $email)->exists()) {
+                $email = $originalEmail . $emailCounter . '@gmail.com';
+                $emailCounter++;
+            }
+
             $user = User::create([
                 'name' => $karyawan->nama_karyawan,
-                'username' => $karyawan->nik,
-                'password' => Hash::make($karyawan->nik),
-                'email' => strtolower(removeTitik($karyawan->nik)) . '@' . $generalsetting->domain_email,
+                'username' => $username,
+                'password' => Hash::make('12345'),
+                'email' => $email,
+                'password_changed_at' => null, // Flag untuk force change password
             ]);
 
             Userkaryawan::create([

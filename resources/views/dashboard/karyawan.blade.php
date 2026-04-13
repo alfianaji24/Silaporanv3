@@ -762,6 +762,266 @@
             window.location.href = "{{ route('facerecognition.karyawan.create') }}";
         });
 
+        // Force Change Password Popup
+        @if(auth()->user()->hasRole('karyawan') && auth()->user()->password_changed_at === null)
+        $(document).ready(function() {
+            Swal.fire({
+                title: '⚠️ Password Default',
+                html: `
+                    <div style="text-align: center;">
+                        <p style="margin-bottom: 15px;">Anda menggunakan password default <strong>"12345"</strong>.</p>
+                        <p style="margin-bottom: 15px;">Untuk keamanan akun, Anda <strong>wajib</strong> mengganti password sebelum menggunakan sistem.</p>
+                        <p style="color: #666; font-size: 14px;">Password harus berbeda dengan password saat ini.</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: false,
+                confirmButtonText: 'Ganti Password Sekarang',
+                confirmButtonColor: '#3085d6',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                customClass: {
+                    popup: 'force-password-popup'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    showPasswordChangeModal();
+                }
+            });
+        });
+
+        function showPasswordChangeModal() {
+            Swal.fire({
+                title: '🔐 Ganti Password',
+                html: `
+                    <div class="password-form">
+                        <div class="form-group" style="position: relative; margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Password Saat Ini</label>
+                            <input type="password" id="current_password" class="swal2-input" placeholder="Masukkan password saat ini (12345)" style="padding-right: 40px;">
+                            <button type="button" onclick="togglePassword('current_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
+                                <i class="ti ti-eye" id="current_password_icon"></i>
+                            </button>
+                        </div>
+                        <div class="form-group" style="position: relative; margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Password Baru</label>
+                            <input type="password" id="new_password" class="swal2-input" placeholder="Minimal 6 karakter" style="padding-right: 40px;">
+                            <button type="button" onclick="togglePassword('new_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
+                                <i class="ti ti-eye" id="new_password_icon"></i>
+                            </button>
+                        </div>
+                        <div class="form-group" style="position: relative; margin-bottom: 10px;">
+                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Konfirmasi Password</label>
+                            <input type="password" id="confirm_password" class="swal2-input" placeholder="Ulangi password baru" style="padding-right: 40px;">
+                            <button type="button" onclick="togglePassword('confirm_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
+                                <i class="ti ti-eye" id="confirm_password_icon"></i>
+                            </button>
+                        </div>
+                        <div id="password-strength" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Simpan Password',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#4CAF50',
+                cancelButtonColor: '#f44336',
+                reverseButtons: true,
+                focusConfirm: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    // Add password strength checker
+                    const newPasswordInput = document.getElementById('new_password');
+                    newPasswordInput.addEventListener('input', checkPasswordStrength);
+                    
+                    // Add real-time validation
+                    const confirmPasswordInput = document.getElementById('confirm_password');
+                    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+                },
+                preConfirm: () => {
+                    const currentPassword = Swal.getPopup().querySelector('#current_password').value;
+                    const newPassword = Swal.getPopup().querySelector('#new_password').value;
+                    const confirmPassword = Swal.getPopup().querySelector('#confirm_password').value;
+
+                    if (!currentPassword || !newPassword || !confirmPassword) {
+                        Swal.showValidationMessage(`Semua field harus diisi!`);
+                        return false;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        Swal.showValidationMessage(`Konfirmasi password tidak cocok!`);
+                        return false;
+                    }
+                    
+                    if (newPassword.length < 6) {
+                        Swal.showValidationMessage(`Password minimal 6 karakter!`);
+                        return false;
+                    }
+                    
+                    if (currentPassword === newPassword) {
+                        Swal.showValidationMessage(`Password baru harus berbeda dengan password saat ini!`);
+                        return false;
+                    }
+                    
+                    // Additional password validation
+                    if (!validatePassword(newPassword)) {
+                        Swal.showValidationMessage(`Password harus mengandung huruf dan angka!`);
+                        return false;
+                    }
+                    
+                    return { currentPassword, newPassword };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    changePassword(result.value.currentPassword, result.value.newPassword);
+                } else {
+                    // Jika user batal, tampilkan popup lagi
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: '⚠️ Peringatan',
+                            text: 'Anda wajib mengganti password untuk melanjutkan!',
+                            icon: 'warning',
+                            confirmButtonText: 'OK',
+                            allowOutsideClick: false
+                        }).then(() => {
+                            showPasswordChangeModal();
+                        });
+                    }, 500);
+                }
+            });
+        }
+        
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const iconField = document.getElementById(fieldId + '_icon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                iconField.className = 'ti ti-eye-off';
+            } else {
+                passwordField.type = 'password';
+                iconField.className = 'ti ti-eye';
+            }
+        }
+        
+        function checkPasswordStrength() {
+            const password = document.getElementById('new_password').value;
+            const strengthDiv = document.getElementById('password-strength');
+            
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+                return;
+            }
+            
+            let strength = 0;
+            let feedback = [];
+            
+            // Length check
+            if (password.length >= 6) strength += 25;
+            else feedback.push('minimal 6 karakter');
+            
+            // Contains letter
+            if (/[a-zA-Z]/.test(password)) strength += 25;
+            else feedback.push('mengandung huruf');
+            
+            // Contains number
+            if (/[0-9]/.test(password)) strength += 25;
+            else feedback.push('mengandung angka');
+            
+            // Contains special character
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 25;
+            else feedback.push('mengandung karakter khusus');
+            
+            let strengthText = '';
+            let strengthColor = '';
+            
+            if (strength <= 25) {
+                strengthText = 'Lemah';
+                strengthColor = '#f44336';
+            } else if (strength <= 50) {
+                strengthText = 'Sedang';
+                strengthColor = '#ff9800';
+            } else if (strength <= 75) {
+                strengthText = 'Kuat';
+                strengthColor = '#4caf50';
+            } else {
+                strengthText = 'Sangat Kuat';
+                strengthColor = '#2196f3';
+            }
+            
+            if (feedback.length > 0) {
+                strengthDiv.innerHTML = `<span style="color: ${strengthColor};">Kekuatan: ${strengthText}</span><br><span style="color: #999;">Tambahkan: ${feedback.join(', ')}</span>`;
+            } else {
+                strengthDiv.innerHTML = `<span style="color: ${strengthColor};">Kekuatan: ${strengthText}</span>`;
+            }
+        }
+        
+        function checkPasswordMatch() {
+            const newPassword = document.getElementById('new_password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const strengthDiv = document.getElementById('password-strength');
+            
+            if (confirmPassword.length > 0 && newPassword !== confirmPassword) {
+                if (!strengthDiv.innerHTML.includes('tidak cocok')) {
+                    strengthDiv.innerHTML += '<br><span style="color: #f44336;">Password tidak cocok!</span>';
+                }
+            } else if (confirmPassword.length > 0 && newPassword === confirmPassword) {
+                strengthDiv.innerHTML = strengthDiv.innerHTML.replace('<br><span style="color: #f44336;">Password tidak cocok!</span>', '');
+            }
+        }
+        
+        function validatePassword(password) {
+            // Password harus mengandung huruf dan angka
+            return /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
+        }
+
+        function changePassword(currentPassword, newPassword) {
+            Swal.fire({
+                title: 'Mengubah Password...',
+                text: 'Mohon tunggu sebentar.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: "{{ route('force.password.update') }}",
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    current_password: currentPassword,
+                    password: newPassword,
+                    password_confirmation: newPassword
+                },
+                success: function(response) {
+                    Swal.fire({
+                        title: '✅ Berhasil!',
+                        text: 'Password berhasil diubah. Silakan login kembali.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "{{ route('logout.get') }}";
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        errorMessage = Object.values(errors).flat().join(', ');
+                    }
+                    
+                    document.getElementById('passwordError').textContent = errorMessage;
+                    document.getElementById('passwordError').style.display = 'block';
+                    showPasswordChangeModal();
+                }
+            });
+        }
+        @endif
+
         // Logout Handler with SweetAlert2 confirmation
         function handleLogout(event) {
             event.preventDefault();

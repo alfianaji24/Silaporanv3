@@ -38,7 +38,7 @@ class ForcePasswordChangeController extends Controller
         // Update password
         $user->update([
             'password' => Hash::make($request->password),
-            'password_change_required' => false,
+            'password_changed_at' => now(),
         ]);
 
         // If AJAX request, return JSON response

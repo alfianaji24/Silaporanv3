@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('titlepage', 'Dashboard')
 
-
 <style>
     .stat-grid {
         display: grid;

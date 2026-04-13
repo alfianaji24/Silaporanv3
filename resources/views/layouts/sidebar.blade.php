@@ -537,6 +537,11 @@
                             <div>Session Management</div>
                         </a>
                     </li>
+                    <li class="menu-item {{ request()->is(['admin/update', 'admin/update/*']) ? 'active' : '' }}">
+                        <a href="{{ route('admin.update.index') }}" class="menu-link">
+                            <div>Update Management</div>
+                        </a>
+                    </li>
                     @can('bersihkanfoto.index')
                         <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
                             <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
