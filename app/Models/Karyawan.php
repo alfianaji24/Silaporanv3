@@ -27,6 +27,21 @@ class Karyawan extends Model
         );
     }
 
+    protected function namaLengkap(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->formatNamaLengkap()
+        );
+    }
+
+    private function formatNamaLengkap()
+    {
+        $gelarDepan = $this->gelar_depan ? trim($this->gelar_depan) . ' ' : '';
+        $gelarBelakang = $this->gelar_belakang ? ', ' . trim($this->gelar_belakang) : '';
+        
+        return $gelarDepan . $this->nama_karyawan . $gelarBelakang;
+    }
+
     function getRekapstatuskaryawan($request = null)
     {
         $query = Karyawan::query();

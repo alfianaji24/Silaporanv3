@@ -103,7 +103,7 @@
                                             <!-- Identity -->
                                             <div class="col-md-4">
                                                 <div class="fw-bold text-dark" style="font-size: 14px;">
-                                                    {{ $d->nama_karyawan }}
+                                                    {{ $d->nama_lengkap }}
                                                     <span class="text-muted fw-normal" style="font-size: 12px;">({{ $d->nik_show ?? $d->nik }})</span>
                                                 </div>
                                                 <div class="mt-1">

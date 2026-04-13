@@ -3,7 +3,15 @@
     @method('PUT')
     <x-input-with-icon-label icon="ti ti-barcode" label="NIK" name="nik_show" value="{{ $karyawan->nik_show ?? $karyawan->nik }}" />
     <x-input-with-icon-label icon="ti ti-credit-card" label="No. KTP" name="no_ktp" value="{{ $karyawan->no_ktp }}" />
-    <x-input-with-icon-label icon="ti ti-user" label="Nama Karyawan" name="nama_karyawan" value="{{ $karyawan->nama_karyawan }}" />
+    <div class="row">
+        <div class="col-4">
+            <x-input-with-icon-label icon="ti ti-medal" label="Gelar Depan (Opsional)" name="gelar_depan" value="{{ $karyawan->gelar_depan }}" placeholder="Contoh: Dr., Ir., H." />
+        </div>
+        <div class="col-8">
+            <x-input-with-icon-label icon="ti ti-user" label="Nama Karyawan" name="nama_karyawan" value="{{ $karyawan->nama_karyawan }}" />
+        </div>
+    </div>
+    <x-input-with-icon-label icon="ti ti-medal" label="Gelar Belakang (Opsional)" name="gelar_belakang" value="{{ $karyawan->gelar_belakang }}" placeholder="Contoh: S.Ked., M.Kom., S.H., M.H." />
     <div class="row">
         <div class="col-6">
             <x-input-with-icon-label icon="ti ti-map-pin" label="Tempat Lahir" name="tempat_lahir" value="{{ $karyawan->tempat_lahir }}" />
