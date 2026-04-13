@@ -3,7 +3,31 @@
 
 @section('content')
 @section('navigasi')
-    <span>Laporan Presensi & Gaji</span>
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        Laporan Presensi & Gaji
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Generate laporan presensi dan gaji karyawan, export ke Excel/PDF, dan monitoring data kehadiran.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-file-report ti-xs me-1"></i> Laporan
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-chart-line ti-xs me-1"></i> Presensi & Gaji
+            </li>
+        </ol>
+    </nav>
+</div>
 @endsection
 <div class="row">
     <div class="col-lg-6 col-sm-12 col-xs-12">

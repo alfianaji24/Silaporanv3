@@ -537,6 +537,11 @@
                             <div>Session Management</div>
                         </a>
                     </li>
+                    <li class="menu-item {{ request()->is(['list-account', 'list-account/*']) ? 'active' : '' }}">
+                        <a href="{{ route('list-account.index') }}" class="menu-link">
+                            <div>List Account</div>
+                        </a>
+                    </li>
                     <li class="menu-item {{ request()->is(['admin/update', 'admin/update/*']) ? 'active' : '' }}">
                         <a href="{{ route('admin.update.index') }}" class="menu-link">
                             <div>Update Management</div>

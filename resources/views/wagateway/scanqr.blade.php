@@ -1,7 +1,31 @@
 @extends('layouts.app')
 @section('titlepage', 'WhatsApp Gateway')
 @section('navigasi')
-    <span>WhatsApp Gateway Dashboard</span>
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        WhatsApp Gateway Dashboard
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Dashboard monitoring WhatsApp Gateway, status koneksi, QR code, dan statistik pengiriman pesan.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-device-mobile ti-xs me-1"></i> WhatsApp Gateway
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-dashboard ti-xs me-1"></i> Dashboard
+            </li>
+        </ol>
+    </nav>
+</div>
 @endsection
 @section('content')
     <div class="row">

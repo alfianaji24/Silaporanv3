@@ -284,7 +284,21 @@
 
 @section('content')
 @section('navigasi')
-    <span>Dashboard</span>
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        Dashboard
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Halaman utama dashboard dengan overview statistik, monitoring real-time, dan quick access menu.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item active">
+                <i class="ti ti-dashboard ti-xs me-1"></i> Dashboard
+            </li>
+        </ol>
+    </nav>
+</div>
 @endsection
 
 <div class="d-flex justify-content-end mt-3">

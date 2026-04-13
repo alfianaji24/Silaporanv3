@@ -3,7 +3,33 @@
 @section('title', 'Riwayat Pesan WhatsApp')
 
 @section('content')
-    <div class="container-fluid">
+@section('navigasi')
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        Riwayat Pesan WhatsApp
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Manajemen dan monitoring riwayat pengiriman pesan WhatsApp, melihat status berhasil atau gagal terkirim.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-device-mobile ti-xs me-1"></i> WhatsApp Gateway
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-message-2 ti-xs me-1"></i> Riwayat Pesan
+            </li>
+        </ol>
+    </nav>
+</div>
+@endsection
         <div class="row">
             <div class="col-12">
                 <div class="card">

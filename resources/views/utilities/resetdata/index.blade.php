@@ -3,7 +3,31 @@
 
 @section('content')
 @section('navigasi')
-    <span>Utilities > Reset Data</span>
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        Reset Data
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Utilitas untuk mereset data sistem, membersihkan database, dan mengembalikan ke pengaturan awal.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-tool ti-xs me-1"></i> Utilities
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-refresh-alert ti-xs me-1"></i> Reset Data
+            </li>
+        </ol>
+    </nav>
+</div>
 @endsection
 
 <div class="container-xxl flex-grow-1 container-p-y">

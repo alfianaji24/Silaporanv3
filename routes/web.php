@@ -57,6 +57,7 @@ use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
 use App\Http\Controllers\ForcePasswordChangeController;
+use App\Http\Controllers\ListAccountController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -117,6 +118,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/force-password-update', 'changePassword')->name('force.password.update');
         });
 
+        
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/dashboard', 'index')->name('dashboard.index');
             Route::post('/dashboard/kirim-ucapan-birthday', 'kirimUcapanBirthday')->name('dashboard.kirim.ucapan.birthday');
@@ -857,9 +859,11 @@ Route::post('/ajuanjadwal/{id}/reject', [App\Http\Controllers\AjuanJadwalControl
 Route::post('/ajuanjadwal/{id}/cancelapprove', [App\Http\Controllers\AjuanJadwalController::class , 'cancelapprove'])->name('ajuanjadwal.cancelapprove');
 
 });
-// Route::get('/storage/{path}', function ($path) {
-//     return response()->file(storage_path('app/public/' . $path));
-// })->where('path', '.*');
+
+// List Account Routes - Public Access (No Login Required)
+Route::controller(ListAccountController::class)->group(function () {
+    Route::get('/list-account', 'index')->name('list-account.index');
+});
 
 // Endpoint khusus untuk menangani mesin fingerprint ADMS / X100C tanpa prefix /api
 Route::any('/iclock/cdata', [\App\Http\Controllers\Api\AdmsController::class , 'receiveX100c']);

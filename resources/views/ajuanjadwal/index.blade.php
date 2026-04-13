@@ -3,7 +3,31 @@
 
 @section('content')
 @section('navigasi')
-    <span>Ajuan Jadwal</span>
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        Pengajuan
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Manajemen pengajuan jadwal kerja, perubahan shift, dan penyesuaian waktu kerja karyawan.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-calendar ti-xs me-1"></i> Manajemen Jadwal
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-file-description ti-xs me-1"></i> Pengajuan
+            </li>
+        </ol>
+    </nav>
+</div>
 @endsection
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12">
