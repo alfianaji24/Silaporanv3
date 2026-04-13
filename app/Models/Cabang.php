@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AuditTrail;
 
 class Cabang extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditTrail;
     protected $table = "cabang";
     protected $primaryKey = "kode_cabang";
     public $incrementing = false;

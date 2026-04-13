@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\AuditTrail;
 
 class Jabatan extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditTrail;
     protected $table = "jabatan";
     protected $primaryKey = "kode_jabatan";
     public $incrementing = false;

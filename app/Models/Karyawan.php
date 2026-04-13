@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Traits\AuditTrail;
 
 class Karyawan extends Model
 {
-    use HasFactory;
+    use HasFactory, AuditTrail;
     protected $table = "karyawan";
     protected $primaryKey = "nik";
     public $incrementing = false;

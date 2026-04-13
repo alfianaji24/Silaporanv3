@@ -569,6 +569,12 @@
                      <div>WA Gateway</div>
                  </a>
             </li>
+            <li class="menu-item {{ request()->is(['activity-logs', 'activity-logs/*']) ? 'active' : '' }}">
+                 <a href="{{ route('activity.logs.index') }}" class="menu-link">
+                     <i class="menu-icon tf-icons ti ti-file-description"></i>
+                     <div>Activity Logs</div>
+                 </a>
+            </li>
          @endif
      </ul>
  </aside>

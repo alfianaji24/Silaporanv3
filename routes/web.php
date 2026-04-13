@@ -58,6 +58,7 @@ use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
 use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\ListAccountController;
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -750,6 +751,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
         Route::get('/sessions/check', 'checkSession')->name('sessions.check');
         Route::post('/sessions/logout-flutter', 'logoutFlutter')->name('sessions.logout-flutter');
+    }
+    );
+
+    // Activity Log Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(ActivityLogController::class)->group(function () {
+        Route::get('/activity-logs', 'index')->name('activity.logs.index');
+        Route::get('/activity-logs/{id}', 'show')->name('activity.logs.show');
+        Route::get('/activity-logs/export', 'export')->name('activity.logs.export');
+        Route::post('/activity-logs/clear', 'clear')->name('activity.logs.clear');
+        Route::get('/activity-logs/statistics', 'statistics')->name('activity.logs.statistics');
     }
     );
 
