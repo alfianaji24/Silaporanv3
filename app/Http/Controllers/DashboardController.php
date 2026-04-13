@@ -27,11 +27,6 @@ class DashboardController extends Controller
 {
     public function index(StatusKaryawanChart $chart, JeniskelaminkaryawanChart $jkchart, PendidikankaryawanChart $pddchart, Request $request)
     {
-        // Simple debug log
-        \Log::info('DASHBOARD DEBUG: Access attempt', [
-            'user_id' => auth()->check() ? auth()->user()->id : null
-        ]);
-
         $agent = new Agent();
         $user = User::where('id', auth()->user()->id)->first();
 

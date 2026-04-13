@@ -192,6 +192,10 @@
                                             Sisa masa kontrak Anda adalah <strong>{{ $notif_kontrak['sisa_hari'] }} hari</strong>.<br> (Selesai: {{ $notif_kontrak['tanggal_akhir'] }}).
                                         </p>
                                         <span style="font-size:11px; color:#856404; opacity:.6; margin-top:6px; display:inline-block; font-weight: 500;">Mohon segera koordinasi dengan HRD.</span>
+                                    @elseif($type == 'pengumuman')
+                                        <h4 style="font-size:14px; font-weight:700; color:#0c5460; margin:0 0 2px 0; letter-spacing: -0.2px;">{{ $pengumuman->judul }}</h4>
+                                        <span style="font-size:10px; color:#0c5460; opacity:.6; font-weight: 600;">{{ \Carbon\Carbon::parse($pengumuman->created_at)->translatedFormat('d F Y') }}</span>
+                                        <div style="font-size:12px; color:#0c5460; opacity:.85; margin-top:6px; line-height:1.5;">{!! Str::limit($pengumuman->isi, 100) !!}</div>
                                     @elseif($type == 'sp')
                                         <h4 style="font-size:14px; font-weight:700; color:#721c24; margin:0 0 4px 0; letter-spacing: -0.2px;">Peringatan Disiplin</h4>
                                         <p style="font-size:12px; color:#721c24; opacity:.85; line-height:1.5; margin:0;">
@@ -603,77 +607,6 @@
     </div>
 
 
-        {{-- ===== PASSWORD CHANGE MODAL ===== --}}
-        @if (auth()->user()->password_change_required)
-            <div id="passwordChangeModal" class="fixed inset-0 z-[1000] flex items-center justify-center p-4" style="display:none;">
-                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-                <div class="relative bg-white rounded-[20px] w-full max-w-[380px] overflow-hidden shadow-2xl animate-bounce-in">
-                    <div class="p-6 relative z-10">
-                        <button onclick="hidePasswordChange()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                            <ion-icon name="close-circle-outline" style="font-size:24px;"></ion-icon>
-                        </button>
-                        
-                        <div class="text-center mb-6">
-                            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <ion-icon name="lock-closed-outline" style="font-size:32px; color:#f59e0b;"></ion-icon>
-                            </div>
-                            <h2 class="text-xl font-bold text-gray-800 mb-2">Password Wajib Diubah</h2>
-                            <p class="text-sm text-gray-600">Untuk keamanan akun Anda, Anda harus mengubah password default saat pertama kali login.</p>
-                        </div>
-
-                        <form id="passwordChangeForm" method="POST" action="{{ route('force.password.update') }}">
-                            @csrf
-                            
-                            <!-- Current Password -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Password Saat Ini</label>
-                                <input type="password" name="current_password" id="current_password" required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-{{ $t['primary'] ?? '#2d5a4c' }} focus:border-transparent"
-                                       placeholder="Masukkan password saat ini">
-                                @error('current_password')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- New Password -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Password Baru</label>
-                                <input type="password" name="password" id="password" required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-{{ $t['primary'] ?? '#2d5a4c' }} focus:border-transparent"
-                                       placeholder="Masukkan password baru">
-                                @error('password')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <!-- Confirm Password -->
-                            <div class="mb-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password Baru</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-{{ $t['primary'] ?? '#2d5a4c' }} focus:border-transparent"
-                                       placeholder="Konfirmasi password baru">
-                                @error('password_confirmation')
-                                    <span class="text-red-500 text-xs mt-1">{{ $message }}</span>
-                                @enderror
-                            </div>
-
-                            <button type="submit" class="w-full py-3 rounded-full text-white font-semibold shadow-lg transition-all active:scale-95" style="background:{{ $t['primary'] ?? '#2d5a4c' }};">
-                                Ubah Password
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <style>
-                @keyframes bounce-in {
-                    0% { opacity:0; transform:scale(0.8) translateY(20px); }
-                    70% { transform:scale(1.05) translateY(-5px); }
-                    100% { opacity:1; transform:scale(1) translateY(0); }
-                }
-                .animate-bounce-in { animation: bounce-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-            </style>
-        @endif
-
         {{-- ===== BIRTHDAY MODAL ===== --}}
         @if (isset($is_birthday) && $is_birthday)
             <div id="birthdayModal" class="fixed inset-0 z-[1000] flex items-center justify-center p-4" style="display:none;">
@@ -756,13 +689,6 @@
                 }, 5000);
             }
 
-            // Password change logic - show after a short delay
-            @if (auth()->user()->password_change_required)
-                setTimeout(function(){
-                    $('#passwordChangeModal').fadeIn(400);
-                }, 1000);
-            @endif
-
             // Birthday logic
             @if (isset($is_birthday) && $is_birthday)
                 setTimeout(function(){
@@ -770,51 +696,6 @@
                     createConfetti();
                 }, 1500);
             @endif
-
-            // Password change form submission
-            $('#passwordChangeForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                var form = $(this);
-                var submitBtn = form.find('button[type="submit"]');
-                var originalText = submitBtn.text();
-                
-                // Show loading state
-                submitBtn.prop('disabled', true).text('Mengubah...');
-                
-                $.ajax({
-                    url: form.attr('action'),
-                    method: 'POST',
-                    data: form.serialize(),
-                    success: function(response) {
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Password berhasil diubah. Halaman akan di-refresh.',
-                            icon: 'success',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    },
-                    error: function(xhr) {
-                        var errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
-                        
-                        Swal.fire({
-                            title: 'Error!',
-                            text: errorMessage,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                        
-                        // Reset button state
-                        submitBtn.prop('disabled', false).text(originalText);
-                    }
-                });
-            });
         });
 
         // Birthday Confetti
@@ -834,10 +715,6 @@
 
         function hideBirthday() {
             $('#birthdayModal').fadeOut(300);
-        }
-
-        function hidePasswordChange() {
-            $('#passwordChangeModal').fadeOut(300);
         }
 
         // History Tab Switching

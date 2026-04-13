@@ -12,6 +12,8 @@ use App\Http\Controllers\GajipokokController;
 use App\Http\Controllers\GeneralsettingController;
 use App\Http\Controllers\GrupController;
 use App\Http\Controllers\HariliburController;
+use App\Http\Controllers\IPBlacklistController;
+use App\Http\Controllers\SessionManagementController;
 use App\Http\Controllers\IzinabsenController;
 use App\Http\Controllers\IzincutiController;
 use App\Http\Controllers\IzindinasController;
@@ -39,8 +41,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PresensiController;
 use App\Http\Controllers\PresensiistirahatController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReimbursementController;
-// use App\Http\Controllers\SessionManagementController; // TEMPORARILY DISABLED
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SlipgajiController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\KaryawanApprovalController;
@@ -48,7 +49,6 @@ use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WagatewayController;
 use App\Http\Controllers\FacerecognitionpresensiController;
-use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\IconGeneratorController;
 use App\Http\Controllers\BersihkanfotoController;
 use App\Http\Controllers\TrackingPresensiController;
@@ -56,12 +56,10 @@ use App\Http\Controllers\AktivitasKaryawanController;
 use App\Http\Controllers\ResetDataController;
 use App\Http\Controllers\UpdateController;
 use App\Http\Controllers\Admin\UpdateManagementController;
-use App\Http\Controllers\DownloadController;
-use App\Http\Controllers\IPBlacklistController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
-Route::middleware(['guest', 'ip.blacklist'])->group(function () {
+Route::middleware('guest')->group(function () {
     Route::get('/', function () {
             $agent = new \Jenssegers\Agent\Agent();
             $isMobile = $agent->isMobile() && !$agent->isTablet();
@@ -91,52 +89,15 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
     Route::post('/public/presensi/store', 'store')->name('public.presensi.store');
 });
 
-// Public Download Application Routes (No Auth Required)
-Route::middleware('ip.blacklist')->controller(DownloadController::class)->group(function () {
-    Route::get('/download', 'index')->name('download.index');
-    Route::get('/download/apk', 'downloadApk')->name('download.apk');
-});
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route dashboard moved to DashboardController group below
-
-Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function () {
+Route::middleware('auth')->group(function () {
 
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    
-    // IP Blacklist Management (Super Admin Only)
-    Route::middleware(['role:super admin'])->controller(IPBlacklistController::class)->group(function () {
-        Route::get('/ip-blacklist', 'index')->name('ip-blacklist.index');
-        Route::get('/ip-blacklist/dashboard', 'dashboard')->name('ip-blacklist.dashboard');
-        Route::post('/ip-blacklist', 'store')->name('ip-blacklist.store');
-        Route::put('/ip-blacklist/{id}', 'update')->name('ip-blacklist.update');
-        Route::post('/ip-blacklist/{id}/toggle', 'toggle')->name('ip-blacklist.toggle');
-        Route::delete('/ip-blacklist/{id}', 'destroy')->name('ip-blacklist.destroy');
-        
-        // Unblock Requests Management
-        Route::get('/ip-blacklist/unblock-requests', 'unblockRequests')->name('ip-blacklist.unblock-requests');
-        Route::post('/ip-blacklist/unblock-requests/{id}/process', 'processUnblockRequest')->name('ip-blacklist.process-unblock-request');
-    });
-
-    // Public route for unblock requests (no auth required)
-    Route::post('/request-unblock', [IPBlacklistController::class, 'storeUnblockRequest'])->name('ip-blacklist.request-unblock');
-
-    // Session Management (Admin Only) - TEMPORARILY DISABLED
-    // Route::middleware(['role:super admin|admin'])->controller(SessionManagementController::class)->group(function () {
-    //     Route::get('/sessions', 'index')->name('sessions.index');
-    //     Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
-    //     Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
-    //     Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
-    //     Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
-    // });
-
-    // Flutter WebView API Routes - TEMPORARILY DISABLED
-    // Route::middleware('auth')->controller(SessionManagementController::class)->group(function () {
-    //     Route::get('/api/session/check', 'checkSession')->name('api.session.check');
-    //     Route::post('/api/session/logout', 'logoutFlutter')->name('api.session.logout');
-    // });
 
     //Setings
     //Role
@@ -149,8 +110,8 @@ Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function 
         }
         );
 
-        Route::middleware(['verified'])->controller(DashboardController::class)->group(function () {
-            Route::get('/dashboard', 'index')->name('dashboard');
+        Route::controller(DashboardController::class)->group(function () {
+            Route::get('/dashboard', 'index')->name('dashboard.index');
             Route::post('/dashboard/kirim-ucapan-birthday', 'kirimUcapanBirthday')->name('dashboard.kirim.ucapan.birthday');
         }
         );
@@ -757,6 +718,32 @@ Route::middleware(['auth', 'ip.blacklist', 'session.validate'])->group(function 
     }
     );
 
+    // IP Blacklist Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(IPBlacklistController::class)->group(function () {
+        Route::get('/ip-blacklist', 'index')->name('ip-blacklist.index');
+        Route::get('/ip-blacklist/dashboard', 'dashboard')->name('ip-blacklist.dashboard');
+        Route::post('/ip-blacklist', 'store')->name('ip-blacklist.store');
+        Route::put('/ip-blacklist/{id}', 'update')->name('ip-blacklist.update');
+        Route::delete('/ip-blacklist/{id}', 'destroy')->name('ip-blacklist.destroy');
+        Route::post('/ip-blacklist/{id}/toggle', 'toggle')->name('ip-blacklist.toggle');
+        Route::get('/ip-blacklist/unblock-requests', 'unblockRequests')->name('ip-blacklist.unblock-requests');
+        Route::post('/ip-blacklist/{id}/approve-unblock', 'approveUnblock')->name('ip-blacklist.approve-unblock');
+        Route::post('/ip-blacklist/{id}/reject-unblock', 'rejectUnblock')->name('ip-blacklist.reject-unblock');
+    }
+    );
+
+    // Session Management Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(SessionManagementController::class)->group(function () {
+        Route::get('/sessions', 'index')->name('sessions.index');
+        Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
+        Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
+        Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
+        Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
+        Route::get('/sessions/check', 'checkSession')->name('sessions.check');
+        Route::post('/sessions/logout-flutter', 'logoutFlutter')->name('sessions.logout-flutter');
+    }
+    );
+
     // Pengumuman Routes
     Route::controller(App\Http\Controllers\PengumumanController::class)->group(function () {
         Route::get('/pengumuman', 'index')->name('pengumuman.index');
@@ -791,12 +778,6 @@ try {
 catch (\Exception $e) {
     echo "Error";
 }
-});
-
-// Routes for forced password change (must be accessible when password_change_required is true)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/force-password-change', [ForcePasswordChangeController::class, 'showChangeForm'])->name('force.password.change');
-    Route::post('/force-password-change', [ForcePasswordChangeController::class, 'changePassword'])->name('force.password.update');
 });
 
 Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admin as it doesn't exist. Permissions handle access control.
@@ -876,339 +857,5 @@ Route::post('/ajuanjadwal/{id}/cancelapprove', [App\Http\Controllers\AjuanJadwal
 // Endpoint khusus untuk menangani mesin fingerprint ADMS / X100C tanpa prefix /api
 Route::any('/iclock/cdata', [\App\Http\Controllers\Api\AdmsController::class , 'receiveX100c']);
 
-// Endpoint debugging IP Blacklist
-Route::get('/debug-ip-blacklist', function (\Illuminate\Http\Request $request) {
-    $clientIP = $request->ip();
-    $headers = $request->headers->all();
-    
-    // Cek semua possible IP headers
-    $possibleIPs = [
-        'CF-Connecting-IP' => $request->header('CF-Connecting-IP'),
-        'X-Forwarded-For' => $request->header('X-Forwarded-For'),
-        'X-Real-IP' => $request->header('X-Real-IP'),
-        'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? null,
-        'request->ip()' => $clientIP,
-    ];
-    
-    // Get all blacklisted IPs
-    $blacklistedIPs = \App\Models\IPBlacklist::all();
-    
-    // Check if current IP is blacklisted
-    $isBlacklisted = \App\Models\IPBlacklist::where('ip_address', $clientIP)
-        ->where('is_active', true)
-        ->exists();
-    
-    return response()->json([
-        'current_request_info' => [
-            'ip' => $clientIP,
-            'possible_ips' => $possibleIPs,
-            'headers' => $headers,
-        ],
-        'blacklist_check' => [
-            'is_blacklisted' => $isBlacklisted,
-            'total_blacklisted' => $blacklistedIPs->count(),
-        ],
-        'all_blacklisted_ips' => $blacklistedIPs->map(function($ip) {
-            return [
-                'ip_address' => $ip->ip_address,
-                'is_active' => $ip->is_active,
-                'blocked_at' => $ip->blocked_at,
-                'expires_at' => $ip->expires_at,
-                'reason' => $ip->reason,
-            ];
-        }),
-    ]);
-});
-
-// Endpoint testing WA notification
-Route::get('/test-wa-unblock', function () {
-    try {
-        $generalsetting = DB::table('pengaturan_umum')->where('id', 1)->first();
-        
-        $message = "*🧪 TEST NOTIFIKASI WA*\n\n";
-        $message .= "🔹 *Waktu*: " . now()->format('d-m-Y H:i:s') . "\n";
-        $message .= "🔹 *Status*: Testing\n";
-        $message .= "\n_Silaporan v3.1 - Test System_";
-
-        $waNumber = $generalsetting->no_hp_wa_unblock ?? $generalsetting->no_hp_wa ?? '';
-        $endpoint = rtrim($generalsetting->domain_wa_gateway, '/') . '/send-message';
-        
-        Log::info('Test WA Notification - Sending', [
-            'wa_number' => $waNumber,
-            'endpoint' => $endpoint,
-            'message_length' => strlen($message)
-        ]);
-        
-        $response = Http::timeout(10)->post($endpoint, [
-            'api_key' => $generalsetting->wa_api_key,
-            'number' => $waNumber,
-            'message' => $message
-        ]);
-
-        Log::info('Test WA Notification - Response', [
-            'status_code' => $response->status(),
-            'successful' => $response->successful(),
-            'response_body' => $response->body()
-        ]);
-
-        return response()->json([
-            'success' => $response->successful(),
-            'status_code' => $response->status(),
-            'response_body' => $response->body(),
-            'config' => [
-                'wa_number' => $waNumber,
-                'endpoint' => $endpoint,
-                'notifikasi_wa' => $generalsetting->notifikasi_wa,
-                'domain_wa_gateway' => $generalsetting->domain_wa_gateway,
-                'wa_api_key' => $generalsetting->wa_api_key ? 'SET' : 'NULL'
-            ]
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Test WA Notification Error', ['error' => $e->getMessage()]);
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage()
-        ]);
-    }
-});
-
-// Endpoint testing multiple WA Gateway paths
-Route::get('/test-wa-gateway-paths', function () {
-    $generalsetting = DB::table('pengaturan_umum')->where('id', 1)->first();
-    $baseDomain = rtrim($generalsetting->domain_wa_gateway, '/');
-    
-    $paths = [
-        '/api/send-message',
-        '/send-message',
-        '/api/v1/send-message',
-        '/message/send',
-        '/api/message',
-        '/send',
-        '/api/send'
-    ];
-    
-    $results = [];
-    
-    foreach ($paths as $path) {
-        try {
-            $url = $baseDomain . $path;
-            $response = Http::timeout(5)->get($url);
-            
-            $results[] = [
-                'path' => $path,
-                'url' => $url,
-                'status_code' => $response->status(),
-                'successful' => $response->successful(),
-                'response_preview' => substr($response->body(), 0, 200)
-            ];
-        } catch (\Exception $e) {
-            $results[] = [
-                'path' => $path,
-                'url' => $baseDomain . $path,
-                'status_code' => 'ERROR',
-                'successful' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-    
-    return response()->json([
-        'base_domain' => $baseDomain,
-        'results' => $results
-    ]);
-});
-
-// Endpoint debugging WA Gateway API parameters
-Route::get('/test-wa-params', function () {
-    $generalsetting = DB::table('pengaturan_umum')->where('id', 1)->first();
-    $endpoint = rtrim($generalsetting->domain_wa_gateway, '/') . '/send-message';
-    $waNumber = $generalsetting->no_hp_wa_unblock ?? $generalsetting->no_hp_wa ?? '';
-    
-    $message = "*🧪 TEST PARAMS WA*\n\n";
-    $message .= "🔹 *Waktu*: " . now()->format('d-m-Y H:i:s') . "\n";
-    $message .= "🔹 *Status*: Testing Parameters\n";
-    
-    // Test dengan berbagai parameter combinations
-    $testCases = [
-        [
-            'name' => 'Current Parameters',
-            'params' => [
-                'api_key' => $generalsetting->wa_api_key,
-                'number' => $waNumber,
-                'message' => $message
-            ]
-        ],
-        [
-            'name' => 'With sender field',
-            'params' => [
-                'api_key' => $generalsetting->wa_api_key,
-                'sender' => $waNumber,
-                'message' => $message
-            ]
-        ],
-        [
-            'name' => 'With target field',
-            'params' => [
-                'api_key' => $generalsetting->wa_api_key,
-                'target' => $waNumber,
-                'message' => $message
-            ]
-        ],
-        [
-            'name' => 'With phone field',
-            'params' => [
-                'api_key' => $generalsetting->wa_api_key,
-                'phone' => $waNumber,
-                'message' => $message
-            ]
-        ]
-    ];
-    
-    $results = [];
-    
-    foreach ($testCases as $testCase) {
-        try {
-            $response = Http::timeout(10)->post($endpoint, $testCase['params']);
-            
-            $results[] = [
-                'name' => $testCase['name'],
-                'params' => array_keys($testCase['params']),
-                'status_code' => $response->status(),
-                'successful' => $response->successful(),
-                'response_body' => $response->body()
-            ];
-        } catch (\Exception $e) {
-            $results[] = [
-                'name' => $testCase['name'],
-                'params' => array_keys($testCase['params']),
-                'status_code' => 'ERROR',
-                'successful' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-    
-    return response()->json([
-        'endpoint' => $endpoint,
-        'wa_number' => $waNumber,
-        'api_key_preview' => $generalsetting->wa_api_key ? substr($generalsetting->wa_api_key, 0, 8) . '***' : 'NULL',
-        'results' => $results
-    ]);
-});
-
-// Endpoint untuk cek format nomor WA
-Route::get('/test-wa-formats', function () {
-    $generalsetting = DB::table('pengaturan_umum')->where('id', 1)->first();
-    $endpoint = rtrim($generalsetting->domain_wa_gateway, '/') . '/send-message';
-    
-    $baseNumber = '085162663451';
-    
-    // Test berbagai format nomor WA
-    $numberFormats = [
-        '085162663451',      // Original format
-        '6285162663451',     // Country code without +
-        '+6285162663451',    // Country code with +
-        '62851-62663451',    // With dash
-        '62851 62663451',    // With space
-    ];
-    
-    $message = "*🧪 TEST FORMAT NOMOR WA*\n\n";
-    $message .= "🔹 *Waktu*: " . now()->format('d-m-Y H:i:s') . "\n";
-    $message .= "🔹 *Status*: Testing Format\n";
-    
-    $results = [];
-    
-    foreach ($numberFormats as $format) {
-        try {
-            $response = Http::timeout(10)->post($endpoint, [
-                'api_key' => $generalsetting->wa_api_key,
-                'number' => $format,
-                'message' => $message . "Format: " . $format
-            ]);
-            
-            $results[] = [
-                'format' => $format,
-                'status_code' => $response->status(),
-                'successful' => $response->successful(),
-                'response_body' => $response->body()
-            ];
-        } catch (\Exception $e) {
-            $results[] = [
-                'format' => $format,
-                'status_code' => 'ERROR',
-                'successful' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-    
-    return response()->json([
-        'endpoint' => $endpoint,
-        'api_key_preview' => $generalsetting->wa_api_key ? substr($generalsetting->wa_api_key, 0, 8) . '***' : 'NULL',
-        'results' => $results
-    ]);
-});
-
-// Endpoint test dengan API Key lengkap
-Route::get('/test-wa-full-key', function () {
-    $generalsetting = DB::table('pengaturan_umum')->where('id', 1)->first();
-    $endpoint = rtrim($generalsetting->domain_wa_gateway, '/') . '/send-message';
-    
-    $apiKey = $generalsetting->wa_api_key;
-    $waNumber = $generalsetting->no_hp_wa_unblock ?? $generalsetting->no_hp_wa ?? '';
-    
-    $message = "*🧪 TEST FULL API KEY*\n\n";
-    $message .= "🔹 *Waktu*: " . now()->format('d-m-Y H:i:s') . "\n";
-    $message .= "🔹 *API Key Length*: " . strlen($apiKey) . " characters\n";
-    $message .= "🔹 *Status*: Full Key Test\n";
-    
-    Log::info('Full WA API Key Test', [
-        'api_key_length' => strlen($apiKey),
-        'api_key_preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -8),
-        'wa_number' => $waNumber,
-        'endpoint' => $endpoint
-    ]);
-    
-    try {
-        $response = Http::timeout(10)->post($endpoint, [
-            'api_key' => $apiKey,
-            'number' => $waNumber,
-            'message' => $message
-        ]);
-        
-        Log::info('Full WA API Key Test Response', [
-            'status_code' => $response->status(),
-            'successful' => $response->successful(),
-            'response_body' => $response->body()
-        ]);
-        
-        return response()->json([
-            'success' => $response->successful(),
-            'status_code' => $response->status(),
-            'response_body' => $response->body(),
-            'debug_info' => [
-                'api_key_length' => strlen($apiKey),
-                'api_key_preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -8),
-                'wa_number' => $waNumber,
-                'endpoint' => $endpoint,
-                'message_length' => strlen($message)
-            ]
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Full WA API Key Test Error', [
-            'error' => $e->getMessage(),
-            'api_key_length' => strlen($apiKey)
-        ]);
-        
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'debug_info' => [
-                'api_key_length' => strlen($apiKey),
-                'api_key_preview' => substr($apiKey, 0, 8) . '...' . substr($apiKey, -8)
-            ]
-        ]);
-    }
-});
 
 require __DIR__ . '/auth.php';

@@ -2,25 +2,38 @@
 
 @section('title', 'IP Blacklist Management')
 
+@section('navigasi')
+<div class="d-flex justify-content-between align-items-center w-100">
+    <div>
+        IP Blacklist Management
+        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
+            Manajemen dan monitoring IP address yang diblokir dalam sistem.
+        </div>
+    </div>
+    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
+        <ol class="breadcrumb breadcrumb-style1 mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard.index') }}">
+                    <i class="ti ti-home-2 ti-xs"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="javascript:void(0);">
+                    <i class="ti ti-settings ti-xs me-1"></i> Utilities
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="ti ti-shield ti-xs me-1"></i> IP Blacklist Management
+            </li>
+        </ol>
+    </nav>
+</div>
+@endsection
+
 @section('content')
-<div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-shield-alt"></i> IP Blacklist Management
-                    </h3>
-                    <div class="card-tools">
-                        <a href="{{ route('ip-blacklist.dashboard') }}" class="btn btn-info btn-sm">
-                            <i class="fas fa-chart-bar"></i> Dashboard
-                        </a>
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addIPModal">
-                            <i class="fas fa-plus"></i> Add IP
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Flash Messages -->
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible">
@@ -58,13 +71,19 @@
                                     <option value="3" {{ request('threat_level') == '3' ? 'selected' : '' }}>Low (3+)</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <button type="submit" class="btn btn-outline-secondary">
                                     <i class="fas fa-search"></i> Filter
                                 </button>
                                 <a href="{{ route('ip-blacklist.index') }}" class="btn btn-outline-secondary ml-2">
                                     <i class="fas fa-times"></i> Clear
                                 </a>
+                                <a href="{{ route('ip-blacklist.dashboard') }}" class="btn btn-info btn-sm ml-2">
+                                    <i class="ti ti-chart-bar me-1"></i> Dashboard
+                                </a>
+                                <button type="button" class="btn btn-primary btn-sm ml-2" data-bs-toggle="modal" data-bs-target="#addIPModal">
+                                    <i class="ti ti-plus me-1"></i> Add IP
+                                </button>
                             </div>
                         </div>
                     </form>

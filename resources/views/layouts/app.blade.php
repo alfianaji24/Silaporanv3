@@ -59,9 +59,9 @@
     <link rel="apple-touch-icon" href="/assets/img/icons/pwa/icon-192x192.png">
     <link rel="apple-touch-icon" sizes="192x192" href="/assets/img/icons/pwa/icon-192x192.png">
     <link rel="apple-touch-icon" sizes="512x512" href="/assets/img/icons/pwa/icon-512x512.png">
-    
+
     <!-- PWA Manifest -->
-    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Service Worker Registration -->
     <script>

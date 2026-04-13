@@ -29,12 +29,6 @@ class Kernel extends ConsoleKernel
         $schedule->job(new CheckFailedMessagesJob)
             ->hourly()
             ->appendOutputTo(storage_path('logs/check-failed-messages-scheduler.log'));
-
-        // Auto cleanup expired sessions setiap 30 menit untuk mencegah 419 error
-        $schedule->command('session:auto-cleanup')
-            ->everyThirtyMinutes()
-            ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/session-cleanup-scheduler.log'));
     }
 
     /**

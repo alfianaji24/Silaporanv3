@@ -506,43 +506,47 @@
                     <div>Utilities</div>
                 </a>
                 <ul class="menu-sub">
-                     <li class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
-                         <a href="{{ route('users.index') }}" class="menu-link">
-                             <div>User</div>
-                         </a>
-                     </li>
-                     <li class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
-                         <a href="{{ route('roles.index') }}" class="menu-link">
-                             <div>Role</div>
-                         </a>
-                     </li>
-                     <li class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}">
-                         <a href="{{ route('permissions.index') }}" class="menu-link">
-                             <div>Permission</div>
-                         </a>
-                     </li>
-                     <li
-                         class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
-                         <a href="{{ route('permissiongroups.index') }}" class="menu-link">
-                             <div>Group Permission</div>
-                         </a>
-                     </li>
-                     @can('bersihkanfoto.index')
-                         <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
-                             <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
-                                 <div>Bersihkan Foto</div>
-                             </a>
-                         </li>
-                     @endcan
-                     <li class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
-                        <a href="{{ route('resetdata.index') }}" class="menu-link">
-                            <div>Reset Data</div>
+                    <li class="menu-item {{ request()->is(['users', 'users/*']) ? 'active' : '' }}">
+                        <a href="{{ route('users.index') }}" class="menu-link">
+                            <div>User</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->is(['roles', 'roles/*']) ? 'active' : '' }}">
+                        <a href="{{ route('roles.index') }}" class="menu-link">
+                            <div>Role</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->is(['permissions', 'permissions/*']) ? 'active' : '' }}">
+                        <a href="{{ route('permissions.index') }}" class="menu-link">
+                            <div>Permission</div>
+                        </a>
+                    </li>
+                    <li
+                        class="menu-item  {{ request()->is(['permissiongroups', 'permissiongroups/*']) ? 'active' : '' }}">
+                        <a href="{{ route('permissiongroups.index') }}" class="menu-link">
+                            <div>Group Permission</div>
                         </a>
                     </li>
                     <li class="menu-item {{ request()->is(['ip-blacklist', 'ip-blacklist/*']) ? 'active' : '' }}">
-                        <a href="{{ route('ip-blacklist.dashboard') }}" class="menu-link">
-                            <i class="menu-icon tf-icons ti ti-shield-lock"></i>
+                        <a href="{{ route('ip-blacklist.index') }}" class="menu-link">
                             <div>IP Blacklist</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->is(['sessions', 'sessions/*']) ? 'active' : '' }}">
+                        <a href="{{ route('sessions.index') }}" class="menu-link">
+                            <div>Session Management</div>
+                        </a>
+                    </li>
+                    @can('bersihkanfoto.index')
+                        <li class="menu-item {{ request()->is(['bersihkanfoto', 'bersihkanfoto/*']) ? 'active' : '' }}">
+                            <a href="{{ route('bersihkanfoto.index') }}" class="menu-link">
+                                <div>Bersihkan Foto</div>
+                            </a>
+                        </li>
+                    @endcan
+                    <li class="menu-item {{ request()->is(['resetdata', 'resetdata/*']) ? 'active' : '' }}">
+                        <a href="{{ route('resetdata.index') }}" class="menu-link">
+                            <div>Reset Data</div>
                         </a>
                     </li>
                 </ul>

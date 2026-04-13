@@ -9,13 +9,24 @@ use App\Models\User;
 class SessionManagementController extends Controller
 {
     /**
-     * Display active sessions for users
+     * Display sessions for users (active and inactive)
      */
     public function index(Request $request)
     {
         $query = UserSession::with(['user', 'forcedByAdmin'])
-            ->active()
-            ->orderBy('last_activity', 'desc');
+            ->orderBy('created_at', 'desc');
+
+        // Filter by status (active/inactive)
+        if ($request->has('status') && $request->status !== '') {
+            if ($request->status === 'active') {
+                $query->active();
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        } else {
+            // Default to show all sessions (empty status = all sessions)
+            // No additional filter needed
+        }
 
         // Filter by user type
         if ($request->has('user_type') && $request->user_type !== '') {
@@ -41,7 +52,22 @@ class SessionManagementController extends Controller
 
         $sessions = $query->paginate(20);
 
-        return view('admin.sessions.index', compact('sessions'));
+        // Get statistics
+        $stats = [
+            'total_sessions' => UserSession::count(),
+            'active_sessions' => UserSession::active()->count(),
+            'inactive_sessions' => UserSession::where('is_active', false)->count(),
+            'karyawan_sessions' => UserSession::whereHas('user', function($q) {
+                $q->role('karyawan');
+            })->count(),
+            'admin_sessions' => UserSession::whereHas('user', function($q) {
+                $q->whereDoesntHave('roles', function($roleQuery) {
+                    $roleQuery->where('name', 'karyawan');
+                });
+            })->count(),
+        ];
+
+        return view('admin.sessions.index', compact('sessions', 'stats'));
     }
 
     /**

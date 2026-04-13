@@ -313,6 +313,39 @@
 
         .divider span { margin: 0 10px; }
 
+        /* SweetAlert2 Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -100%, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        @keyframes fadeOutUp {
+            from {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+            to {
+                opacity: 0;
+                transform: translate3d(0, -100%, 0);
+            }
+        }
+
+        .animate__fadeInDown {
+            animation-name: fadeInDown;
+            animation-duration: 0.5s;
+        }
+
+        .animate__fadeOutUp {
+            animation-name: fadeOutUp;
+            animation-duration: 0.3s;
+        }
+
         .social-login {
             display: flex;
             justify-content: center;
@@ -402,6 +435,39 @@
             <span>{{ $errors->first() }}</span>
             <button class="alert-close" onclick="document.getElementById('alert-box-2').style.display='none'">&times;</button>
         </div>
+    @endif
+
+    @if(session('login_blocked'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '🚫 LOGIN DIBLOKIR!',
+                    html: `
+                        <div style="text-align: left; font-size: 14px;">
+                            <div style="margin-bottom: 12px; font-weight: 600;">Akun Anda sedang aktif di perangkat lain:</div>
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                                <div><strong>Device:</strong> {{ session('login_blocked.device') }} - {{ session('login_blocked.browser') }}</div>
+                                <div><strong>IP:</strong> {{ session('login_blocked.ip') }}</div>
+                                <div><strong>Login:</strong> {{ session('login_blocked.login_time') }}</div>
+                            </div>
+                            <div style="font-style: italic; color: #666; font-size: 13px;">
+                                Silakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk logout paksa pada perangkat yang aktif.
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'OK, Mengerti',
+                    confirmButtonColor: '#dc3545',
+                    backdrop: `rgba(0,0,0,0.4)`,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+            });
+        </script>
     @endif
 
     <div class="top-section">

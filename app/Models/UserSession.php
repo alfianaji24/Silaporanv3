@@ -119,6 +119,57 @@ class UserSession extends Model
         return $sessions->count();
     }
 
+    /**
+     * Force logout a specific session
+     */
+    public static function forceLogoutSession($sessionId)
+    {
+        $session = self::where('session_id', $sessionId)->first();
+        if ($session) {
+            $session->update([
+                'is_active' => false,
+                'logout_time' => now(),
+            ]);
+            
+            \Log::info('Session force logged out', [
+                'session_id' => $sessionId,
+                'user_id' => $session->user_id,
+                'logout_time' => now()->toDateTimeString()
+            ]);
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Force logout all active sessions for a user
+     */
+    public static function forceLogoutAllUserSessions($userId)
+    {
+        $sessions = self::where('user_id', $userId)
+            ->where('is_active', true)
+            ->get();
+            
+        $updatedCount = 0;
+        foreach ($sessions as $session) {
+            $session->update([
+                'is_active' => false,
+                'logout_time' => now(),
+            ]);
+            $updatedCount++;
+        }
+        
+        \Log::info('All user sessions force logged out', [
+            'user_id' => $userId,
+            'sessions_updated' => $updatedCount,
+            'logout_time' => now()->toDateTimeString()
+        ]);
+        
+        return $updatedCount;
+    }
+
     private static function getClientIP($request)
     {
         $ipHeaders = [

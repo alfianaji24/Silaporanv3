@@ -33,13 +33,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // Log start of login process
-        \Log::info('LOGIN PROCESS STARTED', [
-            'email' => $request->email,
-            'method' => $request->method(),
-            'url' => $request->fullUrl()
-        ]);
-
         $request->authenticate();
 
         $loginType = $request->input('login_type', 'user');
@@ -61,111 +54,12 @@ class AuthenticatedSessionController extends Controller
             }
         }
 
-        // Log login information
-        $this->logUserLogin($request, $user);
-
-        \Log::info('AFTER LOG USER LOGIN', [
-            'user_id' => $user->id,
-            'proceeding_to_session_management' => true
-        ]);
-
-        // Session management based on user role
-        \Log::info('ENTERING SESSION MANAGEMENT', [
-            'user_id' => $user->id,
-            'user_role' => $user->roles->pluck('name')->first()
-        ]);
-
-        try {
-            \Log::info('CHECKING USER ROLE', [
-                'user_id' => $user->id,
-                'is_karyawan' => $user->hasRole('karyawan')
-            ]);
-
-            if ($user->hasRole('karyawan')) {
-                // Check if user already has active session (but allow Flutter WebView reconnection)
-                $userAgent = $request->userAgent();
-                $isFlutterWebView = strpos($userAgent, 'wv') !== false && strpos($userAgent, 'Chrome') !== false;
-                
-                \Log::info('CHECKING ACTIVE SESSION', [
-                    'user_id' => $user->id,
-                    'is_flutter_webview' => $isFlutterWebView
-                ]);
-
-                $existingSession = \App\Models\UserSession::where('user_id', $user->id)
-                    ->active()
-                    ->first();
-
-                \Log::info('ACTIVE SESSION CHECK RESULT', [
-                    'user_id' => $user->id,
-                    'existing_session_found' => $existingSession ? $existingSession->id : null,
-                    'is_flutter_webview' => $isFlutterWebView,
-                    'will_block_login' => $existingSession && !$isFlutterWebView
-                ]);
-
-                if ($existingSession && !$isFlutterWebView) {
-                    // User already logged in on another device, block login (except Flutter WebView)
-                    $deviceInfo = $existingSession->device_type ?? 'Unknown';
-                    if ($existingSession->browser) {
-                        $deviceInfo .= ' - ' . $existingSession->browser;
-                    }
-                    $loginTime = $existingSession->login_time ? $existingSession->login_time->format('d M Y H:i') : 'Unknown';
-                    $ipAddress = $existingSession->ip_address ?? 'Unknown';
-
-                    \Log::info('BLOCKING LOGIN - ACTIVE SESSION FOUND', [
-                        'user_id' => $user->id,
-                        'existing_session_id' => $existingSession->id,
-                        'device_info' => $deviceInfo,
-                        'ip_address' => $ipAddress
-                    ]);
-
-                    Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-
-                    return redirect()->route('loginuser')
-                        ->with('error', "🚫 AKUN SEDANG AKTIF DI PERANGKAT LAIN!\n\nDevice: {$deviceInfo}\nIP: {$ipAddress}\nLogin: {$loginTime}\n\nSilakan logout dari perangkat lain terlebih dahulu atau hubungi admin support untuk force logout.");
-                }
-
-                // For Flutter WebView, update existing session or create new one
-                if ($isFlutterWebView && $existingSession) {
-                    // Update existing session for Flutter WebView reconnection
-                    $existingSession->update([
-                        'session_id' => session()->getId(),
-                        'ip_address' => \App\Models\UserSession::getClientIP($request),
-                        'user_agent' => $request->userAgent(),
-                        'last_activity' => now(),
-                    ]);
-                } else {
-                    // Create new session for karyawan
-                    \App\Models\UserSession::createSession($user, $request);
-                }
-            } else {
-                // Admin session management (multiple devices allowed)
-                \App\Models\UserSession::createSession($user, $request);
-            }
-        } catch (\Exception $e) {
-            // Log error but continue with login
-            \Log::error('Session management error', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-
-        \Log::info('ABOUT TO REGENERATE SESSION', [
-            'user_id' => $user->id,
-            'before_session_id' => session()->getId()
-        ]);
-
         $request->session()->regenerate();
 
-        // Simple debug log
-        \Log::info('LOGIN DEBUG: About to redirect', [
-            'user_id' => $user->id,
-            'route' => 'dashboard'
-        ]);
+        // Session creation is now handled by LogUserLogin event listener
+        // This ensures real-time session tracking for all users
 
-        // Direct redirect to dashboard to avoid intended URL issues
-        return redirect()->route('dashboard');
+        return redirect()->intended(RouteServiceProvider::HOME);
     }
 
     /**
@@ -177,28 +71,8 @@ class AuthenticatedSessionController extends Controller
         $isMobile = $agent->isMobile();
         $user = Auth::user();
         $isAdmin = $user && !$user->hasRole('karyawan');
-        $sessionId = session()->getId();
 
         Auth::guard('web')->logout();
-
-        // Update session status in database
-        if ($user) {
-            try {
-                \App\Models\UserSession::where('user_id', $user->id)
-                    ->where('session_id', $sessionId)
-                    ->active()
-                    ->update([
-                        'is_active' => false,
-                        'logout_time' => now(),
-                    ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to update session on logout', [
-                    'user_id' => $user->id,
-                    'session_id' => $sessionId,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
 
         $request->session()->invalidate();
 
@@ -211,115 +85,5 @@ class AuthenticatedSessionController extends Controller
 
         // Karyawan logout -> redirect to /login
         return redirect()->route('login');
-    }
-
-    /**
-     * Log user login information including IP and device details
-     */
-    private function logUserLogin(Request $request, $user): void
-    {
-        $agent = new Agent();
-        
-        // Get client IP address (similar to IPBlacklistMiddleware)
-        $clientIP = $this->getClientIP($request);
-        
-        // Get device information
-        $deviceInfo = [
-            'ip_address' => $clientIP,
-            'user_agent' => $request->userAgent(),
-            'device_type' => $this->getDeviceType($agent),
-            'platform' => $agent->platform() ?: 'Unknown',
-            'browser' => $agent->browser() ?: 'Unknown',
-            'browser_version' => $agent->version($agent->browser()) ?: 'Unknown',
-            'is_mobile' => $agent->isMobile(),
-            'is_tablet' => $agent->isTablet(),
-            'is_desktop' => $agent->isDesktop(),
-            'languages' => $request->getLanguages(),
-            'login_time' => now()->toISOString(),
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_role' => $user->hasRole('karyawan') ? 'karyawan' : 'admin/staff',
-        ];
-
-        // Log to Laravel log
-        \Log::info('User Login', [
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_role' => $deviceInfo['user_role'],
-            'ip_address' => $clientIP,
-            'device_type' => $deviceInfo['device_type'],
-            'platform' => $deviceInfo['platform'],
-            'browser' => $deviceInfo['browser'] . ' ' . $deviceInfo['browser_version'],
-            'login_time' => $deviceInfo['login_time'],
-        ]);
-
-        // Save to database
-        try {
-            \App\Models\UserLoginLog::create([
-                'user_id' => $user->id,
-                'ip_address' => $clientIP,
-                'user_agent' => $request->userAgent(),
-                'device_type' => $deviceInfo['device_type'],
-                'platform' => $deviceInfo['platform'],
-                'browser' => $deviceInfo['browser'],
-                'browser_version' => $deviceInfo['browser_version'],
-                'is_mobile' => $deviceInfo['is_mobile'],
-                'is_tablet' => $deviceInfo['is_tablet'],
-                'is_desktop' => $deviceInfo['is_desktop'],
-                'languages' => $deviceInfo['languages'],
-                'login_time' => now(),
-                'session_id' => session()->getId(),
-                'is_successful' => true,
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to save login log to database', [
-                'user_id' => $user->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Get client real IP address (similar to IPBlacklistMiddleware)
-     */
-    private function getClientIP(Request $request): string
-    {
-        $ipHeaders = [
-            'CF-Connecting-IP',    // Cloudflare
-            'X-Forwarded-For',     // General proxy
-            'X-Real-IP',           // Nginx
-            'X-Client-IP',         // Some proxies
-            'HTTP_X_FORWARDED_FOR',
-            'HTTP_X_REAL_IP',
-            'REMOTE_ADDR'
-        ];
-
-        foreach ($ipHeaders as $header) {
-            $ip = $request->header($header);
-            if ($ip && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                if (strpos($ip, ',') !== false) {
-                    $ip = trim(explode(',', $ip)[0]);
-                }
-                return $ip;
-            }
-        }
-
-        return $request->ip();
-    }
-
-    /**
-     * Get device type description
-     */
-    private function getDeviceType(Agent $agent): string
-    {
-        if ($agent->isMobile()) {
-            return 'Mobile';
-        } elseif ($agent->isTablet()) {
-            return 'Tablet';
-        } elseif ($agent->isDesktop()) {
-            return 'Desktop';
-        } else {
-            return 'Unknown';
-        }
     }
 }
