@@ -667,7 +667,11 @@ class KaryawanController extends Controller
             $originalEmail = $email;
             $emailCounter = 1;
             while (User::where('email', $email)->exists()) {
-                $email = $originalEmail . $emailCounter . '@gmail.com';
+                // Pisahkan email dari domain
+                $emailParts = explode('@', $originalEmail);
+                $emailName = $emailParts[0];
+                $domain = $emailParts[1];
+                $email = $emailName . $emailCounter . '@' . $domain;
                 $emailCounter++;
             }
 
@@ -715,11 +719,36 @@ class KaryawanController extends Controller
                 // Check if user already exists (double check)
                 $existingUser = Userkaryawan::where('nik', $k->nik)->first();
                 if (!$existingUser) {
+                    // Generate username dan email dari nama karyawan (sama seperti generate individual)
+                    $username = $this->generateUsernameFromName($k->nama_karyawan);
+                    $email = $this->generateEmailFromName($k->nama_karyawan);
+                    
+                    // Cek apakah username sudah ada
+                    $originalUsername = $username;
+                    $counter = 1;
+                    while (User::where('username', $username)->exists()) {
+                        $username = $originalUsername . $counter;
+                        $counter++;
+                    }
+                    
+                    // Cek apakah email sudah ada
+                    $originalEmail = $email;
+                    $emailCounter = 1;
+                    while (User::where('email', $email)->exists()) {
+                        // Pisahkan email dari domain
+                        $emailParts = explode('@', $originalEmail);
+                        $emailName = $emailParts[0];
+                        $domain = $emailParts[1];
+                        $email = $emailName . $emailCounter . '@' . $domain;
+                        $emailCounter++;
+                    }
+
                     $user = User::create([
                         'name' => $k->nama_karyawan,
-                        'username' => $k->nik,
-                        'password' => Hash::make($k->nik),
-                        'email' => strtolower(removeTitik($k->nik)) . '@' . $generalsetting->domain_email,
+                        'username' => $username,
+                        'password' => Hash::make('12345'),  // Default password yang sama
+                        'password_changed_at' => null,      // Flag untuk force change password
+                        'email' => $email,
                     ]);
 
                     Userkaryawan::create([
