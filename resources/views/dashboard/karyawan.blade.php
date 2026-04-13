@@ -791,34 +791,76 @@
         });
 
         function showPasswordChangeModal() {
-            Swal.fire({
-                title: '🔐 Ganti Password',
-                html: `
-                    <div class="password-form">
-                        <div class="form-group" style="position: relative; margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Password Saat Ini</label>
-                            <input type="password" id="current_password" class="swal2-input" placeholder="Masukkan password saat ini (12345)" style="padding-right: 40px;">
-                            <button type="button" onclick="togglePassword('current_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
-                                <i class="ti ti-eye" id="current_password_icon"></i>
-                            </button>
-                        </div>
-                        <div class="form-group" style="position: relative; margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Password Baru</label>
-                            <input type="password" id="new_password" class="swal2-input" placeholder="Minimal 6 karakter" style="padding-right: 40px;">
-                            <button type="button" onclick="togglePassword('new_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
-                                <i class="ti ti-eye" id="new_password_icon"></i>
-                            </button>
-                        </div>
-                        <div class="form-group" style="position: relative; margin-bottom: 10px;">
-                            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500;">Konfirmasi Password</label>
-                            <input type="password" id="confirm_password" class="swal2-input" placeholder="Ulangi password baru" style="padding-right: 40px;">
-                            <button type="button" onclick="togglePassword('confirm_password')" style="position: absolute; right: 10px; top: 32px; background: none; border: none; cursor: pointer; color: #666; font-size: 18px;">
-                                <i class="ti ti-eye" id="confirm_password_icon"></i>
-                            </button>
-                        </div>
-                        <div id="password-strength" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
-                    </div>
-                `,
+    Swal.fire({
+        title: '🔐 Ganti Password',
+        // 1. Perkecil lebar modal secara keseluruhan
+        width: '400px', 
+        padding: '1rem',
+        html: `
+            <style>
+                /* Style khusus untuk mengecilkan elemen di dalam modal */
+                .password-form {
+                    text-align: left;
+                    padding: 0 10px;
+                }
+                .password-form .form-group {
+                    margin-bottom: 12px !important;
+                }
+                .password-form label {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #444;
+                    margin-bottom: 4px !important;
+                }
+                /* Mengecilkan input bawaan SweetAlert2 */
+                .password-form .swal2-input {
+                    height: 38px !important;
+                    margin: 0 !important;
+                    font-size: 14px !important;
+                    width: 100% !important;
+                    box-sizing: border-box !important;
+                    border-radius: 6px !important;
+                }
+                .password-form .eye-btn {
+                    position: absolute; 
+                    right: 8px; 
+                    top: 30px; /* Menyesuaikan posisi icon mata */
+                    background: none; 
+                    border: none; 
+                    cursor: pointer; 
+                    color: #999; 
+                    font-size: 16px;
+                    z-index: 10;
+                }
+            </style>
+
+            <div class="password-form">
+                <div class="form-group" style="position: relative;">
+                    <label>Password Saat Ini</label>
+                    <input type="password" id="current_password" class="swal2-input" placeholder="******">
+                    <button type="button" class="eye-btn" onclick="togglePassword('current_password')">
+                        <i class="ti ti-eye" id="current_password_icon"></i>
+                    </button>
+                </div>
+
+                <div class="form-group" style="position: relative;">
+                    <label>Password Baru</label>
+                    <input type="password" id="new_password" class="swal2-input" placeholder="Minimal 6 karakter">
+                    <button type="button" class="eye-btn" onclick="togglePassword('new_password')">
+                        <i class="ti ti-eye" id="new_password_icon"></i>
+                    </button>
+                </div>
+
+                <div class="form-group" style="position: relative;">
+                    <label>Konfirmasi Password</label>
+                    <input type="password" id="confirm_password" class="swal2-input" placeholder="Ulangi password">
+                    <button type="button" class="eye-btn" onclick="togglePassword('confirm_password')">
+                        <i class="ti ti-eye" id="confirm_password_icon"></i>
+                    </button>
+                </div>
+                <div id="password-strength" style="margin-top: 5px; font-size: 11px; color: #666;"></div>
+            </div>
+        `,
                 icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Simpan Password',
