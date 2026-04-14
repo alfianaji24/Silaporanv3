@@ -800,6 +800,12 @@ catch (\Exception $e) {
 }
 });
 
+// Public Download Routes
+Route::controller(App\Http\Controllers\DownloadController::class)->group(function () {
+    Route::get('/download', 'index')->name('download.index');
+    Route::get('/download/apk', 'downloadApk')->name('download.apk');
+});
+
 Route::group(['middleware' => ['auth']], function () { // Removed userAkses:admin as it doesn't exist. Permissions handle access control.
 Route::group(['middleware' => ['permission:kpi.period.index']], function () {
         Route::get('/kpi/periods', [KpiPeriodController::class , 'index'])->name('kpi.periods.index');
