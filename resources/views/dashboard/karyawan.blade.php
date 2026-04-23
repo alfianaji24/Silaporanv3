@@ -762,8 +762,8 @@
             window.location.href = "{{ route('facerecognition.karyawan.create') }}";
         });
 
-        // Force Change Password Popup
-        @if(auth()->user()->hasRole('karyawan') && auth()->user()->password_changed_at === null)
+        // Force Change Password Popup - DISABLED
+        {{-- @if(auth()->user()->hasRole('karyawan') && auth()->user()->password_changed_at === null)
         $(document).ready(function() {
             Swal.fire({
                 title: '⚠️ Password Default',
@@ -789,6 +789,7 @@
                 }
             });
         });
+        @endif --}}
 
         function showPasswordChangeModal() {
     Swal.fire({
@@ -1062,7 +1063,6 @@
                 }
             });
         }
-        @endif
 
         // Logout Handler with SweetAlert2 confirmation
         function handleLogout(event) {
