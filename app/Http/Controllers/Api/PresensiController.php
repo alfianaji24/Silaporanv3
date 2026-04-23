@@ -147,6 +147,7 @@ class PresensiController extends Controller
                     if ($presensi_hariini != null) {
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_in' => $jam_presensi,
+                            'tipe_presensi' => 'fingerprint'
                         ]);
                     }
                     else {
@@ -158,7 +159,8 @@ class PresensiController extends Controller
                             'lokasi_out' => null,
                             'foto_out' => null,
                             'kode_jam_kerja' => $kode_jam_kerja,
-                            'status' => 'h'
+                            'status' => 'h',
+                            'tipe_presensi' => 'fingerprint'
                         ]);
                     }
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
@@ -203,6 +205,7 @@ class PresensiController extends Controller
                 if ($presensi_hariini != null) {
                     Presensi::where('id', $presensi_hariini->id)->update([
                         'jam_out' => $jam_presensi,
+                        'tipe_presensi' => 'fingerprint'
                     ]);
                 }
                 else {
@@ -214,7 +217,8 @@ class PresensiController extends Controller
                         'lokasi_in' => null,
                         'foto_in' => null,
                         'kode_jam_kerja' => $kode_jam_kerja,
-                        'status' => 'h'
+                        'status' => 'h',
+                        'tipe_presensi' => 'fingerprint'
                     ]);
                 }
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)

@@ -193,7 +193,8 @@ class FacerecognitionpresensiController extends Controller
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_in' => $jam_presensi,
                             'lokasi_in' => $lokasi,
-                            'foto_in' => $fileName
+                            'foto_in' => $fileName,
+                            'tipe_presensi' => 'face_recognition'
                         ]);
                     } else {
                         Presensi::create([
@@ -206,7 +207,8 @@ class FacerecognitionpresensiController extends Controller
                             'foto_in' => $fileName,
                             'foto_out' => null,
                             'kode_jam_kerja' => $kode_jam_kerja,
-                            'status' => 'h'
+                            'status' => 'h',
+                            'tipe_presensi' => 'face_recognition'
                         ]);
                     }
                     Storage::put($file, $image_base64);
@@ -254,7 +256,8 @@ class FacerecognitionpresensiController extends Controller
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_out' => $jam_presensi,
                             'lokasi_out' => $lokasi,
-                            'foto_out' => $fileName
+                            'foto_out' => $fileName,
+                            'tipe_presensi' => 'face_recognition'
                         ]);
                     } else {
                         Presensi::create([
@@ -267,7 +270,8 @@ class FacerecognitionpresensiController extends Controller
                             'foto_in' => null,
                             'foto_out' => $fileName,
                             'kode_jam_kerja' => $kode_jam_kerja,
-                            'status' => 'h'
+                            'status' => 'h',
+                            'tipe_presensi' => 'face_recognition'
                         ]);
                     }
                     Storage::put($file, $image_base64);

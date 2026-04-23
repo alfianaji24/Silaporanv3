@@ -490,7 +490,8 @@ class PresensiController extends Controller
                             Presensi::where('id', $presensi_hariini->id)->update([
                                 'jam_in' => $jam_presensi,
                                 'lokasi_in' => $lokasi,
-                                'foto_in' => $fileName
+                                'foto_in' => $fileName,
+                                'tipe_presensi' => 'mobile'
                             ]);
                         } else {
                             Presensi::create([
@@ -503,7 +504,8 @@ class PresensiController extends Controller
                                 'foto_in' => $fileName,
                                 'foto_out' => null,
                                 'kode_jam_kerja' => $kode_jam_kerja,
-                                'status' => 'h'
+                                'status' => 'h',
+                                'tipe_presensi' => 'mobile'
                             ]);
                         }
 
@@ -514,9 +516,17 @@ class PresensiController extends Controller
                                 $is_terlambat = $jam_presensi_carbon->gt($jam_masuk_carbon);
                                 $terlambat_menit = $is_terlambat ? $jam_presensi_carbon->diffInMinutes($jam_masuk_carbon) : 0;
 
+                                // Get the attendance record to get the tipe_presensi
+                                $attendance_record = $presensi_hariini ?: Presensi::where('nik', $karyawan->nik)
+                                    ->where('tanggal', $tanggal_presensi)
+                                    ->first();
+                                
+                                $tipe_presensi_text = $attendance_record ? $this->getTipePresensiText($attendance_record->tipe_presensi) : 'via: Mobile';
+
                                 $message = "📢 INFO ABSEN MASUK\n\n"
                                     . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                    . "🕒 Waktu: {$jam_presensi}\n";
+                                    . "🕒 Waktu: {$jam_presensi}\n"
+                                    . "📱 {$tipe_presensi_text}\n";
 
                                 if ($is_terlambat) {
                                     $message .= "⏰ Terlambat: {$terlambat_menit} menit\n";
@@ -558,7 +568,8 @@ class PresensiController extends Controller
                             Presensi::where('id', $presensi_hariini->id)->update([
                                 'jam_out' => $jam_presensi,
                                 'lokasi_out' => $lokasi,
-                                'foto_out' => $fileName
+                                'foto_out' => $fileName,
+                                'tipe_presensi' => 'mobile'
                             ]);
                         } else {
                             Presensi::create([
@@ -571,7 +582,8 @@ class PresensiController extends Controller
                                 'foto_in' => null,
                                 'foto_out' => $fileName,
                                 'kode_jam_kerja' => $kode_jam_kerja,
-                                'status' => 'h'
+                                'status' => 'h',
+                                'tipe_presensi' => 'mobile'
                             ]);
                         }
 
@@ -580,17 +592,33 @@ class PresensiController extends Controller
                             try {
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "📢 INFO ABSEN PULANG\n\n"
-                                            . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                            . "🕒 Waktu: {$jam_presensi}\n\n"
+                                // Get the attendance record to get the tipe_presensi
+                                $attendance_record = $presensi_hariini ?: Presensi::where('nik', $karyawan->nik)
+                                    ->where('tanggal', $tanggal_presensi)
+                                    ->first();
+                                
+                                $tipe_presensi_text = $attendance_record ? $this->getTipePresensiText($attendance_record->tipe_presensi) : 'via: Mobile';
+
+                                $message = "📢 INFO ABSEN PULANG\n\n"
+                                    . "👤 Nama: {$karyawan->nama_karyawan}\n"
+                                    . "🕒 Waktu: {$jam_presensi}\n"
+                                    . "📱 {$tipe_presensi_text}\n\n"
                                             . "Telah Berhasil Tercatat\n"
                                             . "Sampai Jumpa Besok!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
+                                    // Get the attendance record to get the tipe_presensi
+                                    $attendance_record = $presensi_hariini ?: Presensi::where('nik', $karyawan->nik)
+                                        ->where('tanggal', $tanggal_presensi)
+                                        ->first();
+                                    
+                                    $tipe_presensi_text = $attendance_record ? $this->getTipePresensiText($attendance_record->tipe_presensi) : 'via: Mobile';
+
                                     $message = "📢 INFO ABSEN PULANG\n\n"
                                         . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                        . "🕒 Waktu: {$jam_presensi}\n\n"
+                                        . "🕒 Waktu: {$jam_presensi}\n"
+                                        . "📱 {$tipe_presensi_text}\n\n"
                                         . "Telah Berhasil Tercatat\n"
                                         . "Sampai Jumpa Besok!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
@@ -618,6 +646,19 @@ class PresensiController extends Controller
     function sendwa($no_hp, $message)
     {
         dispatch(new SendWaMessage($no_hp, $message));
+    }
+
+    /**
+     * Get attendance method text for WhatsApp notification
+     */
+    private function getTipePresensiText($tipe_presensi)
+    {
+        $mapping = [
+            'fingerprint' => 'via: Fingerprint',
+            'mobile' => 'via: Mobile',
+            'face_recognition' => 'via: Face Recognition'
+        ];
+        return $mapping[$tipe_presensi] ?? 'via: Mobile';
     }
     public function edit(Request $request)
     {
