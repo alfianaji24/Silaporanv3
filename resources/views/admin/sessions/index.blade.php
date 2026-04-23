@@ -117,38 +117,50 @@
                     
                     <!-- Filters -->
                     <div class="card-actions mt-3">
-                        <form method="GET" action="{{ route('sessions.index') }}" class="d-inline-block">
-                            <div class="input-group input-group-merge" style="width: 800px;">
-                                <input type="text" name="search" class="form-control" placeholder="Cari user..." value="{{ request('search') }}">
-                                <button type="submit" class="btn btn-outline-secondary">
-                                    <i class="ti ti-search"></i>
-                                </button>
+                        <form method="GET" action="{{ route('sessions.index') }}" class="d-inline-block w-100">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-md-4">
+                                    <div class="input-group input-group-merge">
+                                        <input type="text" name="search" class="form-control" placeholder="Cari user..." value="{{ request('search') }}">
+                                        <button type="submit" class="btn btn-outline-secondary">
+                                            <i class="ti ti-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <select name="status" class="form-select">
+                                        <option value="">Semua Session</option>
+                                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <select name="user_type" class="form-select">
+                                        <option value="">Semua User</option>
+                                        <option value="karyawan" {{ request('user_type') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
+                                        <option value="admin" {{ request('user_type') == 'admin' ? 'selected' : '' }}>Admin</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="ti ti-filter me-1"></i>Filter
+                                        </button>
+                                        <a href="{{ route('sessions.index') }}" class="btn btn-outline-secondary">
+                                            <i class="ti ti-refresh me-1"></i>Reset
+                                        </a>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#forceLogoutModal">
+                                            <i class="ti ti-logout me-1"></i>Force Logout
+                                        </button>
+                                        <form method="POST" action="{{ route('sessions.cleanup') }}" class="d-inline-block">
+                                            @csrf
+                                            <button type="submit" class="btn btn-warning" onclick="return confirm('Yakin ingin membersihkan session lama?')">
+                                                <i class="ti ti-trash me-1"></i>Cleanup
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
-                        </form>
-                        <form method="GET" action="{{ route('sessions.index') }}" class="d-inline-block ms-2">
-                            <select name="status" class="form-select" onchange="this.form.submit()">
-                                <option value="">Semua Session</option>
-                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
-                            </select>
-                        </form>
-                        <form method="GET" action="{{ route('sessions.index') }}" class="d-inline-block ms-2">
-                            <select name="user_type" class="form-select" onchange="this.form.submit()">
-                                <option value="">Semua User</option>
-                                <option value="karyawan" {{ request('user_type') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
-                                <option value="admin" {{ request('user_type') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            </select>
-                        </form>
-                        <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#forceLogoutModal">
-                            <i class="ti ti-logout me-1"></i>
-                            Force Logout User
-                        </button>
-                        <form method="POST" action="{{ route('sessions.cleanup') }}" class="d-inline-block ms-2">
-                            @csrf
-                            <button type="submit" class="btn btn-warning" onclick="return confirm('Yakin ingin membersihkan session lama?')">
-                                <i class="ti ti-trash me-1"></i>
-                                Cleanup Sessions
-                            </button>
                         </form>
                     </div>
                 </div>
@@ -165,6 +177,7 @@
                                         <th>Browser</th>
                                         <th>Login Time</th>
                                         <th>Last Activity</th>
+                                        <th>Sisa Waktu</th>
                                         <th>Logout Time</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -205,6 +218,20 @@
                                                 <span class="text-muted" title="{{ $session->last_activity->format('d M Y H:i:s') }}">
                                                     {{ $session->last_activity->diffForHumans() }}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                @if ($session->is_active)
+                                                    <div class="session-countdown" 
+                                                         data-last-activity="{{ $session->last_activity->timestamp }}"
+                                                         data-session-id="{{ $session->id }}">
+                                                        <span class="countdown-text">Menghitung...</span>
+                                                        <div class="progress progress-sm mt-1" style="height: 4px;">
+                                                            <div class="progress-bar countdown-progress" role="progressbar"></div>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
                                             </td>
                                             <td>
                                                 @if ($session->logout_time)
@@ -338,7 +365,7 @@ function viewUserSessions(userId) {
             let html = '';
             if (data.sessions.length > 0) {
                 html = '<div class="table-responsive"><table class="table table-sm">';
-                html += '<thead><tr><th>IP Address</th><th>Device</th><th>Platform</th><th>Browser</th><th>Login Time</th><th>Last Activity</th></tr></thead><tbody>';
+                html += '<thead><tr><th>IP Address</th><th>Device</th><th>Platform</th><th>Browser</th><th>Login Time</th><th>Last Activity</th><th>Sisa Waktu</th><th>Logout Time</th></tr></thead><tbody>';
                 
                 data.sessions.forEach(session => {
                     html += `<tr>
@@ -363,5 +390,83 @@ function viewUserSessions(userId) {
                 '<div class="alert alert-danger">Gagal memuat data session.</div>';
         });
 }
+
+// Session Countdown Timer
+class SessionCountdown {
+    constructor() {
+        // Use General Setting session_time (in days) converted to seconds
+        this.sessionLifetime = {{ App\Models\Pengaturanumum::where('id',1)->first()->session_time ?? 1 }} * 24 * 60 * 60;
+        this.init();
+    }
+
+    init() {
+        this.updateAllCountdowns();
+        // Update every second
+        setInterval(() => this.updateAllCountdowns(), 1000);
+    }
+
+    updateAllCountdowns() {
+        document.querySelectorAll('.session-countdown').forEach(element => {
+            this.updateCountdown(element);
+        });
+    }
+
+    updateCountdown(element) {
+        const lastActivity = parseInt(element.dataset.lastActivity);
+        const currentTime = Math.floor(Date.now() / 1000);
+        const elapsedSeconds = currentTime - lastActivity;
+        const remainingSeconds = this.sessionLifetime - elapsedSeconds;
+
+        if (remainingSeconds <= 0) {
+            element.innerHTML = '<span class="text-danger"><i class="ti ti-alert-triangle me-1"></i>Expired</span>';
+            return;
+        }
+
+        const hours = Math.floor(remainingSeconds / 3600);
+        const minutes = Math.floor((remainingSeconds % 3600) / 60);
+        const seconds = remainingSeconds % 60;
+
+        // Format time display
+        let timeText = '';
+        if (hours > 0) {
+            timeText = `${hours}j ${minutes}m ${seconds}d`;
+        } else if (minutes > 0) {
+            timeText = `${minutes}m ${seconds}d`;
+        } else {
+            timeText = `${seconds}d`;
+        }
+
+        // Calculate progress percentage
+        const progressPercentage = (remainingSeconds / this.sessionLifetime) * 100;
+        
+        // Determine color based on remaining time
+        let progressClass = 'bg-success';
+        let textClass = 'text-success';
+        
+        if (progressPercentage < 25) {
+            progressClass = 'bg-danger';
+            textClass = 'text-danger';
+        } else if (progressPercentage < 50) {
+            progressClass = 'bg-warning';
+            textClass = 'text-warning';
+        }
+
+        element.innerHTML = `
+            <span class="${textClass}">
+                <i class="ti ti-clock me-1"></i>${timeText}
+            </span>
+            <div class="progress progress-sm mt-1" style="height: 4px;">
+                <div class="progress-bar ${progressClass}" role="progressbar" 
+                     style="width: ${progressPercentage}%">
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Initialize countdown when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    new SessionCountdown();
+});
 </script>
 @endsection
