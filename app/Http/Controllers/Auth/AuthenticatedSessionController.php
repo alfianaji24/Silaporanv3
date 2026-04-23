@@ -18,9 +18,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        // If accessed via /login route, show loginuser.blade.php (for karyawan)
+        // Show login.blade.php for /login route (supports both admin & karyawan)
         if ($request->route()->getName() === 'login') {
-            return view('auth.loginuser');
+            return view('auth.login');
         }
         
         // Default to login.blade.php (for admin)
@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
-     * /login = karyawan only | / = user only (non-karyawan)
+     * /login = all users (admin & karyawan) | / = user only (non-karyawan)
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -45,14 +45,9 @@ class AuthenticatedSessionController extends Controller
                 $request->session()->regenerateToken();
                 return redirect()->route('login')->with('error', 'Mohon dapat menggunakan login administrator');
             }
-        } else {
-            if ($user->hasRole('karyawan')) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-                return redirect()->route('loginuser')->with('error', 'Anda Tidak Memiliki Akses Untuk Login, Silahkan Hubungi IT Support!!!');
-            }
         }
+        // Remove the restriction for karyawan users trying to login via /login
+        // Now both admin and karyawan can use the same login page
 
         $request->session()->regenerate();
 
