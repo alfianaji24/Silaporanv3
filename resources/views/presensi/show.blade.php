@@ -87,13 +87,27 @@
                     <i class="ti ti-camera"></i> Foto Presensi {{ $in_out }}
                 </div>
                 <div class="p-3 text-center">
-                    @if (!empty($foto) && Storage::disk('public')->exists('/uploads/absensi/' . $foto))
-                        <img src="{{ url('/storage/uploads/absensi/' . $foto) }}" class="attendance-img" alt="Foto Presensi">
+                    {{-- Logic untuk foto berdasarkan tipe presensi --}}
+                    @if($presensi->tipe_presensi == 'fingerprint')
+                        {{-- Untuk fingerprint, tampilkan foto yang ada (dari foto_in/foto_out) --}}
+                        @if (!empty($foto) && Storage::disk('public')->exists('/uploads/absensi/' . $foto))
+                            <img src="{{ url('/storage/uploads/absensi/' . $foto) }}" class="attendance-img" alt="Foto Presensi Fingerprint">
+                        @else
+                            <div class="py-5 bg-light rounded d-flex flex-column align-items-center justify-content-center border">
+                                <i class="ti ti-fingerprint text-muted fs-1 mb-2"></i>
+                                <span class="text-muted small">Presensi Fingerprint - Tidak ada foto</span>
+                            </div>
+                        @endif
                     @else
-                        <div class="py-5 bg-light rounded d-flex flex-column align-items-center justify-content-center border">
-                            <i class="ti ti-camera-off text-muted fs-1 mb-2"></i>
-                            <span class="text-muted small">Tidak ada lampiran foto</span>
-                        </div>
+                        {{-- Untuk mobile, tampilkan foto mobile biasa --}}
+                        @if (!empty($foto) && Storage::disk('public')->exists('/uploads/absensi/' . $foto))
+                            <img src="{{ url('/storage/uploads/absensi/' . $foto) }}" class="attendance-img" alt="Foto Presensi">
+                        @else
+                            <div class="py-5 bg-light rounded d-flex flex-column align-items-center justify-content-center border">
+                                <i class="ti ti-camera-off text-muted fs-1 mb-2"></i>
+                                <span class="text-muted small">Tidak ada lampiran foto</span>
+                            </div>
+                        @endif
                     @endif
                     <div class="mt-3">
                         <span class="status-pill {{ $status == 'in' ? 'bg-success text-white' : 'bg-danger text-white' }}">
@@ -126,28 +140,57 @@
                         <td>{{ $presensi->nama_dept }}</td>
                     </tr>
                     <tr>
+                        <th>Lokasi Presensi</th>
+                        <td>
+                            @if($presensi->tipe_presensi == 'fingerprint')
+                                {{-- Untuk fingerprint, tampilkan lokasi kantor cabang --}}
+                                <span class="text-primary">
+                                    <i class="ti ti-building"></i> Lokasi Kantor Cabang
+                                </span>
+                                <br><small class="text-muted">{{ $cabang->nama_cabang }}</small>
+                            @else
+                                {{-- Untuk mobile, tampilkan lokasi user --}}
+                                @if (!empty($lokasi_user))
+                                    <a href="https://www.google.com/maps?q={{ $lokasi_user }}" target="_blank" class="text-primary">
+                                        <i class="ti ti-map-pin"></i> {{ $lokasi_user }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Jarak Radius</th>
+                        <td>
+                            @if($presensi->tipe_presensi == 'fingerprint')
+                                {{-- Untuk fingerprint, jarak selalu 0 karena di kantor --}}
+                                <span class="text-success fw-bold">
+                                    <i class="ti ti-building"></i> Di Kantor Cabang
+                                </span>
+                            @else
+                                {{-- Untuk mobile, hitung jarak radius --}}
+                                @php
+                                    $meters = 0;
+                                    if (!empty($lokasi_user)) {
+                                        $lok = explode(',', $lokasi_user);
+                                        $dist = HitungJarak($latitude, $longitude, $lok[0], $lok[1]);
+                                        $meters = $dist['meters'];
+                                    }
+                                @endphp
+                                <span class="{{ $meters > $cabang->radius_cabang ? 'text-danger' : 'text-success' }} fw-bold">
+                                    {{ formatAngkaDesimal($meters) }} Meter
+                                </span>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Kantor / Cabang</th>
                         <td>{{ $presensi->nama_cabang }}</td>
                     </tr>
                     <tr>
                         <th>Waktu Presensi</th>
                         <td>{{ DateToIndo($presensi->tanggal) }} / <span class="text-primary fw-bold">{{ date('H:i:s', strtotime($jam)) }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Jarak Radius</th>
-                        <td>
-                            @php
-                                $meters = 0;
-                                if (!empty($lokasi_user)) {
-                                    $lok = explode(',', $lokasi_user);
-                                    $dist = HitungJarak($latitude, $longitude, $lok[0], $lok[1]);
-                                    $meters = $dist['meters'];
-                                }
-                            @endphp
-                            <span class="{{ $meters > $cabang->radius_cabang ? 'text-danger' : 'text-success' }} fw-bold">
-                                {{ formatAngkaDesimal($meters) }} Meter
-                            </span>
-                        </td>
                     </tr>
                 </table>
             </div>
@@ -184,12 +227,18 @@
             <div class="presensi-detail-card">
                 <div class="card-header-custom justify-content-between">
                     <span><i class="ti ti-map-pin"></i> Plotting Lokasi Presensi</span>
-                    @if($lokasi_user)
+                    @if($presensi->tipe_presensi == 'fingerprint')
+                        <small class="text-muted fw-normal">Lokasi Kantor Cabang: {{ $cabang->nama_cabang }}</small>
+                    @elseif($lokasi_user)
                         <small class="text-muted fw-normal">Koordinat: {{ $lokasi_user }}</small>
                     @endif
                 </div>
                 <div class="p-0">
-                    @if (!empty($lokasi_user))
+                    @if($presensi->tipe_presensi == 'fingerprint')
+                        {{-- Untuk fingerprint, tampilkan map kantor cabang --}}
+                        <div id="{{ $map_id }}"></div>
+                    @elseif(!empty($lokasi_user))
+                        {{-- Untuk mobile, tampilkan map lokasi user --}}
                         <div id="{{ $map_id }}"></div>
                     @else
                         <div class="d-flex flex-column align-items-center justify-content-center p-5 bg-light" style="height: 450px;">
@@ -203,16 +252,27 @@
     </div>
 </div>
 
-@if (!empty($lokasi_user))
+@if($presensi->tipe_presensi == 'fingerprint' || !empty($lokasi_user))
 <script>
-    var lokasi = "{{ $lokasi_user }}";
-    var lok = lokasi.split(",");
-    var latitude_user = lok[0];
-    var longitude_user = lok[1];
-
-    var latitude_kantor = "{{ $latitude }}";
-    var longitude_kantor = "{{ $longitude }}";
-    var rd = "{{ $cabang->radius_cabang }}";
+    @if($presensi->tipe_presensi == 'fingerprint')
+        {{-- Untuk fingerprint, gunakan lokasi kantor cabang --}}
+        var latitude_user = "{{ $latitude }}";
+        var longitude_user = "{{ $longitude }}";
+        var latitude_kantor = "{{ $latitude }}";
+        var longitude_kantor = "{{ $longitude }}";
+        var rd = "{{ $cabang->radius_cabang }}";
+        var is_fingerprint = true;
+    @else
+        {{-- Untuk mobile, gunakan lokasi user --}}
+        var lokasi = "{{ $lokasi_user }}";
+        var lok = lokasi.split(",");
+        var latitude_user = lok[0];
+        var longitude_user = lok[1];
+        var latitude_kantor = "{{ $latitude }}";
+        var longitude_kantor = "{{ $longitude }}";
+        var rd = "{{ $cabang->radius_cabang }}";
+        var is_fingerprint = false;
+    @endif
     
     var {{ $map_id }} = L.map('{{ $map_id }}', {
         center: [latitude_user, longitude_user],
@@ -224,8 +284,15 @@
         attribution: '© OpenStreetMap'
     }).addTo({{ $map_id }});
 
-    var marker = L.marker([latitude_user, longitude_user]).addTo({{ $map_id }});
-    marker.bindPopup("<b>Lokasi Karyawan</b>").openPopup();
+    @if($presensi->tipe_presensi == 'fingerprint')
+        {{-- Untuk fingerprint, tampilkan marker kantor cabang --}}
+        var marker = L.marker([latitude_user, longitude_user]).addTo({{ $map_id }});
+        marker.bindPopup("<b>Lokasi Kantor Cabang</b><br>{{ $cabang->nama_cabang }}").openPopup();
+    @else
+        {{-- Untuk mobile, tampilkan marker lokasi user --}}
+        var marker = L.marker([latitude_user, longitude_user]).addTo({{ $map_id }});
+        marker.bindPopup("<b>Lokasi Karyawan</b>").openPopup();
+    @endif
 
     var circle = L.circle([latitude_kantor, longitude_kantor], {
         color: 'red',
