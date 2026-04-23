@@ -169,9 +169,17 @@ class PresensiController extends Controller
                             $is_terlambat = strtotime($jam_presensi) > strtotime($jam_masuk);
                             $terlambat_menit = $is_terlambat ? floor((strtotime($jam_presensi) - strtotime($jam_masuk)) / 60) : 0;
 
+                            // Get attendance record for tipe_presensi
+                            $attendance_record = Presensi::where('nik', $karyawan->nik)
+                                ->where('tanggal', $tanggal_presensi)
+                                ->first();
+                            
+                            $tipe_presensi_text = 'via: Fingerprint';
+
                             $message = "📢 INFO ABSEN MASUK\n\n"
                                 . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n";
+                                . "🕒 Waktu: {$jam_presensi}\n"
+                                . "📱 {$tipe_presensi_text}\n";
 
                             if ($is_terlambat) {
                                 $message .= "⏰ Terlambat: {$terlambat_menit} menit\n";
@@ -224,9 +232,17 @@ class PresensiController extends Controller
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                 if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                     try {
+                        // Get attendance record for tipe_presensi
+                        $attendance_record = Presensi::where('nik', $karyawan->nik)
+                            ->where('tanggal', $tanggal_presensi)
+                            ->first();
+                        
+                        $tipe_presensi_text = 'via: Fingerprint';
+
                         $message = "📢 INFO ABSEN PULANG\n\n"
                                 . "👤 Nama: {$karyawan->nama_karyawan}\n"
-                                . "🕒 Waktu: {$jam_presensi}\n\n"
+                                . "🕒 Waktu: {$jam_presensi}\n"
+                                . "📱 {$tipe_presensi_text}\n\n"
                                 . "Telah Berhasil Tercatat\n"
                                 . "Sampai Jumpa Besok!";
                         $this->sendwa($karyawan->no_hp, $message);

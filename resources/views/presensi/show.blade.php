@@ -110,7 +110,7 @@
                 </div>
                 <table class="table info-table mb-0">
                     <tr>
-                        <th>NPP / NIK</th>
+                        <th>id</th>
                         <td>{{ $presensi->nik }}</td>
                     </tr>
                     <tr>

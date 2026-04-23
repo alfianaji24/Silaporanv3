@@ -729,14 +729,25 @@ class PresensiController extends Controller
     public function show($id, $status)
     {
         $presensi = Presensi::where('presensi.id', $id)
-            ->with('mesinfingerprint')
             ->join('karyawan', 'presensi.nik', '=', 'karyawan.nik')
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->select('presensi.*', 'karyawan.nama_karyawan', 'karyawan.kode_cabang', 'departemen.nama_dept', 'jabatan.nama_jabatan', 'cabang.nama_cabang', 'cabang.lokasi_cabang')
             ->first();
+
+        // Check if presensi data exists
+        if (!$presensi) {
+            return redirect()->back()->with('error', 'Data presensi tidak ditemukan.');
+        }
+
         $cabang = Cabang::where('kode_cabang', $presensi->kode_cabang)->first();
+        
+        // Check if cabang exists
+        if (!$cabang) {
+            return redirect()->back()->with('error', 'Data cabang tidak ditemukan.');
+        }
+
         $lokasi = explode(',', $cabang->lokasi_cabang);
         $data['latitude'] = $lokasi[0];
         $data['longitude'] = $lokasi[1];
