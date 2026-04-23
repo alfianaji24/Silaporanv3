@@ -83,7 +83,7 @@ class AuthenticatedSessionController extends Controller
             return redirect('/');
         }
 
-        // Karyawan logout -> redirect to /login
-        return redirect()->route('login');
+        // Karyawan logout -> redirect to /login (loginuser route for karyawan)
+        return redirect()->route('loginuser');
     }
 }

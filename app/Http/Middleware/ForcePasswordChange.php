@@ -17,22 +17,19 @@ class ForcePasswordChange
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->password_changed_at === null && Auth::user()->hasRole('karyawan')) {
-            // Allow access to password change routes and logout
+            // Allow access to dashboard, settings, and basic routes
             $allowedRoutes = [
-                'password.change',
-                'password.update',
+                'dashboard.index',
+                'profile.index',  // Settings/Profile page
+                'password.update', // Password change form
                 'logout',
                 'login'
             ];
-
-            // If user needs to change password, allow access to dashboard
-            // because the password change popup will be displayed there.
-            $allowedRoutes[] = 'dashboard.index';
             
             if (!$request->routeIs($allowedRoutes)) {
-                // Redirect employees to dashboard (will show popup)
+                // Redirect to dashboard with message to change password
                 return redirect()->route('dashboard.index')
-                    ->with('warning', 'Anda wajib mengganti password default sebelum menggunakan akun ini.');
+                    ->with('password_required', 'Mohon ubah password terlebih dahulu di menu Setting untuk mengakses fitur lainnya.');
             }
         }
         

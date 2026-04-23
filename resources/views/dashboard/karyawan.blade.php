@@ -770,13 +770,13 @@
                 html: `
                     <div style="text-align: center;">
                         <p style="margin-bottom: 15px;">Anda menggunakan password default <strong>"12345"</strong>.</p>
-                        <p style="margin-bottom: 15px;">Untuk keamanan akun, Anda <strong>wajib</strong> mengganti password sebelum menggunakan sistem.</p>
-                        <p style="color: #666; font-size: 14px;">Password harus berbeda dengan password saat ini.</p>
+                        <p style="margin-bottom: 15px;">Mohon dapat mengganti password terlebih dahulu Agar semua fitur bisa digunakan.</p>
+                        <p style="margin-bottom: 15px;">Silakan menuju ke <strong>Setting > Password Baru</strong> untuk mengubah password.</p>
                     </div>
                 `,
                 icon: 'warning',
                 showCancelButton: false,
-                confirmButtonText: 'Ganti Password Sekarang',
+                confirmButtonText: 'Menu Setting',
                 confirmButtonColor: '#3085d6',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
@@ -785,7 +785,8 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showPasswordChangeModal();
+                    // Redirect to settings/profile page
+                    window.location.href = "{{ route('profile.index') }}";
                 }
             });
         });
