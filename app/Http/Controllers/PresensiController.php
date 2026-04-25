@@ -458,9 +458,29 @@ class PresensiController extends Controller
         //dd($jam_presensi . " " . $jam_mulai_pulang);
         //Cek Radius
         //dd($jam_presensi . " " . $jam_mulai_masuk);
-        $presensi_hariini = Presensi::where('nik', $karyawan->nik)
-            ->where('tanggal', $tanggal_presensi)
-            ->first();
+        
+        // Logic untuk mencari presensi yang benar saat checkout
+        if ($status == 2) { // Checkout
+            // Untuk checkout shift malam, cari presensi yang bisa jadi dari hari kemarin
+            if ($lintas_hari == 1) {
+                // Shift malam: cari presensi dari hari kemarin atau hari ini
+                $presensi_hariini = Presensi::where('nik', $karyawan->nik)
+                    ->whereIn('tanggal', [$tanggal_kemarin, $tanggal_sekarang])
+                    ->whereNull('jam_out') // Belum checkout
+                    ->orderBy('tanggal', 'desc') // Ambil yang terbaru
+                    ->first();
+            } else {
+                // Shift normal: cari presensi hari ini
+                $presensi_hariini = Presensi::where('nik', $karyawan->nik)
+                    ->where('tanggal', $tanggal_presensi)
+                    ->first();
+            }
+        } else {
+            // Checkin: gunakan logic normal
+            $presensi_hariini = Presensi::where('nik', $karyawan->nik)
+                ->where('tanggal', $tanggal_presensi)
+                ->first();
+        }
 
         // Konversi jam_presensi ke Carbon untuk perbandingan
         // Gunakan parse() yang lebih fleksibel untuk menghindari error format
@@ -565,6 +585,7 @@ class PresensiController extends Controller
                 } else {
                     try {
                         if ($presensi_hariini != null) {
+                            // Update presensi yang ditemukan (bisa dari hari kemarin untuk shift malam)
                             Presensi::where('id', $presensi_hariini->id)->update([
                                 'jam_out' => $jam_presensi,
                                 'lokasi_out' => $lokasi,
@@ -572,9 +593,14 @@ class PresensiController extends Controller
                                 'tipe_presensi' => 'mobile'
                             ]);
                         } else {
+                            // Jika tidak ada presensi, buat baru dengan tanggal yang sesuai
+                            $tanggal_checkout = ($lintas_hari == 1 && $jam_sekarang < $generalsetting->batas_presensi_lintashari) 
+                                ? $tanggal_kemarin 
+                                : $tanggal_presensi;
+                                
                             Presensi::create([
                                 'nik' => $karyawan->nik,
-                                'tanggal' => $tanggal_presensi,
+                                'tanggal' => $tanggal_checkout,
                                 'jam_in' => null,
                                 'jam_out' => $jam_presensi,
                                 'lokasi_in' => null,
