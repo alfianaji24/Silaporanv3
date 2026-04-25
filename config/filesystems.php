@@ -56,6 +56,30 @@ return [
             'throw' => false,
         ],
 
+        's3_backup' => [
+            'driver' => 's3',
+            'key' => env('AWS_BACKUP_ACCESS_KEY_ID'),
+            'secret' => env('AWS_BACKUP_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_BACKUP_DEFAULT_REGION'),
+            'bucket' => env('AWS_BACKUP_BUCKET'),
+            'url' => env('AWS_BACKUP_URL'),
+            'endpoint' => env('AWS_BACKUP_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_BACKUP_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+        ],
+
+        'ftp' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'port' => env('FTP_PORT', 21),
+            'root' => env('FTP_ROOT'),
+            'passive' => true,
+            'ssl' => false,
+            'timeout' => 30,
+        ],
+
     ],
 
     /*
@@ -71,6 +95,10 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('uploads') => storage_path('app/uploads'),
+        public_path('documents') => storage_path('app/documents'),
+        public_path('backups') => storage_path('app/backups'),
+        public_path('exports') => storage_path('app/exports'),
     ],
 
 ];

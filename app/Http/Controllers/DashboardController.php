@@ -18,6 +18,7 @@ use App\Models\Cuti;
 use App\Models\Approveizincuti;
 use App\Models\Pengaturanumum;
 use App\Jobs\SendWaMessage;
+use App\Services\StorageService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -328,7 +329,40 @@ class DashboardController extends Controller
             $data['sip_duabulan'] = $sk->getRekapSip(3, $userCabangs, $userDepartemens);
             $data['sip_enambulan'] = $sk->getRekapSip(4, $userCabangs, $userDepartemens);
 
+            // Add storage info
+            try {
+                $storageStats = StorageService::getStorageStats('local');
+                $data['storage_info'] = [
+                    'percentage' => round($storageStats['percentage_used'], 1),
+                    'used' => $this->formatBytes($storageStats['used']),
+                    'total' => $this->formatBytes($storageStats['total']),
+                    'free' => $this->formatBytes($storageStats['free'])
+                ];
+            } catch (\Exception $e) {
+                $data['storage_info'] = null;
+            }
+
             return view('dashboard.dashboard', $data);
+        }
+    }
+
+    /**
+     * Format bytes to human readable format
+     */
+    private function formatBytes($size, $precision = 2)
+    {
+        if ($size >= 1073741824) {
+            return number_format($size / 1073741824, $precision) . ' GB';
+        } elseif ($size >= 1048576) {
+            return number_format($size / 1048576, $precision) . ' MB';
+        } elseif ($size >= 1024) {
+            return number_format($size / 1024, $precision) . ' KB';
+        } elseif ($size > 1) {
+            return $size . ' bytes';
+        } elseif ($size == 1) {
+            return '1 byte';
+        } else {
+            return '0 bytes';
         }
     }
 

@@ -59,6 +59,7 @@ use App\Http\Controllers\Admin\UpdateManagementController;
 use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\ListAccountController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
 
@@ -885,5 +886,19 @@ Route::controller(ListAccountController::class)->group(function () {
 // Endpoint khusus untuk menangani mesin fingerprint ADMS / X100C tanpa prefix /api
 Route::any('/iclock/cdata', [\App\Http\Controllers\Api\AdmsController::class , 'receiveX100c']);
 
+
+// Storage Management Routes
+Route::middleware('auth')->controller(StorageController::class)->group(function () {
+    Route::get('/storage/dashboard', 'dashboard')->name('storage.dashboard');
+    Route::post('/storage/upload', 'upload')->name('storage.upload');
+    Route::post('/storage/upload-presensi', 'uploadPresensi')->name('storage.upload.presensi');
+    Route::post('/storage/upload-karyawan-photo', 'uploadKaryawanPhoto')->name('storage.upload.karyawan_photo');
+    Route::post('/storage/upload-laporan', 'uploadLaporan')->name('storage.upload.laporan');
+    Route::delete('/storage/delete', 'delete')->name('storage.delete');
+    Route::get('/storage/stats', 'stats')->name('storage.stats');
+    Route::post('/storage/export', 'export')->name('storage.export');
+    Route::post('/storage/backup', 'backup')->name('storage.backup');
+    Route::post('/storage/cleanup', 'cleanup')->name('storage.cleanup');
+});
 
 require __DIR__ . '/auth.php';
