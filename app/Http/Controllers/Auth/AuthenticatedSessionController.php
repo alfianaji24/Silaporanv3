@@ -18,13 +18,13 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        // Show login.blade.php for /login route (supports both admin & karyawan)
+        // Show loginuser.blade.php for /login route
         if ($request->route()->getName() === 'login') {
-            return view('auth.login');
+            return view('auth.loginuser');
         }
         
-        // Default to login.blade.php (for admin)
-        return view('auth.login');
+        // Default to loginuser.blade.php
+        return view('auth.loginuser');
     }
 
     /**
