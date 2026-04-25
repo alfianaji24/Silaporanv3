@@ -239,11 +239,20 @@ class PresensiController extends Controller
                         
                         $tipe_presensi_text = 'via: Fingerprint';
 
+                        // Deteksi pulang cepat (mirip seperti deteksi terlambat)
+                        $is_pulang_cepat = strtotime($jam_presensi) < strtotime($jam_pulang);
+                        $pulang_cepat_menit = $is_pulang_cepat ? floor((strtotime($jam_pulang) - strtotime($jam_presensi)) / 60) : 0;
+
                         $message = "📢 INFO ABSEN PULANG\n\n"
                                 . "👤 Nama: {$karyawan->nama_karyawan}\n"
                                 . "🕒 Waktu: {$jam_presensi}\n"
-                                . "📝 {$tipe_presensi_text}\n\n"
-                                . "Telah Berhasil Tercatat\n"
+                                . "📝 {$tipe_presensi_text}\n";
+
+                        if ($is_pulang_cepat) {
+                            $message .= "⏰ Pulang Cepat: {$pulang_cepat_menit} menit\n";
+                        }
+
+                        $message .= "\nTelah Berhasil Tercatat\n"
                                 . "Sampai Jumpa Besok!";
                         $this->sendwa($karyawan->no_hp, $message);
                     }

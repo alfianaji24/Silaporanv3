@@ -616,6 +616,10 @@ class PresensiController extends Controller
                         //Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                         if ($generalsetting->notifikasi_wa == 1) {
                             try {
+                                // Deteksi pulang cepat (mirip seperti deteksi terlambat)
+                                $is_pulang_cepat = $jam_presensi_carbon->lt($jam_pulang_carbon);
+                                $pulang_cepat_menit = $is_pulang_cepat ? $jam_pulang_carbon->diffInMinutes($jam_presensi_carbon) : 0;
+
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
                                 // Get the attendance record to get the tipe_presensi
@@ -628,8 +632,13 @@ class PresensiController extends Controller
                                 $message = "📢 INFO ABSEN PULANG\n\n"
                                     . "👤 Nama: {$karyawan->nama_karyawan}\n"
                                     . "🕒 Waktu: {$jam_presensi}\n"
-                                    . "📝 {$tipe_presensi_text}\n\n"
-                                            . "Telah Berhasil Tercatat\n"
+                                    . "📝 {$tipe_presensi_text}\n";
+
+                                if ($is_pulang_cepat) {
+                                    $message .= "⏰ Pulang Cepat: {$pulang_cepat_menit} menit\n";
+                                }
+
+                                $message .= "\nTelah Berhasil Tercatat\n"
                                             . "Sampai Jumpa Besok!";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
@@ -644,8 +653,13 @@ class PresensiController extends Controller
                                     $message = "📢 INFO ABSEN PULANG\n\n"
                                         . "👤 Nama: {$karyawan->nama_karyawan}\n"
                                         . "🕒 Waktu: {$jam_presensi}\n"
-                                        . "📝 {$tipe_presensi_text}\n\n"
-                                        . "Telah Berhasil Tercatat\n"
+                                        . "📝 {$tipe_presensi_text}\n";
+
+                                if ($is_pulang_cepat) {
+                                    $message .= "⏰ Pulang Cepat: {$pulang_cepat_menit} menit\n";
+                                }
+
+                                $message .= "\nTelah Berhasil Tercatat\n"
                                         . "Sampai Jumpa Besok!";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
