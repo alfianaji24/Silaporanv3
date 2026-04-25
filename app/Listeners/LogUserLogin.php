@@ -37,45 +37,6 @@ class LogUserLogin
                     ->active()
                     ->first();
                 
-                // Additional check: block if same IP has active session from different user
-                $sameIPSession = UserSession::where('ip_address', $this->getClientIP($this->request))
-                    ->active()
-                    ->where('user_id', '!=', $user->id)
-                    ->whereHas('user', function($query) {
-                        $query->whereHas('roles', function($roleQuery) {
-                            $roleQuery->where('name', 'karyawan');
-                        });
-                    })
-                    ->first();
-                
-                if ($sameIPSession) {
-                    // Block login if same IP is used by another karyawan
-                    $blockedData = [
-                        'device' => $sameIPSession->device_type,
-                        'ip' => $sameIPSession->ip_address,
-                        'login_time' => $sameIPSession->login_time->format('d M Y H:i'),
-                        'browser' => $sameIPSession->browser,
-                        'platform' => $sameIPSession->platform,
-                        'other_user' => $sameIPSession->user->name
-                    ];
-                    
-                    Auth::logout();
-                    $this->request->session()->invalidate();
-                    $this->request->session()->regenerateToken();
-                    
-                    // Save flash data after session regeneration
-                    session()->flash('login_blocked', $blockedData);
-                    
-                    \Log::warning('Login blocked - IP already used by another karyawan', [
-                        'user_id' => $user->id,
-                        'blocked_ip' => $this->getClientIP($this->request),
-                        'active_user_id' => $sameIPSession->user_id,
-                        'active_user_name' => $sameIPSession->user->name
-                    ]);
-                    
-                    return;
-                }
-                
                 if ($existingSession) {
                     // Store session info for blocking alert
                     $blockedData = [
