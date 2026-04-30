@@ -312,12 +312,12 @@ class IzinabsenController extends Controller
             // Dapatkan layer approval untuk tahap yang diminta
             $approvalLayer = $approvalService->getLayer('IZIN', $layer, $karyawan->kode_dept, $karyawan->kode_jabatan, $karyawan->kode_cabang);
             
-            if (!$layer) {
+            if (!$approvalLayer) {
                 return;
             }
 
             // Cari semua user dengan role yang sesuai dan akses ke cabang/dept tersebut
-            $approvers = User::role($layer->role_name)
+            $approvers = User::role($approvalLayer->role_name)
                 ->get()
                 ->filter(function ($user) use ($karyawan) {
                     if ($user->isSuperAdmin()) {
