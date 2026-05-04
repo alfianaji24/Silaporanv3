@@ -69,6 +69,74 @@
             font-size: 0.8rem;
         }
         
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .today-birthday {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107 !important;
+        }
+        
+        .soon-birthday {
+            background-color: #e7f3ff !important;
+        }
+        
+        /* Pagination styling */
+        .pagination {
+            margin: 0;
+        }
+        
+        .pagination .page-link {
+            color: #6c757d;
+            border-color: #dee2e6;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .pagination .page-link:hover {
+            color: #495057;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        
+        /* Hide Laravel default pagination info */
+        .pagination-container .pagination-info {
+            display: none !important;
+        }
+        
+        /* Hide Laravel default pagination info text */
+        .pagination .d-flex > div:first-child {
+            display: none !important;
+        }
+        
+        .pagination .page-item.active .page-link:hover {
+            background-color: #495057;
+            border-color: #495057;
+            color: white;
+        }
+        
+        /* Hide Laravel default pagination info */
+        .pagination-container .d-flex:last-child {
+            display: none;
+        }
+        
+        .pagination-container .d-flex:first-child {
+            justify-content: flex-end !important;
+        }
+        
         .footer {
             background-color: #343a40;
             color: white;
@@ -153,11 +221,16 @@
     <div class="header-section">
         <div class="container-fluid">
             <div class="row align-items-center">
-                <div class="col-12">
-                    <h1 class="mb-0 text-center">
+                <div class="col-md-8">
+                    <h1 class="mb-0">
                         <i class="bi bi-cake2 me-2"></i>
-                        Employee Birthday Data
+                        Employee Birthday
                     </h1>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button id="refreshButton" class="btn btn-light btn-sm" onclick="manualRefresh()">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                    </button>
                 </div>
             </div>
         </div>
@@ -173,17 +246,31 @@
                             <th>Nama Karyawan</th>
                             <th>Tanggal Lahir</th>
                             <th>Umur</th>
+                            <th>Hari Sampai Ultah</th>
                             <th>Jabatan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($karyawan as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
+                        @foreach($karyawan as $item)
+                        <tr data-days-until="{{ $item->hari_sampai_ultah }}">
+                            <td>{{ $loop->index + 1 }}</td>
                             <td>{{ $item->nama_karyawan }}</td>
                             <td>{{ date('d-m-Y', strtotime($item->tanggal_lahir)) }}</td>
                             <td>
                                 <span class="badge badge-age">{{ $item->umur }} Tahun</span>
+                            </td>
+                            <td>
+                                @if($item->hari_sampai_ultah == 0)
+                                    <span class="badge bg-danger animate-pulse">Hari Ini!</span>
+                                @elseif($item->hari_sampai_ultah == 1)
+                                    <span class="badge bg-warning text-dark">Besok</span>
+                                @elseif($item->hari_sampai_ultah <= 7)
+                                    <span class="badge bg-warning">{{ $item->hari_sampai_ultah }} hari</span>
+                                @elseif($item->hari_sampai_ultah <= 30)
+                                    <span class="badge bg-primary">{{ $item->hari_sampai_ultah }} hari</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ $item->hari_sampai_ultah }} hari</span>
+                                @endif
                             </td>
                             <td>{{ $item->nama_jabatan }}</td>
                         </tr>
@@ -197,6 +284,23 @@
                 <i class="bi bi-people display-1 text-muted"></i>
                 <h4 class="text-muted mt-3">Tidak ada data karyawan</h4>
                 <p class="text-muted">Belum ada data karyawan aktif yang tersedia.</p>
+            </div>
+            @else
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Info:</strong> Data diperbarui secara real-time. Ulang tahun hari ini ditandai dengan <span class="badge bg-danger">Hari Ini!</span>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="text-muted pagination-info">
+                        <small>Menampilkan {{ $karyawan->firstItem() }} - {{ $karyawan->lastItem() }} dari total {{ $karyawan->total() }} karyawan</small>
+                    </div>
+                    <div class="pagination-buttons">
+                        {{ $karyawan->links() }}
+                    </div>
+                </div>
             </div>
             @endif
         </div>
@@ -220,40 +324,95 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function exportToExcel() {
-            const table = document.getElementById('birthdayTable');
-            const rows = table.querySelectorAll('tr');
-            let csv = [];
+        // Auto-refresh functionality
+        let refreshInterval;
+        let isRefreshing = false;
+        
+        function refreshBirthdayData() {
+            if (isRefreshing) return;
             
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
-                
-                for (let j = 0; j < cols.length; j++) {
-                    // Remove HTML tags and get text content
-                    let text = cols[j].innerText || cols[j].textContent;
-                    // Clean up text and escape quotes
-                    text = text.replace(/"/g, '""').trim();
-                    // Add quotes if contains comma or quote
-                    if (text.includes(',') || text.includes('"')) {
-                        text = `"${text}"`;
-                    }
-                    row.push(text);
-                }
-                csv.push(row.join(','));
+            isRefreshing = true;
+            const refreshButton = document.getElementById('refreshButton');
+            if (refreshButton) {
+                refreshButton.disabled = true;
+                refreshButton.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Memperbarui...';
             }
             
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
+            // Get current page from URL
+            const currentUrl = new URL(window.location.href);
+            const currentPage = currentUrl.searchParams.get('page') || '1';
             
-            link.setAttribute('href', url);
-            link.setAttribute('download', `data_karyawan_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Fetch current page data
+            fetch(`${currentUrl.pathname}?page=${currentPage}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newTableBody = doc.querySelector('#birthdayTable tbody');
+                const currentTableBody = document.querySelector('#birthdayTable tbody');
+                const newPagination = doc.querySelector('.d-flex.justify-content-between .d-flex');
+                const currentPagination = document.querySelector('.d-flex.justify-content-between .d-flex');
+                const newInfo = doc.querySelector('.text-muted small');
+                const currentInfo = document.querySelector('.text-muted small');
+                
+                if (newTableBody && currentTableBody) {
+                    currentTableBody.innerHTML = newTableBody.innerHTML;
+                    highlightTodayBirthdays();
+                    updateTimestamp();
+                }
+                
+                if (newPagination && currentPagination) {
+                    currentPagination.innerHTML = newPagination.innerHTML;
+                }
+                
+                if (newInfo && currentInfo) {
+                    currentInfo.textContent = newInfo.textContent;
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing data:', error);
+            })
+            .finally(() => {
+                isRefreshing = false;
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                    refreshButton.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Refresh';
+                }
+            });
+        }
+        
+        function highlightTodayBirthdays() {
+            const rows = document.querySelectorAll('#birthdayTable tbody tr');
+            rows.forEach(row => {
+                const daysUntil = parseInt(row.getAttribute('data-days-until'));
+                row.classList.remove('today-birthday', 'soon-birthday');
+                
+                if (daysUntil === 0) {
+                    row.classList.add('today-birthday');
+                } else if (daysUntil <= 7) {
+                    row.classList.add('soon-birthday');
+                }
+            });
+        }
+        
+        function startAutoRefresh() {
+            // Refresh every 60 seconds
+            refreshInterval = setInterval(refreshBirthdayData, 60000);
+        }
+        
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+        
+        // Manual refresh function
+        function manualRefresh() {
+            refreshBirthdayData();
         }
 
         // Real-time timestamp update
@@ -274,11 +433,31 @@
             }
         }
         
-        // Update timestamp every second
-        setInterval(updateTimestamp, 1000);
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            highlightTodayBirthdays();
+            updateTimestamp();
+            startAutoRefresh();
+            
+            // Update timestamp every second
+            setInterval(updateTimestamp, 1000);
+            
+            // Pause auto-refresh when page is not visible
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    stopAutoRefresh();
+                } else {
+                    startAutoRefresh();
+                    // Refresh immediately when page becomes visible again
+                    refreshBirthdayData();
+                }
+            });
+        });
         
-        // Initial update
-        updateTimestamp();
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
     </script>
 </body>
 </html>

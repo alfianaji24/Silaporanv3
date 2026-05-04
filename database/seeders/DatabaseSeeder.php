@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             Izindinaspermissionseeder::class,
             Izinsakitpermissionseeder::class,
             Jabatanpermissionseeder::class,
+            Statuskaryawanpermissionseeder::class,
             Jamkerjabydeptpermissionseeder::class,
             Jamkerjapermissionseeder::class,
             Jenistunjanganpermissionseeder::class,

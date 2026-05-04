@@ -14,13 +14,13 @@
                  @endif
              </span>
              <span class="app-brand-text demo menu-text fw-bold d-flex flex-column ms-2"
-                 style="letter-spacing: 1px; color: #fff;">
-                 <span style="font-size: 18px;">{{ config('app.name') }}</span>
-                 <small class="mt-1" style="font-size: 11px; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.7);">
-                      
-                 </small>
-                 <small class="mt-1"> </small>
-             </span>
+                style="letter-spacing: 1px; color: #fff;">
+                <span style="font-size: 18px;">{{ config('app.name') }}</span>
+                <small class="mt-1" style="font-size: 11px; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.7);">
+                    HR & Payroll Solution
+                </small>
+                <small class="mt-1">Version 3.1</small>
+            </span>
          </a>
 
          <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -80,6 +80,31 @@
 
      <div class="menu-inner-shadow"></div>
 
+    <!-- Quick Actions -->
+    <!-- <div class="px-3 py-2">
+        <div class="text-uppercase small text-white-50 mb-2" style="font-size: 10px; letter-spacing: 1px;">Akses Cepat</div>
+        <div class="d-grid gap-2">
+            @can('karyawan.create')
+            <a href="{{ route('karyawan.create') }}" class="btn btn-sm btn-light text-dark">
+                <i class="ti ti-user-plus me-1"></i>
+                <small>Tambah Karyawan</small>
+            </a>
+            @endcan
+            @can('presensi.index')
+            <a href="{{ route('presensi.index') }}" class="btn btn-sm btn-light text-dark">
+                <i class="ti ti-clock me-1"></i>
+                <small>Presensi Hari Ini</small>
+            </a>
+            @endcan
+            @can('slipgaji.index')
+            <a href="{{ route('slipgaji.index') }}" class="btn btn-sm btn-light text-dark">
+                <i class="ti ti-file-text me-1"></i>
+                <small>Slip Gaji</small>
+            </a>
+            @endcan
+        </div>
+    </div> -->
+
      <ul class="menu-inner py-1">
          <!-- Dashboards -->
          <li class="menu-item {{ request()->is(['dashboard', 'dashboard/*']) ? 'active' : '' }}">
@@ -89,15 +114,16 @@
              </a>
          </li>
          @if (auth()->user()->hasAnyPermission([
-                     'karyawan.index',
-                     'departemen.index',
-                     'cabang.index',
-                     'cuti.index',
-                     'jabatan.index',
-                     'grup.index',
-                 ]))
+                    'karyawan.index',
+                    'departemen.index',
+                    'cabang.index',
+                    'cuti.index',
+                    'jabatan.index',
+                    'grup.index',
+                    'statuskaryawan.index',
+                ]))
              <li
-                 class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'departemen/*', 'cabang', 'cuti', 'jabatan', 'grup', 'grup/*']) ? 'open' : '' }}">
+                 class="menu-item {{ request()->is(['karyawan', 'karyawan/*', 'departemen', 'departemen/*', 'cabang', 'cuti', 'jabatan', 'grup', 'grup/*', 'statuskaryawan', 'statuskaryawan/*']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
                     <i class="menu-icon tf-icons ti ti-database"></i>
                     <div>Data Master</div>
@@ -129,6 +155,13 @@
                  <li class="menu-item {{ request()->is(['jabatan', 'jabatan/*']) ? 'active' : '' }}">
                      <a href="{{ route('jabatan.index') }}" class="menu-link">
                          <div>Jabatan</div>
+                     </a>
+                 </li>
+                 @endcan
+                 @can('statuskaryawan.index')
+                 <li class="menu-item {{ request()->is(['statuskaryawan', 'statuskaryawan/*']) ? 'active' : '' }}">
+                     <a href="{{ route('statuskaryawan.index') }}" class="menu-link">
+                         <div>Status Karyawan</div>
                      </a>
                  </li>
                  @endcan
@@ -589,5 +622,21 @@
             </li>
          @endif
      </ul>
+
+    <!-- Menu Footer -->
+    <div class="menu-footer mt-auto">
+        <div class="px-3 py-2 border-top border-light">
+            <div class="text-center">
+                <small class="text-white-50 d-block mb-1">
+                    <i class="ti ti-server me-1"></i>
+                    Sistem Online
+                </small>
+                <small class="text-white-50 d-block">
+                    <i class="ti ti-headset me-1"></i>
+                    Support: IT Helpdesk
+                </small>
+            </div>
+        </div>
+    </div>
  </aside>
  <!-- / Menu -->

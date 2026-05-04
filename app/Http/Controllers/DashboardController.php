@@ -273,7 +273,10 @@ class DashboardController extends Controller
             $data['departemen'] = $user->getDepartemen();
             $data['cabang'] = $user->getCabang();
             $today = Carbon::now(config('app.timezone'));
-            $data['birthday'] = Karyawan::where('status_aktif_karyawan', 1)
+            $data['birthday'] = Karyawan::where(function($query) {
+                    $query->where('status_aktif_karyawan', 1)
+                          ->orWhere('status_karyawan', 'A'); // Special case: include ASN even if inactive
+                })
                 ->whereMonth('tanggal_lahir', $today->month)->whereDay('tanggal_lahir', $today->day)
                 ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
                 ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
@@ -366,39 +369,15 @@ class DashboardController extends Controller
         }
     }
 
-    public function publicBirthdayList()
-    {
-        // Ambil semua karyawan aktif dengan data lengkap
-        $karyawan = Karyawan::where('status_aktif_karyawan', 1)
-            ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
-            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
-            ->select(
-                'karyawan.nik',
-                'karyawan.nama_karyawan',
-                'karyawan.tanggal_lahir',
-                'jabatan.nama_jabatan',
-                'departemen.nama_dept',
-                'cabang.nama_cabang'
-            )
-            ->orderBy('nama_karyawan', 'asc')
-            ->get();
-
-        // Hitung umur untuk setiap karyawan
-        $karyawan->transform(function ($item) {
-            $item->umur = Carbon::parse($item->tanggal_lahir)->age;
-            return $item;
-        });
-
-        return view('public.birthday', compact('karyawan'));
-    }
-
     public function kirimUcapanBirthday(Request $request)
     {
         try {
             // Ambil karyawan yang ulang tahun hari ini (menggunakan timezone aplikasi)
             $today = Carbon::now(config('app.timezone'));
-            $birthday = Karyawan::where('status_aktif_karyawan', 1)
+            $birthday = Karyawan::where(function($query) {
+                    $query->where('status_aktif_karyawan', 1)
+                          ->orWhere('status_karyawan', 'A'); // Special case: include ASN even if inactive
+                })
                 ->whereMonth('tanggal_lahir', $today->month)
                 ->whereDay('tanggal_lahir', $today->day)
                 ->when($request->kode_cabang, function ($query) use ($request) {

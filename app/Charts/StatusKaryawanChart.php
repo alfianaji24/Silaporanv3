@@ -3,6 +3,7 @@
 namespace App\Charts;
 
 use App\Models\Karyawan;
+use App\Models\Statuskaryawan;
 use ArielMejiaDev\LarapexCharts\LarapexChart;
 use Illuminate\Support\Facades\DB;
 
@@ -17,10 +18,15 @@ class StatusKaryawanChart
 
     public function build($request = null): \ArielMejiaDev\LarapexCharts\PieChart
     {
-        // Ambil jumlah karyawan berdasarkan status (T, K, O)
-
+        // Ambil data status karyawan dari database
+        $statusKaryawanList = Statuskaryawan::orderBy('nama_status_karyawan')->get();
+        
+        // Ambil jumlah karyawan berdasarkan status
         $query = Karyawan::query();
-        $query->where('status_aktif_karyawan', 1);
+        $query->where(function($query) {
+            $query->where('status_aktif_karyawan', 1)
+                  ->orWhere('status_karyawan', 'A'); // Special case: include ASN even if inactive
+        });
         $query->select('status_karyawan', DB::raw('count(*) as total'));
         $query->groupBy('status_karyawan');
         
@@ -39,29 +45,27 @@ class StatusKaryawanChart
 
         $rawData = $query->pluck('total', 'status_karyawan')->toArray();
 
-
-
-        // Mapping status singkatan ke nama lengkap
-        $statusLabels = [
-            'T' => 'Tetap',
-            'K' => 'Kontrak',
-            'O' => 'Outsourcing'
-        ];
-
-        // Konversi kode status ke label lengkap
+        // Konversi kode status ke label lengkap berdasarkan database
         $labels = [];
         $data = [];
 
-        foreach ($statusLabels as $key => $label) {
-            $labels[] = $label;
-            $data[] = (int) ($rawData[$key] ?? 0); // Jika tidak ada data, set 0
+        foreach ($statusKaryawanList as $status) {
+            $labels[] = $status->nama_status_karyawan;
+            $data[] = (int) ($rawData[$status->kode_status_karyawan] ?? 0); // Jika tidak ada data, set 0
         }
+        // Generate warna dinamis berdasarkan jumlah data
+        $colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+        ];
+        $chartColors = array_slice($colors, 0, count($labels));
+
         return $this->chart->pieChart()
             // ->setTitle('Data Karyawan.')
             // ->setSubtitle('Berdasarkan Status Karyawan')
             ->addData($data)
             ->setLabels($labels)
-            ->setColors(['#FF6384', '#36A2EB', '#FFCE56'])
+            ->setColors($chartColors)
             ->setDataLabels(true)
             ->setOptions([
                 'dataLabels' => [

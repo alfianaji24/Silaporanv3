@@ -13,6 +13,7 @@ use App\Models\Pengaturanumum;
 use App\Models\Setjamkerjabydate;
 use App\Models\Setjamkerjabyday;
 use App\Models\Statuskawin;
+use App\Models\Statuskaryawan;
 use App\Models\User;
 use Carbon\Carbon;
 use App\Models\Userkaryawan;
@@ -177,6 +178,8 @@ class KaryawanController extends Controller
         $data['cabang'] = $user->getCabang();
         $data['departemen'] = $user->getDepartemen();
         $data['jabatan'] = Jabatan::orderBy('kode_jabatan')->get();
+        $data['status_karyawan'] = Statuskaryawan::orderBy('kode_status_karyawan')->get();
+        
         return view('datamaster.karyawan.create', $data);
     }
 

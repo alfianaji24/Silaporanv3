@@ -60,14 +60,7 @@
     </div>
     <x-select-label label="Jabatan" name="kode_jabatan" :data="$jabatan" key="kode_jabatan" textShow="nama_jabatan" />
     <x-input-with-icon-label icon="ti ti-calendar" datepicker="flatpickr-date" label="Tanggal Masuk" name="tanggal_masuk" />
-    <div class="form-group mb-3">
-        <label for="exampleFormControlInput1" style="font-weight: 600" class="form-label">Status Karyawan</label>
-        <select name="status_karyawan" id="pendidikan_terakhir" class="form-select">
-            <option value="">Status Karyawan</option>
-            <option value="K">Kontrak</option>
-            <option value="T">Tetap</option>
-        </select>
-    </div>
+    <x-select-label label="Status Karyawan" name="status_karyawan" :data="$status_karyawan" key="kode_status_karyawan" textShow="nama_status_karyawan" />
     <x-input-with-icon-label icon="ti ti-id" label="RFID UID" name="rfid_uid" />
     <x-input-file name="foto" label="Foto" />
     <div class="form-group">

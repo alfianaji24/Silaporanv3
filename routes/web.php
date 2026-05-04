@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\BpjskesehatanController;
+use App\Http\Controllers\BirthdayController;
 use App\Http\Controllers\BpjstenagakerjaController;
 use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CutiController;
@@ -44,6 +44,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SlipgajiController;
 use App\Http\Controllers\ShortcutController;
+use App\Http\Controllers\StatuskaryawanController;
 use App\Http\Controllers\KaryawanApprovalController;
 use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
@@ -95,7 +96,7 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
 });
 
 // Public Birthday List Route
-Route::get('/birthday', [DashboardController::class, 'publicBirthdayList'])->name('public.birthday');
+Route::get('/birthday', [BirthdayController::class, 'index'])->name('public.birthday');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
@@ -315,8 +316,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/jabatan/{kode_jabatan}', 'edit')->name('jabatan.edit')->can('jabatan.edit');
         Route::put('/jabatan/{kode_jabatan}', 'update')->name('jabatan.update')->can('jabatan.edit');
         Route::delete('/jabatan/{kode_jabatan}/delete', 'destroy')->name('jabatan.delete')->can('jabatan.delete');
-    }
-    );
+    });
+
+    Route::controller(StatuskaryawanController::class)->group(function () {
+        Route::get('/statuskaryawan', 'index')->name('statuskaryawan.index')->can('statuskaryawan.index');
+        Route::get('/statuskaryawan/create', 'create')->name('statuskaryawan.create')->can('statuskaryawan.create');
+        Route::post('/statuskaryawan', 'store')->name('statuskaryawan.store')->can('statuskaryawan.create');
+        Route::get('/statuskaryawan/{kode_status_karyawan}', 'edit')->name('statuskaryawan.edit')->can('statuskaryawan.edit');
+        Route::put('/statuskaryawan/{kode_status_karyawan}', 'update')->name('statuskaryawan.update')->can('statuskaryawan.edit');
+        Route::delete('/statuskaryawan/{kode_status_karyawan}/delete', 'destroy')->name('statuskaryawan.delete')->can('statuskaryawan.delete');
+    });
 
 
     Route::controller(CabangController::class)->group(function () {
