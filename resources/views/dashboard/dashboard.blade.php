@@ -620,13 +620,6 @@
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="d-flex align-items-center mb-1">
-                                                                    <i class="ti ti-building me-2 text-{{ $color }}"></i>
-                                                                    <small class="text-muted">Dept:</small>
-                                                                    <strong class="ms-2">{{ $d->kode_dept }}</strong>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-12">
-                                                                <div class="d-flex align-items-center mb-2">
                                                                     <i class="ti ti-map-pin me-2 text-{{ $color }}"></i>
                                                                     <small class="text-muted">Cabang:</small>
                                                                     <strong class="ms-2">{{ $d->nama_cabang }}</strong>

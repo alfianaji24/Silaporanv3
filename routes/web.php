@@ -94,6 +94,9 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
     Route::post('/public/presensi/store', 'store')->name('public.presensi.store');
 });
 
+// Public Birthday List Route
+Route::get('/birthday', [DashboardController::class, 'publicBirthdayList'])->name('public.birthday');
+
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
