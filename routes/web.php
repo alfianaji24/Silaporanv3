@@ -59,6 +59,7 @@ use App\Http\Controllers\Admin\UpdateManagementController;
 use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\ListAccountController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\LaravelLogController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
@@ -762,6 +763,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/activity-logs/export', 'export')->name('activity.logs.export');
         Route::post('/activity-logs/clear', 'clear')->name('activity.logs.clear');
         Route::get('/activity-logs/statistics', 'statistics')->name('activity.logs.statistics');
+    }
+    );
+
+    // System Log Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(LaravelLogController::class)->group(function () {
+        Route::get('/system-logs', 'index')->name('system.logs.index');
+        Route::get('/system-logs/download', 'download')->name('system.logs.download');
+        Route::get('/system-logs/statistics', 'statistics')->name('system.logs.statistics');
     }
     );
 

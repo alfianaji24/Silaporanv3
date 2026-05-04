@@ -569,11 +569,23 @@
                      <div>WA Gateway</div>
                  </a>
             </li>
-            <li class="menu-item {{ request()->is(['activity-logs', 'activity-logs/*']) ? 'active' : '' }}">
-                 <a href="{{ route('activity.logs.index') }}" class="menu-link">
-                     <i class="menu-icon tf-icons ti ti-file-description"></i>
-                     <div>Activity Logs</div>
-                 </a>
+            <li class="menu-item {{ request()->is(['activity-logs', 'activity-logs/*', 'system-logs', 'system-logs/*']) ? 'open' : '' }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons ti ti-file-text"></i>
+                    <div>Logs</div>
+                </a>
+                <ul class="menu-sub">
+                    <li class="menu-item {{ request()->is(['activity-logs', 'activity-logs/*']) ? 'active' : '' }}">
+                        <a href="{{ route('activity.logs.index') }}" class="menu-link">
+                            <div>Activity Logs</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->is(['system-logs', 'system-logs/*']) ? 'active' : '' }}">
+                        <a href="{{ route('system.logs.index') }}" class="menu-link">
+                            <div>System Logs</div>
+                        </a>
+                    </li>
+                </ul>
             </li>
          @endif
      </ul>
