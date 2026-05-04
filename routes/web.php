@@ -851,6 +851,7 @@ Route::group(['middleware' => ['permission:ajuanjadwal.create']], function () {
     Route::get('/ajuanjadwal/create', [App\Http\Controllers\AjuanJadwalController::class, 'create'])->name('ajuanjadwal.create');
     Route::post('/ajuanjadwal/store', [App\Http\Controllers\AjuanJadwalController::class, 'store'])->name('ajuanjadwal.store');
     Route::delete('/ajuanjadwal/{id}/delete', [App\Http\Controllers\AjuanJadwalController::class, 'destroy'])->name('ajuanjadwal.delete');
+    Route::get('/ajuanjadwal/get-jadwal-awal', [App\Http\Controllers\AjuanJadwalController::class, 'getJadwalAwal'])->name('ajuanjadwal.get-jadwal-awal');
 });
 
 Route::group(['middleware' => ['permission:ajuanjadwal.approve']], function () {

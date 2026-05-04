@@ -134,6 +134,11 @@ class AjuanJadwalController extends Controller
             }
         }
 
+        // Use modal view if AJAX request, otherwise use regular view
+        if (request()->ajax() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('ajuanjadwal.create-modal', compact('jamkerja', 'karyawan'));
+        }
+
         return view('ajuanjadwal.create', compact('jamkerja', 'karyawan'));
     }
 
@@ -235,8 +240,25 @@ class AjuanJadwalController extends Controller
             'status' => 'p'
         ]);
 
+        // Handle AJAX response for modal
+        if (request()->ajax() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengajuan Berhasil Disimpan',
+                'redirect' => route('ajuanjadwal.index')
+            ]);
+        }
+
         return Redirect::route('ajuanjadwal.index')->with(['success' => 'Pengajuan Berhasil Disimpan']);
         } catch (\Exception $e) {
+            // Handle AJAX response for modal
+            if (request()->ajax() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422);
+            }
+            
             return Redirect::back()->with(['warning' => $e->getMessage()]);
         }
     }
@@ -289,5 +311,135 @@ class AjuanJadwalController extends Controller
         } catch (\Exception $e) {
             return Redirect::back()->with(['warning' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Get jadwal awal karyawan untuk tanggal tertentu
+     */
+    public function getJadwalAwal(Request $request)
+    {
+        $nik = $request->nik;
+        $tanggal = $request->tanggal;
+
+        if (!$nik || !$tanggal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'NIK dan tanggal harus diisi'
+            ], 400);
+        }
+
+        try {
+            // Get employee data
+            $karyawan = Karyawan::where('nik', $nik)->first();
+            if (!$karyawan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data karyawan tidak ditemukan'
+                ], 404);
+            }
+
+            $kode_cabang = $karyawan->kode_cabang;
+            $kode_dept = $karyawan->kode_dept;
+            $namahari = getnamaHari(date('D', strtotime($tanggal)));
+
+            // Calculate Original Schedule (kode_jam_kerja_awal)
+            $kode_jam_kerja_awal = null;
+            $jadwal_info = null;
+
+            // 1. Cek Jam Kerja By Date
+            $jamkerja_by_date = Setjamkerjabydate::where('nik', $nik)->where('tanggal', $tanggal)->first();
+            if ($jamkerja_by_date) {
+                $kode_jam_kerja_awal = $jamkerja_by_date->kode_jam_kerja;
+                $jadwal_info = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja_awal)->first();
+            }
+
+            // 2. Jika tidak ada, Cek Jam Kerja Group
+            if ($kode_jam_kerja_awal == null) {
+                $cek_group = GrupDetail::where('nik', $nik)->first();
+                if ($cek_group) {
+                    $jamkerja_group = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
+                        ->where('tanggal', $tanggal)
+                        ->first();
+                    if ($jamkerja_group) {
+                        $kode_jam_kerja_awal = $jamkerja_group->kode_jam_kerja;
+                        $jadwal_info = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja_awal)->first();
+                    }
+                }
+            }
+
+            // 3. Jika tidak ada, Cek Jam Kerja Harian (Per Orang)
+            if ($kode_jam_kerja_awal == null) {
+                $jamkerja_harian = Setjamkerjabyday::where('nik', $nik)->where('hari', $namahari)->first();
+                if ($jamkerja_harian) {
+                    $kode_jam_kerja_awal = $jamkerja_harian->kode_jam_kerja;
+                    $jadwal_info = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja_awal)->first();
+                }
+            }
+
+            // 4. Jika tidak ada, Cek Jam Kerja Departemen (Default)
+            if ($kode_jam_kerja_awal == null) {
+                $jamkerja_dept = Detailsetjamkerjabydept::where('kode_dept', $kode_dept)
+                    ->where('kode_cabang', $kode_cabang)
+                    ->where('hari', $namahari)
+                    ->first();
+                if ($jamkerja_dept) {
+                    $kode_jam_kerja_awal = $jamkerja_dept->kode_jam_kerja;
+                    $jadwal_info = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja_awal)->first();
+                }
+            }
+
+            if ($jadwal_info) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'kode_jam_kerja' => $jadwal_info->kode_jam_kerja,
+                        'nama_jam_kerja' => $jadwal_info->nama_jam_kerja,
+                        'jam_masuk' => $jadwal_info->jam_masuk,
+                        'jam_pulang' => $jadwal_info->jam_pulang,
+                        'sumber' => $this->getSumberJadwal($nik, $tanggal, $kode_jam_kerja_awal)
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jadwal tidak ditemukan untuk tanggal tersebut'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper untuk mendapatkan sumber jadwal
+     */
+    private function getSumberJadwal($nik, $tanggal, $kode_jam_kerja)
+    {
+        $namahari = getnamaHari(date('D', strtotime($tanggal)));
+
+        // Cek By Date
+        if (Setjamkerjabydate::where('nik', $nik)->where('tanggal', $tanggal)->where('kode_jam_kerja', $kode_jam_kerja)->exists()) {
+            return 'Jadwal Per Tanggal';
+        }
+
+        // Cek Group
+        $cek_group = GrupDetail::where('nik', $nik)->first();
+        if ($cek_group) {
+            if (GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)->where('tanggal', $tanggal)->where('kode_jam_kerja', $kode_jam_kerja)->exists()) {
+                return 'Jadwal Group';
+            }
+        }
+
+        // Cek Harian
+        if (Setjamkerjabyday::where('nik', $nik)->where('hari', $namahari)->where('kode_jam_kerja', $kode_jam_kerja)->exists()) {
+            return 'Jadwal Harian';
+        }
+
+        // Default: Departemen
+        return 'Jadwal Departemen (Default)';
     }
 }

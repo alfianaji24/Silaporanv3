@@ -36,7 +36,7 @@
             <div class="tab-content">
                 <div class="tab-pane fade active show" id="navs-justified-home" role="tabpanel">
                     @can('ajuanjadwal.create')
-                        <a href="{{ route('ajuanjadwal.create') }}" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
+                        <a href="#" class="btn btn-primary" id="btnCreate"><i class="fa fa-plus me-2"></i>
                             Tambah Data</a>
                     @endcan
                     <div class="row mt-2">
@@ -191,3 +191,125 @@
     </div>
 </div>
 @endsection
+
+<x-modal-form id="modal" size="" show="loadmodal" title="" />
+@push('myscript')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fallback to jQuery if available
+        if (typeof $ !== 'undefined') {
+            $(function() {
+                initModal();
+            });
+        } else {
+            initModal();
+        }
+    });
+
+    function initModal() {
+        function loading() {
+            const loadModalEl = document.getElementById('loadmodal');
+            if (loadModalEl) {
+                loadModalEl.innerHTML = `
+                    <div class="sk-wave sk-primary" style="margin:auto">
+                        <div class="sk-wave-rect"></div>
+                        <div class="sk-wave-rect"></div>
+                        <div class="sk-wave-rect"></div>
+                        <div class="sk-wave-rect"></div>
+                        <div class="sk-wave-rect"></div>
+                    </div>
+                `;
+            }
+        }
+
+        function showModal() {
+            console.log('showModal called');
+            const modalEl = document.getElementById('modal');
+            console.log('Modal element:', modalEl);
+            
+            if (modalEl) {
+                console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+                console.log('Bootstrap.Modal available:', typeof bootstrap !== 'undefined' && bootstrap.Modal);
+                console.log('jQuery available:', typeof $ !== 'undefined');
+                
+                // Try Bootstrap 5 modal
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    console.log('Using Bootstrap 5 modal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
+                // Fallback to jQuery modal
+                else if (typeof $ !== 'undefined' && $(modalEl).modal) {
+                    console.log('Using jQuery modal');
+                    $(modalEl).modal('show');
+                }
+                // Manual fallback
+                else {
+                    console.log('Using manual modal');
+                    modalEl.style.display = 'block';
+                    modalEl.classList.add('show');
+                    document.body.classList.add('modal-open');
+                }
+                
+                loading();
+                
+                // Update title
+                const titleEl = modalEl.querySelector('.modal-title');
+                if (titleEl) {
+                    titleEl.textContent = 'Buat Ajuan Jadwal';
+                }
+                
+                // Load content
+                const loadModalEl = document.getElementById('loadmodal');
+                if (loadModalEl) {
+                    console.log('Loading modal content...');
+                    fetch('/ajuanjadwal/create', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.text();
+                    })
+                    .then(html => {
+                        console.log('Content loaded, length:', html.length);
+                        loadModalEl.innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Error loading modal content:', error);
+                        loadModalEl.innerHTML = '<div class="alert alert-danger">Gagal memuat form. Silakan coba lagi.</div>';
+                    });
+                }
+            } else {
+                console.error('Modal element not found!');
+            }
+        }
+
+        // Bind click event
+        const btnCreateEl = document.getElementById('btnCreate');
+        console.log('Button element:', btnCreateEl);
+        if (btnCreateEl) {
+            console.log('Binding click event to button');
+            btnCreateEl.addEventListener('click', function(e) {
+                console.log('Button clicked!');
+                e.preventDefault();
+                showModal();
+            });
+        } else {
+            console.error('Button element not found!');
+        }
+
+        // jQuery fallback
+        if (typeof $ !== 'undefined') {
+            console.log('jQuery available, binding fallback');
+            $("#btnCreate").off('click').on('click', function(e) {
+                console.log('jQuery button clicked!');
+                e.preventDefault();
+                showModal();
+            });
+        }
+    }
+</script>
+@endpush

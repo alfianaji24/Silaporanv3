@@ -60,10 +60,17 @@ class PresensiController extends Controller
             ->where('tanggal', $tanggal_kemarin)->first();
 
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
+        $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
 
         //Jika Presensi Kemarin Status Lintas Hari nya 1 Makan Tanggal Presensi Sekarang adalah Tanggal Kemarin
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
         $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
+
+        // Jika jam sekarang lebih besar dari batas_presensi_lintashari dan lintas hari aktif, reset ke hari ini
+        if ($jam_sekarang > $batas_presensi_lintashari && $lintas_hari == 1) {
+            $tanggal_presensi = $tanggal_sekarang;
+            $tanggal_pulang = $tanggal_besok;
+        }
 
 
         $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
@@ -133,6 +140,7 @@ class PresensiController extends Controller
         $jam_presensi = $tanggal_sekarang . " " . $jam_sekarang;
 
         $jam_masuk = $tanggal_presensi . " " . date('H:i', strtotime($jam_kerja->jam_masuk));
+        $jam_pulang = $tanggal_pulang . " " . date('H:i', strtotime($jam_kerja->jam_pulang));
 
         $presensi_hariini = Presensi::where('nik', $karyawan->nik)
             ->where('tanggal', $tanggal_presensi)
