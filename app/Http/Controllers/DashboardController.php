@@ -435,7 +435,7 @@ class DashboardController extends Controller
                 $message .= "✨ Sukses dalam karir\n";
                 $message .= "✨ Diberkahi rezeki yang berlimpah\n\n";
                 $message .= "Terima kasih atas dedikasi dan kontribusinya selama ini. Semoga hubungan kerja kita terus berjalan dengan baik!\n\n";
-                $message .= "*Salam Hangat,*\nTim HR";
+                $message .= "*Salam Hangat,*\nKepegawaian Puskesmas Balaraja";
 
                 // Format nomor HP (hapus 0 di depan jika ada, pastikan format 62xxx)
                 $phoneNumber = $karyawan->no_hp;

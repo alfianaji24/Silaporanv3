@@ -68,7 +68,7 @@ class SendBirthdayWhatsapp extends Command
                 $message .= "✨ Sukses dalam karir\n";
                 $message .= "✨ Diberkahi rezeki yang berlimpah\n\n";
                 $message .= "Terima kasih atas dedikasi dan kontribusinya selama ini. Semoga hubungan kerja kita terus berjalan dengan baik!\n\n";
-                $message .= "*Salam Hangat,*\nTim HR";
+                $message .= "*Salam Hangat,*\nKepegawaian Puskesmas Balaraja";
 
                 $phoneNumber = preg_replace('/^0+/', '', trim($karyawan->no_hp));
                 if (!str_starts_with($phoneNumber, '62')) {
