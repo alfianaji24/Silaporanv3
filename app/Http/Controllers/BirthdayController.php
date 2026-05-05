@@ -57,11 +57,14 @@ class BirthdayController extends Controller
                 // Jika ulang tahun tahun ini sudah lewat, hitung untuk tahun depan
                 if ($birthdayThisYear->lt($today)) {
                     $birthdayNextYear = $birthday->copy()->year($today->year + 1);
-                    $daysUntilBirthday = $today->diffInDays($birthdayNextYear, false);
+                    $daysUntilBirthday = $today->diffInDays($birthdayNextYear);
                     $item->tanggal_ultah_selanjutnya = $birthdayNextYear->format('d-m-Y');
                 } else {
                     // Jika ulang tahun tahun ini belum lewat
-                    $daysUntilBirthday = $today->diffInDays($birthdayThisYear, false);
+                    // Gunakan startOfDay untuk memastikan perhitungan hari yang benar
+                    $todayStart = $today->copy()->startOfDay();
+                    $birthdayStart = $birthdayThisYear->copy()->startOfDay();
+                    $daysUntilBirthday = $todayStart->diffInDays($birthdayStart);
                     $item->tanggal_ultah_selanjutnya = $birthdayThisYear->format('d-m-Y');
                 }
             }
