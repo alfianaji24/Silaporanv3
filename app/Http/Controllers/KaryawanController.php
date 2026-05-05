@@ -180,6 +180,16 @@ class KaryawanController extends Controller
         $data['jabatan'] = Jabatan::orderBy('kode_jabatan')->get();
         $data['status_karyawan'] = Statuskaryawan::orderBy('kode_status_karyawan')->get();
         
+        // Generate preview NIK untuk ditampilkan di form (simple increment)
+        $lastKaryawan = Karyawan::orderBy('nik', 'desc')->first();
+        
+        $lastNumber = 0;
+        if ($lastKaryawan) {
+            $lastNumber = (int)$lastKaryawan->nik;
+        }
+        $nextNumber = $lastNumber + 1;
+        $data['nextNik'] = (string)$nextNumber;
+        
         return view('datamaster.karyawan.create', $data);
     }
 
@@ -190,8 +200,7 @@ class KaryawanController extends Controller
         $user = auth()->user();
 
         $request->validate([
-            // nik akan digenerate otomatis; user mengisi nik_show
-            'nik_show' => 'required',
+            // nik dan nik_show akan digenerate otomatis
             'no_ktp' => 'required',
             'nama_karyawan' => 'required',
             'tempat_lahir' => 'required',
@@ -201,21 +210,15 @@ class KaryawanController extends Controller
             'no_hp' => 'required',
             'kode_status_kawin' => 'required',
             'pendidikan_terakhir' => 'required',
-            'kode_cabang' => 'required',
             'kode_dept' => 'required',
             'kode_jabatan' => 'required',
             'tanggal_masuk' => 'required',
             'status_karyawan' => 'required'
         ]);
 
-        // Validasi akses cabang dan departemen jika bukan super admin
+        // Validasi akses departemen jika bukan super admin
         if (!$user->isSuperAdmin()) {
-            $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-
-            if (!in_array($request->kode_cabang, $userCabangs)) {
-                return Redirect::back()->with(messageError('Anda tidak memiliki akses ke cabang yang dipilih'));
-            }
 
             if (!in_array($request->kode_dept, $userDepartemens)) {
                 return Redirect::back()->with(messageError('Anda tidak memiliki akses ke departemen yang dipilih'));
@@ -223,21 +226,15 @@ class KaryawanController extends Controller
         }
 
         try {
-            // Generate NIK format YYMM + 5 digit urut per bulan
-            $tahun = date('y');
-            $bulan = date('m');
-            $prefix = $tahun . $bulan; // e.g., 2510
-
-            $last = Karyawan::where('nik', 'like', $prefix . '%')
-                ->orderBy('nik', 'desc')
-                ->first();
-
+            // Generate NIK dengan simple increment (max NIK + 1)
+            $lastKaryawan = Karyawan::orderBy('nik', 'desc')->first();
+            
             $lastNumber = 0;
-            if ($last) {
-                $lastNumber = (int)substr($last->nik, 4, 5);
+            if ($lastKaryawan) {
+                $lastNumber = (int)$lastKaryawan->nik;
             }
             $nextNumber = $lastNumber + 1;
-            $nikAuto = $prefix . str_pad((string)$nextNumber, 5, '0', STR_PAD_LEFT);
+            $nikAuto = (string)$nextNumber;
             $data_foto = [];
             if ($request->hasfile('foto')) {
                 $foto_name =  $nikAuto . "." . $request->file('foto')->getClientOriginalExtension();
@@ -251,7 +248,7 @@ class KaryawanController extends Controller
 
             $data_karyawan = [
                 'nik' => $nikAuto,
-                'nik_show' => $request->nik_show,
+                'nik_show' => $nikAuto, // otomatis sama dengan nik
                 'no_ktp' => $request->no_ktp,
                 'nama_karyawan' => $namaKaryawan,
                 'gelar_depan' => $request->gelar_depan,
@@ -263,7 +260,7 @@ class KaryawanController extends Controller
                 'no_hp' => $request->no_hp,
                 'kode_status_kawin' => $request->kode_status_kawin,
                 'pendidikan_terakhir' => $request->pendidikan_terakhir,
-                'kode_cabang' => $request->kode_cabang,
+                'kode_cabang' => 'PBL', // otomatis Puskesmas Balaraja
                 'kode_dept' => $request->kode_dept,
                 'kode_jabatan' => $request->kode_jabatan,
                 'tanggal_masuk' => $request->tanggal_masuk,

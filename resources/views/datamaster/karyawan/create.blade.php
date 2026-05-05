@@ -1,6 +1,13 @@
 <form action="{{ route('karyawan.store') }}" id="formcreateKaryawan" method="POST" enctype="multipart/form-data">
     @csrf
-    <x-input-with-icon-label icon="ti ti-barcode" label="NIK" name="nik_show" />
+    <div class="form-group mb-3">
+    <label style="font-weight: 600" class="form-label">NIK (Otomatis)</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="ti ti-barcode"></i></span>
+        <input type="text" class="form-control" value="{{ $nextNik ?? 'Akan digenerate otomatis' }}" readonly style="background-color: #f8f9fa;">
+    </div>
+    <small class="text-muted">NIK akan digenerate otomatis (increment dari NIK terakhir)</small>
+</div>
     <x-input-with-icon-label icon="ti ti-credit-card" label="No. KTP" name="no_ktp" />
     <div class="row">
         <div class="col-4">
@@ -55,7 +62,14 @@
             </div>
         </div>
     </div>
-    <x-select-label label="Kantor Cabang" name="kode_cabang" :data="$cabang" key="kode_cabang" textShow="nama_cabang" />
+    <div class="form-group mb-3">
+    <label style="font-weight: 600" class="form-label">Kantor Cabang (Otomatis)</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="ti ti-map-pin"></i></span>
+        <input type="text" class="form-control" value="PUSKESMAS BALARAJA" readonly style="background-color: #f8f9fa;">
+    </div>
+    <small class="text-muted">Cabang otomatis diatur ke Puskesmas Balaraja</small>
+</div>
     <x-select-label label="Departemen" name="kode_dept" :data="$departemen" key="kode_dept" textShow="nama_dept" />
     </div>
     <x-select-label label="Jabatan" name="kode_jabatan" :data="$jabatan" key="kode_jabatan" textShow="nama_jabatan" />

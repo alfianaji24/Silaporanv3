@@ -1,15 +1,15 @@
 <form action="{{ route('cabang.store') }}" id="formcreateCabang" method="POST">
     @csrf
-    <x-input-with-icon icon="ti ti-barcode" label="Kode Cabang" name="kode_cabang" maxlength="3" placeholder="Contoh: TSM (Maksimal 3 karakter)" required />
-    <x-input-with-icon icon="ti ti-file-text" label="Nama Cabang" name="nama_cabang" maxlength="50" placeholder="Contoh: TASIKMALAYA (Maksimal 50 karakter)" required />
-    <x-input-with-icon icon="ti ti-map-pin" label="Alamat Cabang" name="alamat_cabang" maxlength="100" placeholder="Contoh: Jln. Perintis Kemerdekaan No. 80 (Maksimal 100 karakter)" required />
-    <x-input-with-icon icon="ti ti-phone" label="Telepon Cabang" name="telepon_cabang" maxlength="13" placeholder="Contoh: 0265311766 (Maksimal 13 karakter)" required />
+    <x-input-with-icon icon="ti ti-barcode" label="Kode Cabang" name="kode_cabang" maxlength="3" placeholder="Contoh: BLJ (Maksimal 3 karakter)" required />
+    <x-input-with-icon icon="ti ti-file-text" label="Nama Cabang" name="nama_cabang" maxlength="50" placeholder="Contoh: BALARAJA (Maksimal 50 karakter)" required />
+    <x-input-with-icon icon="ti ti-map-pin" label="Alamat Cabang" name="alamat_cabang" maxlength="100" placeholder="Contoh: Jl. Raya Serang KM 24 (Maksimal 100 karakter)" required />
+    <x-input-with-icon icon="ti ti-phone" label="Telepon Cabang" name="telepon_cabang" maxlength="13" placeholder="Contoh: 021123456 (Maksimal 13 karakter)" required />
     
     <!-- Peta untuk memilih lokasi -->
     <div class="form-group mb-3">
         <label class="form-label">Pilih Lokasi di Peta</label>
         <div class="input-group mb-2">
-            <input type="text" id="searchLocation" class="form-control" placeholder="Cari lokasi (contoh: Tasikmalaya, Jawa Barat)" />
+            <input type="text" id="searchLocation" class="form-control" placeholder="Cari lokasi (contoh: Puskesmas Balaraja)" />
             <button type="button" class="btn btn-primary" id="btnSearchLocation">
                 <i class="ti ti-search me-1"></i> Cari
             </button>

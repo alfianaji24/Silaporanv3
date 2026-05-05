@@ -96,6 +96,6 @@ class BirthdayController extends Controller
             ]
         );
 
-        return view('public.birthday', compact('karyawan'));
+        return view('datamaster.karyawan.birthday', compact('karyawan'));
     }
 }

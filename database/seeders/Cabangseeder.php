@@ -13,6 +13,14 @@ class Cabangseeder extends Seeder
      */
     public function run(): void
     {
+        Cabang::firstOrCreate(['kode_cabang' => 'PBL'], [
+            'nama_cabang' => 'PUSKESMAS BALARAJA',
+            'alamat_cabang' => 'Jln. Raya Balaraja No. 1 Balaraja',
+            'telepon_cabang' => '0215953185',
+            'lokasi_cabang' => '-6.5250,106.5450',
+            'radius_cabang' => '30',
+        ]);
+
         Cabang::firstOrCreate(['kode_cabang' => 'TSM'], [
             'nama_cabang' => 'TASIKMALAYA',
             'alamat_cabang' => 'Jln. Perintis Kemerdekaan No. 80 Kawalu Tasikmalaya',

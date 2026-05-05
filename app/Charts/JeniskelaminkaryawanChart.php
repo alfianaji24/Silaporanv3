@@ -20,7 +20,10 @@ class JeniskelaminkaryawanChart
         // Ambil jumlah karyawan berdasarkan jenis_kelamin (L, P)
 
         $query = Karyawan::query();
-        $query->where('status_aktif_karyawan', 1);
+        $query->where(function($query) {
+            $query->where('status_aktif_karyawan', 1)
+                  ->orWhere('status_karyawan', 'A'); // Include ASN even if inactive
+        });
         $query->select('jenis_kelamin', DB::raw('count(*) as total'));
         $query->groupBy('jenis_kelamin');
         

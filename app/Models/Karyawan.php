@@ -171,7 +171,10 @@ class Karyawan extends Model
             $query->whereBetween('sip.tanggal_akhir', [$start_date_enambulan, $end_date_enambulan]);
         }
 
-        $query->where('karyawan.status_aktif_karyawan', 1);
+        $query->where(function($query) {
+            $query->where('karyawan.status_aktif_karyawan', 1)
+                  ->orWhere('karyawan.status_karyawan', 'A'); // Include ASN even if inactive
+        });
         $query->where('sip.status_sip', 1);
         $query->orderBy('sip.tanggal_akhir');
         $query->orderBy('karyawan.nama_karyawan');
