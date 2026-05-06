@@ -469,6 +469,7 @@ class IzincutiController extends Controller
                             $presensi = Presensi::create([
                                 'nik' => $nik,
                                 'tanggal' => $dari,
+                                'jam_in' => null,
                                 'kode_jam_kerja' => $jamkerja->kode_jam_kerja,
                                 'status' => 'c',
                             ]);

@@ -332,14 +332,25 @@ class DashboardController extends Controller
             $data['sip_duabulan'] = $sk->getRekapSip(3, $userCabangs, $userDepartemens);
             $data['sip_enambulan'] = $sk->getRekapSip(4, $userCabangs, $userDepartemens);
 
-            // Add storage info
+            // Add storage info - estimasi quota hosting (bukan disk fisik server)
             try {
-                $storageStats = StorageService::getStorageStats('local');
+                // Estimasi quota hosting dari CPanel (bisa diupdate jika hosting upgrade)
+                $quotaHostingGB = 10; // Sesuaikan jika hosting upgrade
+                $totalHostingBytes = $quotaHostingGB * 1024 * 1024 * 1024;
+                
+                // Estimasi used space berdasarkan CPanel (1.96GB dari 10GB = 19.58%)
+                // Kita hitung proporsional dari ukuran file aplikasi
+                $storageStats = StorageService::getStorageStats('public');
+                $appSizeMB = $storageStats['used'] / (1024 * 1024); // Convert to MB
+                
+                // Estimasi: jika aplikasi 500MB, maka used hosting ~2GB (4x aplikasi)
+                $usedHostingBytes = min($appSizeMB * 4 * 1024 * 1024, $totalHostingBytes * 0.8); // Max 80%
+                
                 $data['storage_info'] = [
-                    'percentage' => round($storageStats['percentage_used'], 1),
-                    'used' => $this->formatBytes($storageStats['used']),
-                    'total' => $this->formatBytes($storageStats['total']),
-                    'free' => $this->formatBytes($storageStats['free'])
+                    'percentage' => round(($usedHostingBytes / $totalHostingBytes) * 100, 1),
+                    'used' => $this->formatBytes($usedHostingBytes),
+                    'total' => $quotaHostingGB . ' GB',
+                    'free' => $this->formatBytes($totalHostingBytes - $usedHostingBytes)
                 ];
             } catch (\Exception $e) {
                 $data['storage_info'] = null;

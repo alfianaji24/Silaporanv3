@@ -142,4 +142,22 @@ class User extends Authenticatable
 
         return $this->departemens->pluck('kode_dept')->toArray();
     }
+
+    /**
+     * Get approval admin for delegation
+     * If user is karyawan with linked admin, return admin user
+     * Otherwise return null
+     *
+     * @return User|null
+     */
+    public function getApprovalAdmin()
+    {
+        if ($this->hasRole('karyawan')) {
+            $userkaryawan = \App\Models\Userkaryawan::where('id_user', $this->id)->first();
+            if ($userkaryawan && $userkaryawan->approval_admin_id) {
+                return User::find($userkaryawan->approval_admin_id);
+            }
+        }
+        return null;
+    }
 }
