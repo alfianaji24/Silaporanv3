@@ -222,7 +222,8 @@ class PublicPresensiController extends Controller
                     if ($presensi_hariini != null) {
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_in' => $jam_presensi,
-                            'foto_in' => $fileName
+                            'foto_in' => $fileName,
+                            'tipe_presensi_in' => 'kios'
                         ]);
                     } else {
                         Presensi::create([
@@ -235,7 +236,8 @@ class PublicPresensiController extends Controller
                             'foto_in' => $fileName,
                             'foto_out' => null,
                             'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
-                            'status' => 'h'
+                            'status' => 'h',
+                            'tipe_presensi_in' => 'kios'
                         ]);
                     }
 
@@ -294,7 +296,8 @@ class PublicPresensiController extends Controller
                     if ($presensi_hariini != null) {
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_out' => $jam_presensi,
-                            'foto_out' => $fileName
+                            'foto_out' => $fileName,
+                            'tipe_presensi_out' => 'kios'
                         ]);
                     } else {
                         Presensi::create([
@@ -307,7 +310,8 @@ class PublicPresensiController extends Controller
                             'foto_in' => null,
                             'foto_out' => $fileName,
                             'kode_jam_kerja' => $jam_kerja->kode_jam_kerja,
-                            'status' => 'h'
+                            'status' => 'h',
+                            'tipe_presensi_out' => 'kios'
                         ]);
                     }
 
@@ -376,5 +380,19 @@ class PublicPresensiController extends Controller
             'Sun' => 'Minggu', 'Mon' => 'Senin', 'Tue' => 'Selasa', 'Wed' => 'Rabu', 'Thu' => 'Kamis', 'Fri' => 'Jumat', 'Sat' => 'Sabtu'
         ];
         return $namaHari[$hari] ?? $hari;
+    }
+
+    /**
+     * Get attendance method text for WhatsApp notification
+     */
+    private function getTipePresensiText($tipe_presensi)
+    {
+        $mapping = [
+            'fingerprint' => 'via: Fingerprint',
+            'mobile' => 'via: Mobile',
+            'kios' => 'via: Kios',
+            'face_recognition' => 'via: Face Recognition'
+        ];
+        return $mapping[$tipe_presensi] ?? 'via: Mobile';
     }
 }

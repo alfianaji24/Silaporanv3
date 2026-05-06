@@ -511,7 +511,7 @@ class PresensiController extends Controller
                                 'jam_in' => $jam_presensi,
                                 'lokasi_in' => $lokasi,
                                 'foto_in' => $fileName,
-                                'tipe_presensi' => 'mobile'
+                                'tipe_presensi_in' => 'mobile'
                             ]);
                         } else {
                             Presensi::create([
@@ -525,7 +525,7 @@ class PresensiController extends Controller
                                 'foto_out' => null,
                                 'kode_jam_kerja' => $kode_jam_kerja,
                                 'status' => 'h',
-                                'tipe_presensi' => 'mobile'
+                                'tipe_presensi_in' => 'mobile'
                             ]);
                         }
 
@@ -590,7 +590,7 @@ class PresensiController extends Controller
                                 'jam_out' => $jam_presensi,
                                 'lokasi_out' => $lokasi,
                                 'foto_out' => $fileName,
-                                'tipe_presensi' => 'mobile'
+                                'tipe_presensi_out' => 'mobile'
                             ]);
                         } else {
                             // Jika tidak ada presensi, buat baru dengan tanggal yang sesuai
@@ -609,7 +609,7 @@ class PresensiController extends Controller
                                 'foto_out' => $fileName,
                                 'kode_jam_kerja' => $kode_jam_kerja,
                                 'status' => 'h',
-                                'tipe_presensi' => 'mobile'
+                                'tipe_presensi_out' => 'mobile'
                             ]);
                         }
 
@@ -627,7 +627,13 @@ class PresensiController extends Controller
                                     ->where('tanggal', $tanggal_presensi)
                                     ->first();
                                 
-                                $tipe_presensi_text = $attendance_record ? $this->getTipePresensiText($attendance_record->tipe_presensi) : 'via: Mobile';
+                                // Check if this is mixed attendance
+                                if ($attendance_record && $attendance_record->tipe_presensi_in && $attendance_record->tipe_presensi_in !== 'mobile') {
+                                    $in_method = $this->getTipePresensiText($attendance_record->tipe_presensi_in);
+                                    $tipe_presensi_text = "Masuk: {$in_method}, Pulang: via: Mobile";
+                                } else {
+                                    $tipe_presensi_text = 'via: Mobile';
+                                }
 
                                 $message = "📢 INFO ABSEN PULANG\n\n"
                                     . "👤 Nama: {$karyawan->nama_karyawan}\n"
@@ -695,7 +701,9 @@ class PresensiController extends Controller
     {
         $mapping = [
             'fingerprint' => 'via: Fingerprint',
+            'fingerprint_out' => 'via: Fingerprint (Pulang)',
             'mobile' => 'via: Mobile',
+            'kios' => 'via: Kios',
             'face_recognition' => 'via: Face Recognition'
         ];
         return $mapping[$tipe_presensi] ?? 'via: Mobile';

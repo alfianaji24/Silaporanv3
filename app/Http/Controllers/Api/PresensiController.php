@@ -155,7 +155,7 @@ class PresensiController extends Controller
                     if ($presensi_hariini != null) {
                         Presensi::where('id', $presensi_hariini->id)->update([
                             'jam_in' => $jam_presensi,
-                            'tipe_presensi' => 'fingerprint'
+                            'tipe_presensi_in' => 'fingerprint'
                         ]);
                     }
                     else {
@@ -168,7 +168,7 @@ class PresensiController extends Controller
                             'foto_out' => null,
                             'kode_jam_kerja' => $kode_jam_kerja,
                             'status' => 'h',
-                            'tipe_presensi' => 'fingerprint'
+                            'tipe_presensi_in' => 'fingerprint'
                         ]);
                     }
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
@@ -221,7 +221,7 @@ class PresensiController extends Controller
                 if ($presensi_hariini != null) {
                     Presensi::where('id', $presensi_hariini->id)->update([
                         'jam_out' => $jam_presensi,
-                        'tipe_presensi' => 'fingerprint'
+                        'tipe_presensi_out' => 'fingerprint'
                     ]);
                 }
                 else {
@@ -234,7 +234,7 @@ class PresensiController extends Controller
                         'foto_in' => null,
                         'kode_jam_kerja' => $kode_jam_kerja,
                         'status' => 'h',
-                        'tipe_presensi' => 'fingerprint'
+                        'tipe_presensi_out' => 'fingerprint'
                     ]);
                 }
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
@@ -246,6 +246,14 @@ class PresensiController extends Controller
                             ->first();
                         
                         $tipe_presensi_text = 'via: Fingerprint';
+                        
+                        // Check if this is mixed attendance
+                        if ($attendance_record && $attendance_record->tipe_presensi_in && $attendance_record->tipe_presensi_in !== 'fingerprint') {
+                            $in_method = $this->getTipePresensiText($attendance_record->tipe_presensi_in);
+                            $tipe_presensi_text = "Masuk: {$in_method}, Pulang: via: Fingerprint";
+                        } else {
+                            $tipe_presensi_text = 'via: Fingerprint';
+                        }
 
                         // Deteksi pulang cepat (mirip seperti deteksi terlambat)
                         $is_pulang_cepat = strtotime($jam_presensi) < strtotime($jam_pulang);
@@ -283,10 +291,43 @@ class PresensiController extends Controller
     }
 
 
-    function sendwa($no_hp, $message)
+    private function sendwa($no_hp, $message)
     {
         dispatch(new SendWaMessage($no_hp, $message));
     }
+
+    /**
+     * Get attendance method text for WhatsApp notification
+     */
+    private function getTipePresensiText($tipe_presensi)
+    {
+        $mapping = [
+            'fingerprint' => 'via: Fingerprint',
+            'mobile' => 'via: Mobile',
+            'kios' => 'via: Kios',
+            'face_recognition' => 'via: Face Recognition'
+        ];
+        return $mapping[$tipe_presensi] ?? 'via: Mobile';
+    }
+
+    /**
+     * API: Get attendance history for a user
+     * @param Request $request
+     * @param string $userId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function history(Request $request, $userId)
+    {
+        $records = Presensi::where('nik', $userId)
+            ->orderBy('tanggal', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $records
+        ]);
+    }
+}
 
 /**
  * Menerima data dari mesin Fingerspot REVO melalui ADMS
@@ -468,22 +509,3 @@ class PresensiController extends Controller
 //             ->header('Connection', 'close');
 //     }
 // }
-
-    /**
-     * API: Get attendance history for a user
-     * @param Request $request
-     * @param string $userId
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function history(Request $request, $userId)
-    {
-        $records = Presensi::where('nik', $userId)
-            ->orderBy('tanggal', 'desc')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'data' => $records
-        ]);
-    }
-}
