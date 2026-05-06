@@ -149,7 +149,7 @@ class Globalprovider extends ServiceProvider
                      if (!empty($userDepartemens)) $data_izin_dinas->whereIn('karyawan.kode_dept', $userDepartemens);
                 }
                 
-                $data_izin = $data_izinabsen->unionAll($data_izinsakit)->unionAll($data_izincuti)->unionAll($data_izin_dinas)->get();
+                $data_izin = $data_izinabsen->unionAll($data_izinsakit)->unionAll($data_izincuti)->unionAll($data_izin_dinas)->orderBy('created_at', 'desc')->get();
 
                 $notifikasi_ajuan_absen = $notifikasi_izinabsen + $notifikasi_izincuti + $notifikasi_izinsakit + $notifikasi_izin_dinas + $notifikasi_ajuan_jadwal;
                 $shareddata = [
