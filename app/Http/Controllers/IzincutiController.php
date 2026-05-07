@@ -712,6 +712,11 @@ class IzincutiController extends Controller
                 return;
             }
 
+            // Hanya kirim notifikasi untuk level 1 (approval pertama)
+            if ($layer != 1) {
+                return;
+            }
+
             // Cari semua user dengan role yang sesuai dan akses ke cabang/dept tersebut
             $approvers = User::role($approvalLayer->role_name)
                 ->get()
