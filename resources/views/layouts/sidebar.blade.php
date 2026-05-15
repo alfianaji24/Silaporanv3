@@ -184,9 +184,9 @@
              </ul>
          </li>
          @endif
-        @if (auth()->user()->hasAnyPermission(['presensi.index', 'trackingpresensi.index']))
+        @if (auth()->user()->hasAnyPermission(['presensi.index', 'trackingpresensi.index', 'trackingkaryawan.index']))
              <li
-                 class="menu-item {{ request()->is(['presensi', 'presensi/*', 'trackingpresensi', 'trackingpresensi/*']) ? 'open' : '' }}">
+                 class="menu-item {{ request()->is(['presensi', 'presensi/*', 'trackingpresensi', 'trackingpresensi/*', 'tracking-karyawan', 'tracking-karyawan/*']) ? 'open' : '' }}">
                  <a href="javascript:void(0);" class="menu-link menu-toggle">
                      <i class="menu-icon tf-icons ti ti-device-desktop"></i>
                      <div>Presensi</div>
@@ -203,6 +203,13 @@
                          <li class="menu-item {{ request()->is(['trackingpresensi', 'trackingpresensi/*']) ? 'active' : '' }}">
                              <a href="{{ route('trackingpresensi.index') }}" class="menu-link">
                                  <div>Tracking Presensi</div>
+                             </a>
+                         </li>
+                     @endcan
+                     @can('trackingkaryawan.index')
+                         <li class="menu-item {{ request()->is(['tracking-karyawan', 'tracking-karyawan/*']) ? 'active' : '' }}">
+                             <a href="{{ route('trackingkaryawan.index') }}" class="menu-link">
+                                 <div>Tracking Karyawan Live</div>
                              </a>
                          </li>
                      @endcan

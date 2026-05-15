@@ -6,6 +6,7 @@ use App\Models\Pengaturanumum;
 use App\Models\Tutuplaporan;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 
 function buatkode($nomor_terakhir, $kunci, $jumlah_karakter = 0)
 {
@@ -336,10 +337,51 @@ function hitungHari($startDate, $endDate)
     }
 }
 
+function sidStorageLocation(?string $filename): ?array
+{
+    if (empty($filename)) {
+        return null;
+    }
+
+    $candidates = [
+        ['disk' => 'public', 'path' => 'uploads/sid/' . $filename],
+        ['disk' => 'public', 'path' => 'public/uploads/sid/' . $filename],
+        ['disk' => 'local', 'path' => 'public/uploads/sid/' . $filename],
+    ];
+
+    foreach ($candidates as $candidate) {
+        if (Storage::disk($candidate['disk'])->exists($candidate['path'])) {
+            return $candidate;
+        }
+    }
+
+    return null;
+}
+
+function sidStoragePath(?string $filename): ?string
+{
+    $location = sidStorageLocation($filename);
+
+    return $location['path'] ?? null;
+}
+
+function sidAbsolutePath(?string $filename): ?string
+{
+    $location = sidStorageLocation($filename);
+
+    return $location
+        ? Storage::disk($location['disk'])->path($location['path'])
+        : null;
+}
+
+function sidFileExists(?string $filename): bool
+{
+    return sidStorageLocation($filename) !== null;
+}
+
 function getSid($file)
 {
-    $url = url('/storage/uploads/sid/' . $file);
-    return $url;
+    return route('izinsakit.sid', ['filename' => $file]);
 }
 
 function hitungpulangcepat($tanggal_presensi, $jam_out, $jam_pulang, $istirahat, $jam_awal_istirahat, $jam_akhir_istirahat, $lintashari)

@@ -104,8 +104,8 @@
                                                 </div>
                                                 @if (!empty($d->doc_sid))
                                                     <div class="mt-1 d-block d-md-none">
-                                                        @if (Storage::disk('public')->exists('/uploads/sid/' . $d->doc_sid))
-                                                            <a href="{{ url('storage/uploads/sid/'.$d->doc_sid) }}" target="_blank" class="text-primary" style="font-size: 11px;">
+                                                        @if (sidFileExists($d->doc_sid))
+                                                            <a href="{{ getSid($d->doc_sid) }}" target="_blank" class="text-primary" style="font-size: 11px;">
                                                                 <i class="ti ti-file-text me-1"></i>SID
                                                             </a>
                                                         @else
@@ -123,8 +123,8 @@
                                                     {{ $d->kode_izin_sakit }} <span class="mx-1">•</span> {{ $lama }} Hari
                                                     @if (!empty($d->doc_sid))
                                                         <span class="mx-1">•</span>
-                                                        @if (Storage::disk('public')->exists('/uploads/sid/' . $d->doc_sid))
-                                                            <a href="{{ url('storage/uploads/sid/'.$d->doc_sid) }}" target="_blank" class="text-primary" title="Lihat SID">
+                                                        @if (sidFileExists($d->doc_sid))
+                                                            <a href="{{ getSid($d->doc_sid) }}" target="_blank" class="text-primary" title="Lihat SID">
                                                                 <i class="ti ti-file-text me-1"></i>SID
                                                             </a>
                                                         @else

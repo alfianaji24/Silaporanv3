@@ -29,6 +29,8 @@ use App\Http\Controllers\MesinFingerprintController;
 use App\Http\Controllers\KpiPeriodController;
 use App\Http\Controllers\KunjunganController;
 use App\Http\Controllers\TrackingKunjunganController;
+use App\Http\Controllers\TrackingKaryawanController;
+use App\Http\Controllers\EmployeeLocationController;
 use App\Http\Controllers\JenistunjanganController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\LaporanController;
@@ -684,6 +686,16 @@ Route::middleware('auth')->group(function () {
     }
     );
 
+    // Tracking Karyawan Live Routes
+    Route::middleware('permission:trackingkaryawan.index')->controller(TrackingKaryawanController::class)->group(function () {
+        Route::get('/tracking-karyawan', 'index')->name('trackingkaryawan.index');
+        Route::get('/tracking-karyawan/live', 'getLiveData')->name('trackingkaryawan.getData');
+    }
+    );
+
+    // Kirim lokasi GPS dari karyawan (session web / WebView)
+    Route::post('/location/ping', [EmployeeLocationController::class, 'ping'])->name('location.ping');
+
     // Aktivitas Karyawan Routes
     Route::controller(AktivitasKaryawanController::class)->group(function () {
         Route::get('/aktivitaskaryawan', 'index')->name('aktivitaskaryawan.index')->can('aktivitaskaryawan.index');
@@ -756,6 +768,13 @@ Route::middleware('auth')->group(function () {
     }
     );
 
+    // Session check & logout untuk karyawan (WebView / mobile)
+    Route::controller(SessionManagementController::class)->group(function () {
+        Route::get('/sessions/check', 'checkSession')->name('sessions.check');
+        Route::post('/sessions/logout-flutter', 'logoutFlutter')->name('sessions.logout-flutter');
+    }
+    );
+
     // Session Management Routes (Super Admin Only)
     Route::middleware('role:super admin')->controller(SessionManagementController::class)->group(function () {
         Route::get('/sessions', 'index')->name('sessions.index');
@@ -763,8 +782,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
         Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
         Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
-        Route::get('/sessions/check', 'checkSession')->name('sessions.check');
-        Route::post('/sessions/logout-flutter', 'logoutFlutter')->name('sessions.logout-flutter');
     }
     );
 
@@ -908,6 +925,10 @@ Route::controller(ListAccountController::class)->group(function () {
 // Endpoint khusus untuk menangani mesin fingerprint ADMS / X100C tanpa prefix /api
 Route::any('/iclock/cdata', [\App\Http\Controllers\Api\AdmsController::class , 'receiveX100c']);
 
+// Serve file SID lewat Laravel (tidak bergantung symlink public/storage)
+Route::get('/files/sid/{filename}', [IzinsakitController::class, 'serveSid'])
+    ->where('filename', '[A-Za-z0-9._-]+')
+    ->name('izinsakit.sid');
 
 // Storage Management Routes
 Route::middleware('auth')->controller(StorageController::class)->group(function () {

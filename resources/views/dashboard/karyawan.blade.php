@@ -1099,6 +1099,7 @@
             });
         }
     </script>
+    @include('partials.location-tracker')
 </body>
 </html>
 

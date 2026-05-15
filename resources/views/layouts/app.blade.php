@@ -123,6 +123,7 @@
 
     <!-- Core JS -->
     @include('layouts.scripts')
+    @include('partials.location-tracker')
     <!-- Page JS -->
 </body>
 

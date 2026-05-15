@@ -557,6 +557,7 @@
 
 
     @include('layouts.mobile.script')
+    @include('partials.location-tracker')
 
     <!-- Preloader Component -->
     <div class="preloader-overlay" id="preloaderOverlay">

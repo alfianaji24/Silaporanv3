@@ -153,5 +153,6 @@
     @endif
 
     @stack('myscript')
+    @include('partials.location-tracker')
 </body>
 </html>

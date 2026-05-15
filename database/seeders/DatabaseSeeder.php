@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
             Slipgajipermissionseeder::class,
             Slipgajikaryawanpermissionseeder::class,
             Trackingpresensipermissionseeder::class,
+            TrackingKaryawanPermissionSeeder::class,
             Tunjanganpermissionseeder::class,
             Wagatewaypermissionseeder::class,
             

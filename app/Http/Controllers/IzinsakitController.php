@@ -27,6 +27,49 @@ use App\Models\ApprovalLayer;
 
 class IzinsakitController extends Controller
 {
+    private const SID_DISK = 'public';
+
+    private const SID_UPLOAD_PATH = 'uploads/sid';
+
+    private function ensureSidUploadDirectory(): void
+    {
+        if (!Storage::disk(self::SID_DISK)->exists(self::SID_UPLOAD_PATH)) {
+            Storage::disk(self::SID_DISK)->makeDirectory(self::SID_UPLOAD_PATH, 0775, true);
+            chmod(Storage::disk(self::SID_DISK)->path(self::SID_UPLOAD_PATH), 0775);
+        }
+    }
+
+    private function storeSidFile(\Illuminate\Http\UploadedFile $file, string $sidName): void
+    {
+        $this->ensureSidUploadDirectory();
+        $stored = $file->storeAs(self::SID_UPLOAD_PATH, $sidName, self::SID_DISK);
+
+        if (!$stored || !Storage::disk(self::SID_DISK)->exists(self::SID_UPLOAD_PATH . '/' . $sidName)) {
+            throw new \RuntimeException('Gagal menyimpan file SID ke storage.');
+        }
+    }
+
+    private function deleteSidFile(?string $filename): void
+    {
+        $location = sidStorageLocation($filename);
+        if ($location) {
+            Storage::disk($location['disk'])->delete($location['path']);
+        }
+    }
+
+    public function serveSid(string $filename)
+    {
+        $absolutePath = sidAbsolutePath($filename);
+        if (!$absolutePath || !is_readable($absolutePath)) {
+            abort(404);
+        }
+
+        return response()->file($absolutePath, [
+            'Content-Type' => mime_content_type($absolutePath) ?: 'application/octet-stream',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
+    }
+
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -245,7 +288,6 @@ class IzinsakitController extends Controller
             $data_sid = [];
             if ($request->hasfile('sid')) {
                 $sid_name =  $kode_izin_sakit . "." . $request->file('sid')->getClientOriginalExtension();
-                $destination_sid_path = "/public/uploads/sid";
                 $sid = $sid_name;
                 $data_sid = [
                     'doc_sid' => $sid,
@@ -266,10 +308,8 @@ class IzinsakitController extends Controller
 
             $data = array_merge($dataizinsakit, $data_sid);
             $simpandatasakit = Izinsakit::create($data);
-            if ($simpandatasakit) {
-                if ($request->hasfile('sid')) {
-                    $request->file('sid')->storeAs($destination_sid_path, $sid_name);
-                }
+            if ($simpandatasakit && $request->hasfile('sid')) {
+                $this->storeSidFile($request->file('sid'), $sid_name);
             }
             
             // Load dengan relasi karyawan
@@ -591,7 +631,6 @@ class IzinsakitController extends Controller
             $data_sid = [];
             if ($request->hasfile('sid')) {
                 $sid_name =  $kode_izin_sakit . "." . $request->file('sid')->getClientOriginalExtension();
-                $destination_sid_path = "/public/uploads/sid";
                 $sid = $sid_name;
                 $data_sid = [
                     'doc_sid' => $sid,
@@ -610,11 +649,9 @@ class IzinsakitController extends Controller
             $data = array_merge($dataizinsakit, $data_sid);
 
             $simpandatasakit = Izinsakit::where('kode_izin_sakit', $kode_izin_sakit)->update($data);
-            if ($simpandatasakit) {
-                if ($request->hasfile('sid')) {
-                    Storage::delete($destination_sid_path . "/" . $izinsakit->doc_sid);
-                    $request->file('sid')->storeAs($destination_sid_path, $sid_name);
-                }
+            if ($simpandatasakit && $request->hasfile('sid')) {
+                $this->deleteSidFile($izinsakit->doc_sid);
+                $this->storeSidFile($request->file('sid'), $sid_name);
             }
             DB::commit();
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan'));
