@@ -120,12 +120,15 @@ class PublicPresensiController extends Controller
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
         $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
 
+        if (presensiLintasHariTerlewat($presensi_kemarin, $jam_sekarang, $batas_presensi_lintashari)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => pesanBatasPresensiLintasHari($batas_presensi_lintashari),
+            ], 200);
+        }
+
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
         $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
-        if ($jam_sekarang > $batas_presensi_lintashari && $lintas_hari == 1) {
-            $tanggal_presensi = $tanggal_sekarang;
-            $tanggal_pulang = $tanggal_besok;
-        }
 
         $jam_kerja = $this->getJamKerjaKaryawan($karyawan);
         if (!$jam_kerja) {

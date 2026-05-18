@@ -92,6 +92,15 @@ class FacerecognitionpresensiController extends Controller
             ->where('tanggal', $tanggal_kemarin)->first();
 
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
+        $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
+
+        if (presensiLintasHariTerlewat($presensi_kemarin, $jam_sekarang, $batas_presensi_lintashari)) {
+            return response()->json([
+                'status' => false,
+                'message' => pesanBatasPresensiLintasHari($batas_presensi_lintashari),
+                'notifikasi' => 'notifikasi_batas_lintashari',
+            ], 400);
+        }
 
         // Get Lokasi User
         $koordinat_user = explode(",", $lokasi);

@@ -434,6 +434,69 @@ function hitungpulangcepat($tanggal_presensi, $jam_out, $jam_pulang, $istirahat,
         return 0;
     }
 }
+
+/**
+ * Shift lintas hari kemarin belum absen pulang dan sudah lewat batas_presensi_lintashari.
+ */
+function presensiLintasHariTerlewat($presensi_kemarin, $jam_sekarang, $batas_presensi_lintashari)
+{
+    if (!$presensi_kemarin || (int) ($presensi_kemarin->lintashari ?? 0) !== 1) {
+        return false;
+    }
+
+    if (!empty($presensi_kemarin->jam_out)) {
+        return false;
+    }
+
+    $jam = date('H:i:s', strtotime($jam_sekarang));
+    $batas = date('H:i:s', strtotime($batas_presensi_lintashari));
+
+    return $jam > $batas;
+}
+
+function pesanBatasPresensiLintasHari($batas_presensi_lintashari)
+{
+    return 'Batas waktu presensi lintas hari telah lewat (pukul ' . formatIndo3($batas_presensi_lintashari) . '). '
+        . 'Anda belum melakukan absen pulang untuk shift kemarin. Silakan hubungi HR/atasan.';
+}
+
+/**
+ * Deteksi pulang cepat untuk notifikasi WA (sama dengan perhitungan laporan).
+ */
+function deteksiPulangCepatNotifikasi(
+    $tanggal_presensi,
+    $waktu_absen,
+    $jam_pulang,
+    $lintashari,
+    $istirahat = 0,
+    $jam_awal_istirahat = '00:00:00',
+    $jam_akhir_istirahat = '00:00:00'
+) {
+    if (empty($waktu_absen) || empty($jam_pulang)) {
+        return ['is_pulang_cepat' => false, 'menit' => 0];
+    }
+
+    $jam_out = date('Y-m-d H:i', strtotime($waktu_absen));
+    $pulangcepat_jam = hitungpulangcepat(
+        $tanggal_presensi,
+        $jam_out,
+        $jam_pulang,
+        (int) $istirahat,
+        $jam_awal_istirahat,
+        $jam_akhir_istirahat,
+        (int) $lintashari
+    );
+
+    if ($pulangcepat_jam <= 0) {
+        return ['is_pulang_cepat' => false, 'menit' => 0];
+    }
+
+    return [
+        'is_pulang_cepat' => true,
+        'menit' => (int) round($pulangcepat_jam * 60),
+    ];
+}
+
 function hitungjamterlambat($jam_in, $jam_mulai)
 {
 

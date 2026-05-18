@@ -49,9 +49,9 @@ class PresensiController extends Controller
 
         $tanggal_sekarang = date("Y-m-d", strtotime($scan));
         $jam_sekarang = date("H:i", strtotime($scan));
-        $tanggal_kemarin = date("Y-m-d", strtotime("-1 days"));
+        $tanggal_kemarin = date("Y-m-d", strtotime("-1 day", strtotime($tanggal_sekarang)));
 
-        $tanggal_besok = date("Y-m-d", strtotime("+1 days"));
+        $tanggal_besok = date("Y-m-d", strtotime("+1 day", strtotime($tanggal_sekarang)));
 
         //Cek Presensi Kemarin
         $presensi_kemarin = Presensi::where('nik', $karyawan->nik)
@@ -62,15 +62,17 @@ class PresensiController extends Controller
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
         $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
 
+        if (presensiLintasHariTerlewat($presensi_kemarin, $jam_sekarang, $batas_presensi_lintashari)) {
+            return response()->json([
+                'status' => false,
+                'message' => pesanBatasPresensiLintasHari($batas_presensi_lintashari),
+                'notifikasi' => 'notifikasi_batas_lintashari',
+            ], 400);
+        }
+
         //Jika Presensi Kemarin Status Lintas Hari nya 1 Makan Tanggal Presensi Sekarang adalah Tanggal Kemarin
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
         $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
-
-        // Jika jam sekarang lebih besar dari batas_presensi_lintashari dan lintas hari aktif, reset ke hari ini
-        if ($jam_sekarang > $batas_presensi_lintashari && $lintas_hari == 1) {
-            $tanggal_presensi = $tanggal_sekarang;
-            $tanggal_pulang = $tanggal_besok;
-        }
 
 
         $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
@@ -247,9 +249,25 @@ class PresensiController extends Controller
                         
                         $tipe_presensi_text = 'via: Fingerprint';
 
-                        // Deteksi pulang cepat (mirip seperti deteksi terlambat)
-                        $is_pulang_cepat = strtotime($jam_presensi) < strtotime($jam_pulang);
-                        $pulang_cepat_menit = $is_pulang_cepat ? floor((strtotime($jam_pulang) - strtotime($jam_presensi)) / 60) : 0;
+                        // Deteksi pulang cepat — sama dengan perhitungan laporan (hitungpulangcepat)
+                        $lintashari_flag = ($presensi_kemarin && $presensi_kemarin->lintashari == 1)
+                            ? 1
+                            : (int) ($jam_kerja->lintashari ?? 0);
+                        $jadwal_pulang = ($presensi_kemarin && $lintashari_flag == 1)
+                            ? $presensi_kemarin
+                            : $jam_kerja;
+                        $jam_pulang_jadwal = $jadwal_pulang->jam_pulang;
+                        $pulang_cepat = deteksiPulangCepatNotifikasi(
+                            $tanggal_presensi,
+                            $jam_presensi,
+                            $jam_pulang_jadwal,
+                            $lintashari_flag,
+                            $jadwal_pulang->istirahat ?? 0,
+                            $jadwal_pulang->jam_awal_istirahat ?? '00:00:00',
+                            $jadwal_pulang->jam_akhir_istirahat ?? '00:00:00'
+                        );
+                        $is_pulang_cepat = $pulang_cepat['is_pulang_cepat'];
+                        $pulang_cepat_menit = $pulang_cepat['menit'];
 
                         $message = "📢 INFO ABSEN PULANG\n\n"
                                 . "👤 Nama: {$karyawan->nama_karyawan}\n"

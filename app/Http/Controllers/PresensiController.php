@@ -318,12 +318,17 @@ class PresensiController extends Controller
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
 
         $batas_presensi_lintashari = $generalsetting->batas_presensi_lintashari;
+
+        if (presensiLintasHariTerlewat($presensi_kemarin, $jam_sekarang, $batas_presensi_lintashari)) {
+            return response()->json([
+                'status' => false,
+                'message' => pesanBatasPresensiLintasHari($batas_presensi_lintashari),
+                'notifikasi' => 'notifikasi_batas_lintashari',
+            ], 400);
+        }
+
         $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
         $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
-        if ($jam_sekarang > $batas_presensi_lintashari && $lintas_hari == 1) {
-            $tanggal_presensi = $tanggal_sekarang;
-            $tanggal_pulang = $tanggal_besok;
-        }
 
         //dd($jam_sekarang);
         //Get Lokasi User
@@ -616,9 +621,24 @@ class PresensiController extends Controller
                         //Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                         if ($generalsetting->notifikasi_wa == 1) {
                             try {
-                                // Deteksi pulang cepat (mirip seperti deteksi terlambat)
-                                $is_pulang_cepat = $jam_presensi_carbon->lt($jam_pulang_carbon);
-                                $pulang_cepat_menit = $is_pulang_cepat ? $jam_pulang_carbon->diffInMinutes($jam_presensi_carbon) : 0;
+                                // Deteksi pulang cepat — sama dengan perhitungan laporan (hitungpulangcepat)
+                                $lintashari_flag = ($presensi_kemarin && $presensi_kemarin->lintashari == 1)
+                                    ? 1
+                                    : (int) ($jam_kerja->lintashari ?? 0);
+                                $jadwal_pulang = ($presensi_kemarin && $lintashari_flag == 1)
+                                    ? $presensi_kemarin
+                                    : $jam_kerja;
+                                $pulang_cepat = deteksiPulangCepatNotifikasi(
+                                    $tanggal_presensi,
+                                    $jam_presensi,
+                                    $jam_kerja_pulang,
+                                    $lintashari_flag,
+                                    $jadwal_pulang->istirahat ?? 0,
+                                    $jadwal_pulang->jam_awal_istirahat ?? '00:00:00',
+                                    $jadwal_pulang->jam_akhir_istirahat ?? '00:00:00'
+                                );
+                                $is_pulang_cepat = $pulang_cepat['is_pulang_cepat'];
+                                $pulang_cepat_menit = $pulang_cepat['menit'];
 
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
