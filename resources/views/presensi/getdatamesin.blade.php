@@ -1,5 +1,12 @@
 <div class="row">
     <div class="col-12">
+        @if(!empty($lintashari_jadwal) && $lintashari_jadwal)
+            <div class="alert alert-info mb-3">
+                <i class="ti ti-moon me-1"></i>
+                Jadwal lintas hari: data mesin diambil dari <strong>{{ $tanggal ?? '' }}</strong> s.d. <strong>{{ $end_date ?? '' }}</strong>
+                (scan pulang setelah tengah malam ikut hari berikutnya).
+            </div>
+        @endif
         <table class="table">
             <thead class="table-dark">
                 <tr>
