@@ -22,7 +22,16 @@ class CheckLoginRestriction
                 'email' => $request->input('email')
             ]);
             
-            $credentials = $request->only('email', 'password');
+            $idUser = $request->input('id_user');
+            $idType = filter_var($idUser, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+            $credentials = [
+                $idType => $idUser,
+                'password' => $request->input('password'),
+            ];
+
+            if (!$idUser || !$credentials['password']) {
+                return $next($request);
+            }
             
             // Try to authenticate user to check role
             if (Auth::attempt($credentials)) {
@@ -37,9 +46,7 @@ class CheckLoginRestriction
                 // Check if user is karyawan
                 if ($user->hasRole('karyawan')) {
                     // Check for existing active sessions (single device rule)
-                    $existingSession = UserSession::where('user_id', $user->id)
-                        ->active()
-                        ->first();
+                    $existingSession = UserSession::getBlockingActiveSession($user->id);
                     
                     \Log::info('Checking existing sessions for karyawan', [
                         'user_id' => $user->id,

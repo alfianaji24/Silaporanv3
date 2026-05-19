@@ -13,6 +13,8 @@ class SessionManagementController extends Controller
      */
     public function index(Request $request)
     {
+        UserSession::expireStaleSessions();
+
         $query = UserSession::with(['user', 'forcedByAdmin'])
             ->orderBy('created_at', 'desc');
 
@@ -120,6 +122,8 @@ class SessionManagementController extends Controller
      */
     public function getUserSessions($userId)
     {
+        UserSession::expireStaleSessions($userId);
+
         $sessions = UserSession::with(['forcedByAdmin'])
             ->where('user_id', $userId)
             ->active()

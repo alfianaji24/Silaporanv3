@@ -61,6 +61,72 @@ class UserSession extends Model
         return $query->where('last_activity', '>=', now()->subHours($hours));
     }
 
+    /**
+     * Session lifetime in days (from pengaturan umum, same as Session Management UI).
+     */
+    public static function getSessionLifetimeDays(): int
+    {
+        $days = (int) (Pengaturanumum::find(1)?->session_time ?? 1);
+
+        return max(1, $days);
+    }
+
+    /**
+     * Deactivate stale sessions: idle past configured lifetime, or Laravel session no longer exists.
+     */
+    public static function expireStaleSessions(?int $userId = null): int
+    {
+        $cutoff = now()->subDays(static::getSessionLifetimeDays());
+        $deactivated = ['is_active' => false, 'logout_time' => now()];
+
+        $query = static::query()->where('is_active', true);
+
+        if ($userId !== null) {
+            $query->where('user_id', $userId);
+        }
+
+        $expiredCount = (clone $query)
+            ->where('last_activity', '<', $cutoff)
+            ->update($deactivated);
+
+        $orphanCount = 0;
+
+        if (config('session.driver') === 'database') {
+            $sessionTable = config('session.table', 'sessions');
+
+            $orphanCount = (clone $query)
+                ->whereNotExists(function ($sub) use ($sessionTable) {
+                    $sub->selectRaw('1')
+                        ->from($sessionTable)
+                        ->whereColumn("{$sessionTable}.id", 'user_sessions.session_id');
+                })
+                ->update($deactivated);
+        }
+
+        $total = $expiredCount + $orphanCount;
+
+        if ($total > 0) {
+            \Log::info('Expired stale user sessions', [
+                'user_id' => $userId,
+                'expired_by_idle' => $expiredCount,
+                'expired_orphaned' => $orphanCount,
+                'cutoff' => $cutoff->toDateTimeString(),
+            ]);
+        }
+
+        return $total;
+    }
+
+    /**
+     * Active session that should block login, after cleaning up stale rows.
+     */
+    public static function getBlockingActiveSession(int $userId): ?self
+    {
+        static::expireStaleSessions($userId);
+
+        return static::where('user_id', $userId)->active()->first();
+    }
+
     // Static methods for session management
     public static function createSession($user, $request)
     {

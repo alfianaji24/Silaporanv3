@@ -33,9 +33,7 @@ class LogUserLogin
             
             // Check for existing active sessions for karyawan
             if ($user->hasRole('karyawan')) {
-                $existingSession = UserSession::where('user_id', $user->id)
-                    ->active()
-                    ->first();
+                $existingSession = UserSession::getBlockingActiveSession($user->id);
                 
                 if ($existingSession) {
                     // Store session info for blocking alert

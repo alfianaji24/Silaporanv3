@@ -528,9 +528,10 @@ class WagatewayController extends Controller
 
     public function messages(Request $request)
     {
-        $query = Message::orderBy('created_at', 'desc');
         $filter = $request->query('filter') ?? 'success'; // Default ke 'success'
-        
+        $orderDirection = $filter === 'failed' ? 'asc' : 'desc';
+        $query = Message::orderBy('created_at', $orderDirection);
+
         if ($filter === 'failed') {
             $query->where('status', 'failed');
         } elseif ($filter === 'success') {
