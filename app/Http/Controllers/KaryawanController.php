@@ -38,7 +38,7 @@ class KaryawanController extends Controller
     {
         // Pecah nama menjadi kata-kata
         $words = explode(' ', trim($name));
-        
+
         if (count($words) === 1) {
             // Jika hanya satu kata, gunakan nama itu saja
             $username = strtolower($words[0]);
@@ -46,17 +46,17 @@ class KaryawanController extends Controller
             // Jika lebih dari satu kata, ambil kata pertama dan terakhir
             $firstName = strtolower($words[0]);
             $lastName = strtolower(end($words));
-            
+
             // Hapus karakter khusus
             $firstName = preg_replace('/[^a-z0-9]/', '', $firstName);
             $lastName = preg_replace('/[^a-z0-9]/', '', $lastName);
-            
+
             $username = $firstName . '.' . $lastName;
         }
-        
+
         // Hapus karakter khusus untuk username (kecuali titik)
         $username = preg_replace('/[^a-z0-9.]/', '', $username);
-        
+
         return $username;
     }
 
@@ -68,17 +68,17 @@ class KaryawanController extends Controller
         // Ambil nama depan saja
         $words = explode(' ', trim($name));
         $firstName = $words[0];
-        
+
         // Konversi ke lowercase dan hapus karakter khusus
         $email = strtolower($firstName);
         $email = preg_replace('/[^a-z0-9]/', '', $email);
-        
+
         // Ambil domain dari general setting
         $generalSetting = Pengaturanumum::first();
         $domain = $generalSetting ? $generalSetting->domain_email : 'gmail.com';
-        
+
         $email = $email . '@' . $domain;
-        
+
         return $email;
     }
 
@@ -179,17 +179,17 @@ class KaryawanController extends Controller
         $data['departemen'] = $user->getDepartemen();
         $data['jabatan'] = Jabatan::orderBy('kode_jabatan')->get();
         $data['status_karyawan'] = Statuskaryawan::orderBy('kode_status_karyawan')->get();
-        
+
         // Generate preview NIK untuk ditampilkan di form (simple increment)
         $lastKaryawan = Karyawan::orderBy('nik', 'desc')->first();
-        
+
         $lastNumber = 0;
         if ($lastKaryawan) {
             $lastNumber = (int)$lastKaryawan->nik;
         }
         $nextNumber = $lastNumber + 1;
         $data['nextNik'] = (string)$nextNumber;
-        
+
         return view('datamaster.karyawan.create', $data);
     }
 
@@ -228,7 +228,7 @@ class KaryawanController extends Controller
         try {
             // Generate NIK dengan simple increment (max NIK + 1)
             $lastKaryawan = Karyawan::orderBy('nik', 'desc')->first();
-            
+
             $lastNumber = 0;
             if ($lastKaryawan) {
                 $lastNumber = (int)$lastKaryawan->nik;
@@ -679,7 +679,7 @@ class KaryawanController extends Controller
             // Generate username dan email dari nama karyawan
             $username = $this->generateUsernameFromName($karyawan->nama_karyawan);
             $email = $this->generateEmailFromName($karyawan->nama_karyawan);
-            
+
             // Cek apakah username sudah ada
             $originalUsername = $username;
             $counter = 1;
@@ -687,7 +687,7 @@ class KaryawanController extends Controller
                 $username = $originalUsername . $counter;
                 $counter++;
             }
-            
+
             // Cek apakah email sudah ada
             $originalEmail = $email;
             $emailCounter = 1;
@@ -747,7 +747,7 @@ class KaryawanController extends Controller
                     // Generate username dan email dari nama karyawan (sama seperti generate individual)
                     $username = $this->generateUsernameFromName($k->nama_karyawan);
                     $email = $this->generateEmailFromName($k->nama_karyawan);
-                    
+
                     // Cek apakah username sudah ada
                     $originalUsername = $username;
                     $counter = 1;
@@ -755,7 +755,7 @@ class KaryawanController extends Controller
                         $username = $originalUsername . $counter;
                         $counter++;
                     }
-                    
+
                     // Cek apakah email sudah ada
                     $originalEmail = $email;
                     $emailCounter = 1;
