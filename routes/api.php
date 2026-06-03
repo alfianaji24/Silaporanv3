@@ -19,8 +19,31 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/app/config', function () {
+    return response()->json([
+        'success' => true,
+        'app_name' => config('app.name'),
+    ]);
+});
+
+Route::middleware(['auth:sanctum', 'role:karyawan'])->prefix('layanan')->group(function () {
+    Route::get('/idcard', [App\Http\Controllers\Api\LayananController::class, 'idcard']);
+    Route::get('/slipgaji', [App\Http\Controllers\Api\LayananController::class, 'slipgaji']);
+    Route::get('/kontrak', [App\Http\Controllers\Api\LayananController::class, 'kontrak']);
+    Route::get('/sp', [App\Http\Controllers\Api\LayananController::class, 'sp']);
+    Route::get('/jadwal', [App\Http\Controllers\Api\LayananController::class, 'jadwal']);
+    Route::get('/tukar-shift', [App\Http\Controllers\Api\LayananController::class, 'getTukarShift']);
+    Route::post('/tukar-shift', [App\Http\Controllers\Api\LayananController::class, 'submitTukarShift']);
+    Route::get('/tukar-shift/options', [App\Http\Controllers\Api\LayananController::class, 'tukarShiftOptions']);
+    Route::get('/kpi', [App\Http\Controllers\Api\LayananController::class, 'kpi']);
+    Route::get('/faceid', [App\Http\Controllers\Api\LayananController::class, 'faceid']);
+    Route::get('/aktivitas', [App\Http\Controllers\Api\LayananController::class, 'getAktivitas']);
+    Route::post('/aktivitas', [App\Http\Controllers\Api\LayananController::class, 'submitAktivitas']);
+    Route::get('/pengumuman', [App\Http\Controllers\Api\LayananController::class, 'pengumuman']);
+});
+
 Route::apiResource('/presensimachine', App\Http\Controllers\Api\PresensiController::class);
-Route::post('/presensi/log', [App\Http\Controllers\Api\PresensiController::class , 'log']);
+Route::post('/presensi/log', [App\Http\Controllers\Api\PresensiController::class , 'log'])->middleware(['auth:sanctum', 'role:karyawan']);
 
 // Endpoint fingerprint tanpa rate limiting
 // Karena sudah ada mekanisme duplikasi via cache di controller
@@ -69,4 +92,4 @@ Route::prefix('update')->group(function () {
 });
 
 // Endpoint histori presensi karyawan
-Route::get('/attendance/history/{userId}', [App\Http\Controllers\Api\PresensiController::class, 'history']);
+Route::get('/attendance/history/{userId}', [App\Http\Controllers\Api\PresensiController::class, 'history'])->middleware(['auth:sanctum', 'role:karyawan']);

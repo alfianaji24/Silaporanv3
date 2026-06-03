@@ -338,7 +338,6 @@
 @push('myscript')
 <script src="{{ asset('assets/external/js/face-model-cache.js') }}"></script>
 <style>
-
     .nav-pills .nav-link.active,
     .nav-pills .show>.nav-link {
         background-color: {{ $general_setting->theme_color_1 }} !important;

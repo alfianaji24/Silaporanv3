@@ -89,9 +89,10 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
     }
 
-    /* Reset potential safe-area-inset conflict from style.css */
+    /* Handle safe-area-inset for modern bezel-less devices */
     .appBottomMenu {
-        padding-bottom: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+        height: calc(56px + env(safe-area-inset-bottom)) !important;
     }
 </style>
 <div class="appBottomMenu">

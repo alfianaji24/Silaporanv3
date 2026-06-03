@@ -62,7 +62,7 @@ class AuthController extends Controller
             }
 
             // Ambil data karyawan
-            $karyawan = Karyawan::where('nik', $userKaryawan->nik)->first();
+            $karyawan = Karyawan::with('jabatan')->where('nik', $userKaryawan->nik)->first();
 
             if (!$karyawan) {
                 return response()->json([
@@ -83,6 +83,7 @@ class AuthController extends Controller
                 'nik' => $karyawan->nik,
                 'nama_karyawan' => $karyawan->nama_karyawan,
                 'kode_jabatan' => $karyawan->kode_jabatan,
+                'nama_jabatan' => $karyawan->jabatan?->nama_jabatan,
                 'kode_dept' => $karyawan->kode_dept,
                 'kode_cabang' => $karyawan->kode_cabang,
                 'roles' => $user->roles->pluck('name'),
@@ -124,7 +125,7 @@ class AuthController extends Controller
 
             // Get karyawan data
             $userKaryawan = Userkaryawan::where('id_user', $user->id)->first();
-            $karyawan = Karyawan::where('nik', $userKaryawan->nik ?? null)->first();
+            $karyawan = Karyawan::with('jabatan')->where('nik', $userKaryawan->nik ?? null)->first();
 
             $userData = [
                 'id' => (string) $user->id,
@@ -133,7 +134,12 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'nik' => $karyawan?->nik,
                 'nama_karyawan' => $karyawan?->nama_karyawan,
+                'kode_jabatan' => $karyawan?->kode_jabatan,
+                'nama_jabatan' => $karyawan?->jabatan?->nama_jabatan,
+                'kode_dept' => $karyawan?->kode_dept,
+                'kode_cabang' => $karyawan?->kode_cabang,
                 'roles' => $user->roles->pluck('name'),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ];
 
             return response()->json([
@@ -144,7 +150,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Server error',
+                'message' => 'Server error: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -186,7 +192,7 @@ class AuthController extends Controller
             $user = $request->user();
 
             $userKaryawan = Userkaryawan::where('id_user', $user->id)->first();
-            $karyawan = Karyawan::where('nik', $userKaryawan->nik ?? null)->first();
+            $karyawan = Karyawan::with('jabatan')->where('nik', $userKaryawan->nik ?? null)->first();
 
             $userData = [
                 'id' => (string) $user->id,
@@ -196,6 +202,7 @@ class AuthController extends Controller
                 'nik' => $karyawan?->nik,
                 'nama_karyawan' => $karyawan?->nama_karyawan,
                 'kode_jabatan' => $karyawan?->kode_jabatan,
+                'nama_jabatan' => $karyawan?->jabatan?->nama_jabatan,
                 'kode_dept' => $karyawan?->kode_dept,
                 'kode_cabang' => $karyawan?->kode_cabang,
                 'roles' => $user->roles->pluck('name'),

@@ -235,7 +235,9 @@ class SendWaMessage implements ShouldQueue
         if ($messageLog) {
             $this->updateMessageLogFailure($messageLog, $errorMessage);
         }
-        throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
+        throw new \RuntimeException(
+            'SendWaMessage Gateway gagal: HTTP ' . $response->status() . ' — ' . $errorMessage
+        );
     }
 
     protected function updateMessageLogFailure(Message $messageLog, string $errorMessage): void

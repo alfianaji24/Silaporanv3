@@ -229,38 +229,60 @@
 
         {{-- ===== ATTENDANCE SECTION ===== --}}
         <div class="px-5 mt-3 fade-in" style="animation-delay:.2s">
-            <div class="bg-white rounded-[15px] py-6 px-5 shadow-sm border border-gray-100 flex items-center">
-                {{-- Jam Masuk --}}
-                <div class="flex-1 flex items-center gap-3">
-                    <div class="flex items-center justify-center w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-50 border border-gray-100">
-                        @if (!empty($presensi->foto_in) && Storage::disk('public')->exists('/uploads/absensi/' . $presensi->foto_in))
-                            <img src="{{ url('/storage/uploads/absensi/' . $presensi->foto_in) }}" style="width:100%; height:100%; object-fit:cover;">
-                        @else
-                            <ion-icon name="camera-outline" style="font-size:32px; color: {{ $t['primary'] ?? '#2d5a4c' }}; grayscale: 0.2;"></ion-icon>
-                        @endif
+            <div class="bg-white rounded-[15px] p-5 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between">
+                    {{-- Jam Masuk --}}
+                    <div class="flex-1 flex items-center gap-3">
+                        <div class="flex items-center justify-center w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-50 border border-gray-100">
+                            @if (!empty($presensi->foto_in) && Storage::disk('public')->exists('/uploads/absensi/' . $presensi->foto_in))
+                                <img src="{{ url('/storage/uploads/absensi/' . $presensi->foto_in) }}" style="width:100%; height:100%; object-fit:cover;">
+                            @else
+                                <ion-icon name="camera-outline" style="font-size:32px; color: {{ $t['primary'] ?? '#2d5a4c' }}; grayscale: 0.2;"></ion-icon>
+                            @endif
+                        </div>
+                        <div>
+                            <span class="block text-[14px] font-bold text-gray-800" style="letter-spacing:-0.2px; line-height: 1.2;">Jam Masuk</span>
+                            <span class="block text-[16px] font-bold text-gray-400 mt-1" style="letter-spacing: 1px;">{{ !empty($presensi->jam_in) ? date('H:i', strtotime($presensi->jam_in)) : '-- : --' }}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span class="block text-[14px] font-bold text-gray-800" style="letter-spacing:-0.2px; line-height: 1.2;">Jam Masuk</span>
-                        <span class="block text-[16px] font-bold text-gray-400 mt-1" style="letter-spacing: 1px;">{{ !empty($presensi->jam_in) ? date('H:i', strtotime($presensi->jam_in)) : '-- : --' }}</span>
+
+                    {{-- Vertical Separator --}}
+                    <div class="w-[1.5px] h-[35px] bg-gray-100 mx-2"></div>
+
+                    {{-- Jam Pulang --}}
+                    <div class="flex-1 flex items-center gap-3 pl-4">
+                        <div class="flex items-center justify-center w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-50 border border-gray-100">
+                            @if (!empty($presensi->foto_out) && Storage::disk('public')->exists('/uploads/absensi/' . $presensi->foto_out))
+                                <img src="{{ url('/storage/uploads/absensi/' . $presensi->foto_out) }}" style="width:100%; height:100%; object-fit:cover;">
+                            @else
+                                <ion-icon name="camera-outline" style="font-size:32px; color: {{ $t['primary'] ?? '#2d5a4c' }}; grayscale: 0.2;"></ion-icon>
+                            @endif
+                        </div>
+                        <div>
+                            <span class="block text-[14px] font-bold text-gray-800" style="letter-spacing:-0.2px; line-height: 1.2;">Jam Pulang</span>
+                            <span class="block text-[16px] font-bold text-gray-400 mt-1" style="letter-spacing: 1px;">{{ !empty($presensi->jam_out) ? date('H:i', strtotime($presensi->jam_out)) : '-- : --' }}</span>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Vertical Separator --}}
-                <div class="w-[1.5px] h-[35px] bg-gray-100 mx-2"></div>
-
-                {{-- Jam Pulang --}}
-                <div class="flex-1 flex items-center gap-3 pl-4">
-                    <div class="flex items-center justify-center w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-50 border border-gray-100">
-                        @if (!empty($presensi->foto_out) && Storage::disk('public')->exists('/uploads/absensi/' . $presensi->foto_out))
-                            <img src="{{ url('/storage/uploads/absensi/' . $presensi->foto_out) }}" style="width:100%; height:100%; object-fit:cover;">
-                        @else
-                            <ion-icon name="camera-outline" style="font-size:32px; color: {{ $t['primary'] ?? '#2d5a4c' }}; grayscale: 0.2;"></ion-icon>
-                        @endif
-                    </div>
-                    <div>
-                        <span class="block text-[14px] font-bold text-gray-800" style="letter-spacing:-0.2px; line-height: 1.2;">Jam Pulang</span>
-                        <span class="block text-[16px] font-bold text-gray-400 mt-1" style="letter-spacing: 1px;">{{ !empty($presensi->jam_out) ? date('H:i', strtotime($presensi->jam_out)) : '-- : --' }}</span>
-                    </div>
+                {{-- Action Button --}}
+                <div class="mt-5">
+                    @if (empty($presensi->jam_in))
+                        <a href="{{ route('presensi.create') }}" class="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-[12px] text-white font-bold transition-all active:scale-95 shadow-md shadow-emerald-700/20" style="background: linear-gradient(135deg, {{ $t['primary'] ?? '#2d5a4c' }} 0%, #1c4538 100%);">
+                            <ion-icon name="finger-print-outline" style="font-size: 20px;"></ion-icon>
+                            Presensi Masuk (Check In)
+                        </a>
+                    @elseif (empty($presensi->jam_out))
+                        <a href="{{ route('presensi.create') }}" class="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-[12px] text-white font-bold transition-all active:scale-95 shadow-md shadow-amber-600/20" style="background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);">
+                            <ion-icon name="log-out-outline" style="font-size: 20px;"></ion-icon>
+                            Presensi Pulang (Check Out)
+                        </a>
+                    @else
+                        <button disabled class="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-[12px] text-emerald-800 bg-emerald-50 border border-emerald-200 font-bold cursor-not-allowed">
+                            <ion-icon name="checkmark-circle-outline" style="font-size: 20px;"></ion-icon>
+                            Presensi Hari Ini Selesai
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

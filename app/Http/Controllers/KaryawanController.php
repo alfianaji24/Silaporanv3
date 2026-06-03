@@ -304,6 +304,27 @@ class KaryawanController extends Controller
         return view('datamaster.karyawan.edit', $data);
     }
 
+    public function show($nik)
+    {
+        $nik = Crypt::decrypt($nik);
+
+        $data['general_setting'] = Pengaturanumum::first();
+        $data['karyawan'] = Karyawan::select('karyawan.*', 'departemen.nama_dept', 'jabatan.nama_jabatan', 'cabang.nama_cabang')
+            ->where('karyawan.nik', $nik)
+            ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+            ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+            ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
+            ->first();
+        $userKaryawan = Userkaryawan::where('nik', $nik)->first();
+        $data['user'] = $userKaryawan ? User::where('id', $userKaryawan->id_user)->first() : null;
+        $data['karyawan_wajah'] = Facerecognition::where('nik', $nik)->get();
+        $data['mutasi'] = MutasiKaryawan::where('nik', $nik)
+            ->orderBy('tanggal_mutasi', 'desc')
+            ->get();
+
+        return view('datamaster.karyawan.show', $data);
+    }
+
 
     public function update($nik, Request $request)
     {

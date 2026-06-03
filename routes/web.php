@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BirthdayController;
+use App\Http\Controllers\BpjskesehatanController;
 use App\Http\Controllers\BpjstenagakerjaController;
 use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CutiController;
@@ -127,7 +128,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/force-password-update', 'changePassword')->name('force.password.update');
         });
 
-        
+
         Route::controller(DashboardController::class)->group(function () {
             Route::get('/dashboard', 'index')->name('dashboard.index');
             Route::post('/dashboard/kirim-ucapan-birthday', 'kirimUcapanBirthday')->name('dashboard.kirim.ucapan.birthday');
@@ -925,10 +926,6 @@ Route::controller(ListAccountController::class)->group(function () {
 // Endpoint khusus untuk menangani mesin fingerprint ADMS / X100C tanpa prefix /api
 Route::any('/iclock/cdata', [\App\Http\Controllers\Api\AdmsController::class , 'receiveX100c']);
 
-// Serve file SID lewat Laravel (tidak bergantung symlink public/storage)
-Route::get('/files/sid/{filename}', [IzinsakitController::class, 'serveSid'])
-    ->where('filename', '[A-Za-z0-9._-]+')
-    ->name('izinsakit.sid');
 
 // Storage Management Routes
 Route::middleware('auth')->controller(StorageController::class)->group(function () {
