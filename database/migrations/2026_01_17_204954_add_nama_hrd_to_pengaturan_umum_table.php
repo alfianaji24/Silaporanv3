@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('pengaturan_umum', 'nama_hrd')) {
-            Schema::table('pengaturan_umum', function (Blueprint $table) {
-                $table->string('nama_hrd')->nullable();
-            });
-        }
+        Schema::table('pengaturan_umum', function (Blueprint $table) {
+            $table->string('nama_hrd')->nullable();
+        });
     }
 
     /**
@@ -23,10 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('pengaturan_umum', 'nama_hrd')) {
-            Schema::table('pengaturan_umum', function (Blueprint $table) {
-                $table->dropColumn('nama_hrd');
-            });
-        }
+        Schema::table('pengaturan_umum', function (Blueprint $table) {
+            $table->dropColumn('nama_hrd');
+        });
     }
 };

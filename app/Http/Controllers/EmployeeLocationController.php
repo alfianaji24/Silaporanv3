@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\EmployeeLocation;
 use App\Models\Userkaryawan;
-use App\Models\UserSession;
 use Illuminate\Http\Request;
 
 class EmployeeLocationController extends Controller
@@ -37,18 +36,6 @@ class EmployeeLocationController extends Controller
             ], 404);
         }
 
-        $session = UserSession::where('user_id', $user->id)
-            ->where('session_id', session()->getId())
-            ->where('is_active', true)
-            ->first();
-
-        if (!$session) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Sesi tidak aktif',
-            ], 401);
-        }
-
         EmployeeLocation::updateOrCreate(
             ['user_id' => $user->id],
             [
@@ -59,8 +46,6 @@ class EmployeeLocationController extends Controller
                 'recorded_at' => now(),
             ]
         );
-
-        $session->update(['last_activity' => now()]);
 
         return response()->json([
             'success' => true,

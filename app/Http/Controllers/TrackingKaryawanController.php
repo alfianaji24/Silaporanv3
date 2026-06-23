@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Cabang;
 use App\Models\EmployeeLocation;
 use App\Models\Karyawan;
-use App\Models\UserSession;
 use Illuminate\Http\Request;
 
 class TrackingKaryawanController extends Controller
@@ -41,24 +40,12 @@ class TrackingKaryawanController extends Controller
   {
     $staleThreshold = now()->subMinutes(self::STALE_MINUTES);
 
-    $activeSessions = UserSession::query()
-      ->active()
-      ->with(['user'])
-      ->whereHas('user', function ($q) {
-        $q->role('karyawan');
-      })
-      ->where('last_activity', '>=', now()->subHours(12))
+    $locations = EmployeeLocation::where('recorded_at', '>=', $staleThreshold)
       ->get();
 
-    if ($activeSessions->isEmpty()) {
+    if ($locations->isEmpty()) {
       return [];
     }
-
-    $userIds = $activeSessions->pluck('user_id')->unique();
-    $locations = EmployeeLocation::whereIn('user_id', $userIds)
-      ->where('recorded_at', '>=', $staleThreshold)
-      ->get()
-      ->keyBy('user_id');
 
     $niks = $locations->pluck('nik')->unique()->filter();
     $karyawans = Karyawan::whereIn('nik', $niks)
@@ -68,12 +55,7 @@ class TrackingKaryawanController extends Controller
 
     $result = [];
 
-    foreach ($activeSessions as $session) {
-      $location = $locations->get($session->user_id);
-      if (!$location) {
-        continue;
-      }
-
+    foreach ($locations as $location) {
       $karyawan = $karyawans->get($location->nik);
       if (!$karyawan) {
         continue;
@@ -96,7 +78,7 @@ class TrackingKaryawanController extends Controller
       }
 
       $result[] = [
-        'user_id' => $session->user_id,
+        'user_id' => $location->user_id,
         'nik' => $karyawan->nik,
         'nama_karyawan' => $karyawan->nama_karyawan,
         'kode_cabang' => $karyawan->kode_cabang,
@@ -106,10 +88,10 @@ class TrackingKaryawanController extends Controller
         'accuracy' => $location->accuracy,
         'recorded_at' => $location->recorded_at->format('Y-m-d H:i:s'),
         'recorded_at_human' => $location->recorded_at->diffForHumans(),
-        'login_time' => $session->login_time?->format('Y-m-d H:i:s'),
-        'last_activity' => $session->last_activity?->format('Y-m-d H:i:s'),
-        'device_type' => $session->device_type,
-        'platform' => $session->platform,
+        'login_time' => null,
+        'last_activity' => $location->recorded_at->format('Y-m-d H:i:s'),
+        'device_type' => 'Mobile',
+        'platform' => 'Android/iOS',
         'is_online' => true,
       ];
     }

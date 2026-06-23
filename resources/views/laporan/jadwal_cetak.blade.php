@@ -209,6 +209,10 @@
                                     if (isset($mapDept[$nama_hari])) {
                                         $jadwal_info = $mapDept[$nama_hari];
                                     }
+                                    // 5) Global Schedule
+                                    elseif (isset($jadwal_global[$nama_hari])) {
+                                        $jadwal_info = $jadwal_global[$nama_hari];
+                                    }
                                 }
                                 
                                 $bgcolor = '';

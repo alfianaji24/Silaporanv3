@@ -103,9 +103,16 @@
                     ];
 
                     $ceklibur = ceklibur($datalibur, $search);
-                    $ceklembur = ceklembur($datalembur, $search);
-                    $lembur_jam = hitungLembur($ceklembur);
-                    $jml_jam_lembur = !empty($ceklembur) ? $lembur_jam : 0;
+
+                    // Cek snapshot lembur (data terkunci)
+                    $d_row = $presensiByDate[$tanggal_presensi] ?? null;
+                    if ($d_row && $d_row->jam_lembur_aktual !== null) {
+                        $jml_jam_lembur = $d_row->jam_lembur_aktual;
+                    } else {
+                        $ceklembur = ceklembur($datalembur, $search);
+                        $lembur_jam = hitungLembur($ceklembur);
+                        $jml_jam_lembur = !empty($ceklembur) ? $lembur_jam : 0;
+                    }
                     $nama_hari = getHari($tanggal_presensi);
 
                     $d = $presensiByDate[$tanggal_presensi] ?? null;
@@ -167,8 +174,10 @@
                             $pulangcepat = $pulangcepat > $d->total_jam ? $d->total_jam : $pulangcepat;
                             if ($pulangcepat != null) $jml_pulangcepat++;
 
+                            $potongan_istirahat = hitungPotonganIstirahat($d->istirahat_out, $d->istirahat_in, $d->jam_awal_istirahat, $d->jam_akhir_istirahat);
                             $potongan_tidak_absen = (empty($d->jam_out) || empty($d->jam_in)) ? $d->total_jam : 0;
-                            $potongan_jam = $potongan_tidak_absen == 0 ? ($pulangcepat + $potongan_jam_terlambat) : $potongan_tidak_absen;
+                            $status_potongan_istirahat = $d->status_potongan_istirahat ?? $generalsetting->potongan_istirahat;
+                            $potongan_jam = $potongan_tidak_absen == 0 ? ($pulangcepat + $potongan_jam_terlambat + ($status_potongan_istirahat == 1 ? $potongan_istirahat : 0)) : $potongan_tidak_absen;
 
                             $status_potongan_harian = $d->status_potongan ?? $generalsetting->status_potongan_jam;
                             if ($status_potongan_harian == 0) $potongan_jam = 0;
@@ -228,7 +237,7 @@
                                 $bgcolor_hex = '#ff0000';
                                 $textcolor_hex = '#ffffff';
                                 $ket_status = 'ALPA';
-                                $potongan_jam = $generalsetting->status_potongan_jam == 1 ? $totalJamJadwal : 0;
+                                $potongan_jam = $generalsetting->status_potongan_jam == 1 ? (is_array($totalJamJadwal) ? $totalJamJadwal['total_jam'] : $totalJamJadwal) : 0;
                             } else {
                                 $ket_status = '-';
                             }

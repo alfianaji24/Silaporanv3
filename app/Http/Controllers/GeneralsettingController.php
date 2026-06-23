@@ -28,6 +28,7 @@ class GeneralsettingController extends Controller
             'telepon' => 'required',
             'total_jam_bulan' => 'required',
             'status_potongan_jam' => 'nullable',
+            'absen_istirahat' => 'nullable',
             'periode_laporan_dari' => 'required',
             'periode_laporan_sampai' => 'required',
             'domain_email' => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/',
@@ -54,6 +55,7 @@ class GeneralsettingController extends Controller
                 'nama_hrd' => $request->nama_hrd,
                 'total_jam_bulan' => $request->total_jam_bulan,
                 'status_potongan_jam' => $request->has('status_potongan_jam') ? 1 : 0,
+                'absen_istirahat' => $request->has('absen_istirahat') ? 1 : 0,
                 'denda' => $request->has('denda') ? true : false,
                 'lembur' => $request->has('lembur') ? true : false,
                 'face_recognition' => $request->has('face_recognition') ? true : false,
@@ -86,14 +88,14 @@ class GeneralsettingController extends Controller
             if ($request->hasFile('logo')) {
                 $logo = $request->file('logo');
                 $logoName = time() . '.' . $logo->getClientOriginalExtension();
-                
+
                 $destinationPath = 'public/logo';
                 if (!Storage::exists($destinationPath)) {
                     Storage::makeDirectory($destinationPath, 0775, true);
                     $path = Storage::path($destinationPath);
                     chmod($path, 0775);
                 }
-                
+
                 $logo->storeAs($destinationPath, $logoName);
 
                 // Hapus logo lama jika ada
@@ -107,11 +109,11 @@ class GeneralsettingController extends Controller
             $oldTimezone = $setting->timezone ?? 'Asia/Jakarta';
             $oldSessionTime = $setting->session_time;
             $setting->update($data);
-            
+
             // Update .env file dengan timezone baru jika timezone berubah
             if ($oldTimezone != $request->timezone) {
                 $this->updateEnvFile('APP_TIMEZONE', $request->timezone);
-                
+
                 // Clear config cache agar perubahan .env langsung diterapkan
                 try {
                     Artisan::call('config:clear');
@@ -131,7 +133,7 @@ class GeneralsettingController extends Controller
                 } catch (\Exception $e) {
                 }
             }
-            
+
             DB::commit();
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan. Perubahan timezone telah diterapkan.'));
         } catch (\Exception $e) {
@@ -146,13 +148,13 @@ class GeneralsettingController extends Controller
     private function updateEnvFile($key, $value)
     {
         $envFile = base_path('.env');
-        
+
         if (!File::exists($envFile)) {
             return false;
         }
 
         $envContent = File::get($envFile);
-        
+
         // Cek apakah key sudah ada
         if (preg_match("/^{$key}=.*/m", $envContent)) {
             // Update existing key
@@ -163,7 +165,7 @@ class GeneralsettingController extends Controller
         }
 
         File::put($envFile, $envContent);
-        
+
         return true;
     }
 }

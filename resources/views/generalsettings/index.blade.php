@@ -302,7 +302,7 @@
                                     <label for="mobile_theme_scheme" class="form-label" style="font-weight: 600">Tema Aplikasi Mobile</label>
                                     <select name="mobile_theme_scheme" id="mobile_theme_scheme" class="form-select">
                                         @foreach(config('themes.schemes', []) as $themeKey => $themeData)
-                                            <option value="{{ $themeKey }}" 
+                                            <option value="{{ $themeKey }}"
                                                 @selected(($setting->mobile_theme_scheme ?? config('themes.default', 'green')) == $themeKey)>
                                                 {{ $themeData['name'] ?? ucfirst($themeKey) }}
                                             </option>
@@ -343,6 +343,14 @@
                         <div class="checkbox-wrapper-55 mb-2">
                             <label class="rocker rocker-small">
                                 <input type="checkbox" name="lembur" @checked($setting->lembur ?? false)>
+                                <span class="switch-left">Yes</span>
+                                <span class="switch-right">No</span>
+                            </label>
+                        </div>
+                        <label for="" style="font-weight: 600" class="form-label">Tampilkan Istirahat (Ist-O / Ist-I)</label>
+                        <div class="checkbox-wrapper-55 mb-2">
+                            <label class="rocker rocker-small">
+                                <input type="checkbox" name="absen_istirahat" @checked($setting->absen_istirahat ?? false)>
                                 <span class="switch-left">Yes</span>
                                 <span class="switch-right">No</span>
                             </label>

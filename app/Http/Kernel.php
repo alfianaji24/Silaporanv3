@@ -68,8 +68,5 @@ class Kernel extends HttpKernel
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-        'ip.blacklist' => \App\Http\Middleware\IPBlacklistMiddleware::class,
-        'session.validate' => \App\Http\Middleware\SessionValidationMiddleware::class,
-        'login.restriction' => \App\Http\Middleware\CheckLoginRestriction::class,
     ];
 }

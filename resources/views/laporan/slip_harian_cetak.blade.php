@@ -7,150 +7,257 @@
     <title>Slip Gaji Harian {{ date('Y-m-d H:i:s') }}</title>
     <style>
         body {
-            font-family: 'Courier New', monospace;
+            background: #f8fafc;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #334155;
             margin: 0;
-            padding: 15px;
-            font-size: 11px;
-            line-height: 1.3;
-            background-color: #f5f5f5;
+            padding: 20px;
         }
 
         .container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 20px;
             justify-content: flex-start;
         }
 
-        .slip-struk {
-            width: 280px;
-            background: white;
-            border: 1px solid #333;
-            border-radius: 3px;
-            padding: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .slip-card {
+            width: 320px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025);
+            padding: 20px;
+            box-sizing: border-box;
             page-break-inside: avoid;
-            margin-bottom: 15px;
         }
 
-        .header {
-            text-align: center;
-            border-bottom: 1px dashed #333;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
+        .slip-header {
+            border-bottom: 1.5px dashed #cbd5e1;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            text-align: left;
         }
 
         .company-name {
-            font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 2px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
         }
 
-        .slip-title {
-            font-weight: bold;
-            font-size: 10px;
-            margin-bottom: 2px;
-        }
-
-        .periode {
+        .company-sub {
             font-size: 9px;
-            color: #666;
+            color: #64748b;
+            font-weight: 500;
         }
 
-        .employee-section {
-            margin-bottom: 8px;
-            border-bottom: 1px dotted #666;
-            padding-bottom: 6px;
-        }
-
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2px;
-            font-size: 10px;
-        }
-
-        .label {
-            font-weight: bold;
-        }
-
-        .value {
+        .slip-title-block {
             text-align: right;
         }
 
-        .section-title {
-            font-weight: bold;
-            font-size: 10px;
-            text-align: center;
-            margin: 8px 0 4px 0;
-            padding: 2px;
-            background: #f0f0f0;
-            border: 1px solid #ddd;
+        .slip-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #0f172a;
         }
 
-        .earning {
-            background: #e8f5e8;
-            border-color: #28a745;
+        .slip-periode {
+            font-size: 9px;
+            color: #475569;
+            font-weight: 600;
+            margin-top: 2px;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
         }
 
-        .deduction {
-            background: #fde8e8;
-            border-color: #dc3545;
+        .employee-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px dashed #cbd5e1;
         }
 
-        .adjustment {
-            background: #e8f4f8;
-            border-color: #17a2b8;
+        .employee-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .total-section {
-            margin-top: 8px;
-            border-top: 2px solid #333;
+        .employee-label {
+            font-size: 8px;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .employee-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .work-summary-badge {
+            grid-column: span 2;
+            border-top: 1.5px dashed #e2e8f0;
             padding-top: 6px;
+            margin-top: 2px;
+            font-size: 9px;
+            color: #64748b;
+            font-weight: 500;
+            line-height: 1.3;
         }
 
-        .net-salary {
+        .table-section {
+            margin-bottom: 12px;
+        }
+
+        .section-header {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 0;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .section-header.earning {
+            color: #047857;
+        }
+
+        .section-header.deduction {
+            color: #be123c;
+        }
+
+        .section-header.adjustment {
+            color: #0369a1;
+        }
+
+        .slip-row {
             display: flex;
             justify-content: space-between;
-            font-weight: bold;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px dashed #f1f5f9;
             font-size: 11px;
-            padding: 4px;
-            background: #f8f9fa;
-            border: 1px solid #333;
         }
 
-        .work-info {
-            font-size: 9px;
-            color: #666;
-            text-align: center;
-            margin: 6px 0;
-            border-top: 1px dotted #666;
-            padding-top: 4px;
+        .slip-row:last-child {
+            border-bottom: none;
         }
 
-        .currency {
-            font-family: 'Courier New', monospace;
-        }
-
-        .footer {
-            text-align: center;
-            font-size: 8px;
-            color: #888;
-            margin-top: 8px;
-            border-top: 1px dashed #333;
+        .slip-row.subtotal {
+            font-weight: 700;
+            border-top: 1px dashed #cbd5e1;
+            border-bottom: none;
             padding-top: 6px;
+            color: #1e293b;
+            margin-top: 2px;
+        }
+
+        .slip-row-label {
+            color: #475569;
+        }
+
+        .slip-row-value {
+            font-weight: 600;
+            color: #1e293b;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .net-salary-card {
+            border-top: 1.5px dashed #cbd5e1;
+            border-bottom: 1.5px dashed #cbd5e1;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 14px 0;
+        }
+
+        .net-salary-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .net-salary-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: #047857;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .slip-footer {
+            border-top: 1.5px dashed #cbd5e1;
+            padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 6px;
+        }
+
+        .system-info {
+            font-size: 8px;
+            color: #94a3b8;
+            line-height: 1.3;
+        }
+
+        .signature-block {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .signature-title {
+            font-size: 8px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #cbd5e1;
+            width: 100%;
+            margin-bottom: 2px;
+        }
+
+        .signature-subtitle {
+            font-size: 7px;
+            color: #94a3b8;
+            font-weight: 500;
         }
 
         @media print {
             body {
-                margin: 0;
-                padding: 10px;
-                background: white;
+                background: #ffffff !important;
+                padding: 0;
             }
 
-            .slip-struk {
-                box-shadow: none;
-                border: 1px solid #000;
+            .container {
+                gap: 10px;
+            }
+
+            .slip-card {
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: none !important;
+                margin-bottom: 10px;
+            }
+
+            .net-salary-card {
+                border: 1px solid #0f172a !important;
+                color: #0f172a !important;
+                background: #f8fafc !important;
+            }
+
+            .net-salary-value {
+                color: #0f172a !important;
             }
         }
     </style>
@@ -191,39 +298,92 @@
                 $gaji_bersih = $total_upah - $total_denda;
             @endphp
 
-            <div class="slip-struk">
-                <div class="header">
-                    <div class="company-name">{{ $generalsetting->nama_perusahaan }}</div>
-                    <div class="slip-title">SLIP GAJI (HARIAN)</div>
-                    <div class="periode">{{ date('d/m/Y', strtotime($periode_dari)) }} - {{ date('d/m/Y', strtotime($periode_sampai)) }}</div>
+            <div class="slip-card">
+                <!-- Header -->
+                <div class="slip-header">
+                    <div class="company-info">
+                        <div class="company-name">{{ $generalsetting->nama_perusahaan }}</div>
+                        <div class="company-sub">Sistem Payroll Modern (Harian)</div>
+                    </div>
+                    <div class="slip-title-block">
+                        <div class="slip-title">Slip Gaji</div>
+                        <div class="slip-periode">{{ date('d/m/Y', strtotime($periode_dari)) }} - {{ date('d/m/Y', strtotime($periode_sampai)) }}</div>
+                    </div>
                 </div>
 
-                <div class="employee-section">
-                    <div class="row"><span class="label">NIK:</span><span class="value">{{ $d['nik_show'] ?? $d['nik'] }}</span></div>
-                    <div class="row"><span class="label">Nama:</span><span class="value">{{ $d['nama_karyawan'] }}</span></div>
-                    <div class="row"><span class="label">Jabatan:</span><span class="value">{{ $d['nama_jabatan'] }}</span></div>
-                    <div class="row"><span class="label">Dept:</span><span class="value">{{ $d['kode_dept'] }}</span></div>
+                <!-- Employee Info -->
+                <div class="employee-grid">
+                    <div class="employee-item">
+                        <span class="employee-label">NIK</span>
+                        <span class="employee-value">{{ $d['nik_show'] ?? $d['nik'] }}</span>
+                    </div>
+                    <div class="employee-item">
+                        <span class="employee-label">Nama Karyawan</span>
+                        <span class="employee-value">{{ $d['nama_karyawan'] }}</span>
+                    </div>
+                    <div class="employee-item">
+                        <span class="employee-label">Jabatan</span>
+                        <span class="employee-value">{{ $d['nama_jabatan'] }}</span>
+                    </div>
+                    <div class="employee-item">
+                        <span class="employee-label">Departemen</span>
+                        <span class="employee-value">{{ $d['kode_dept'] }}</span>
+                    </div>
+                    <div class="work-summary-badge">
+                        <div style="display: flex; justify-content: space-between; width: 100%;">
+                            <span>Tipe Gaji: Harian</span>
+                            <span>Rate: Rp {{ number_format($d['gaji_pokok'], 0, ',', '.') }}/hari</span>
+                            <span>Kehadiran: {{ $hari_hadir }} Hari</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="work-info">
-                   Rate: Rp {{ number_format($d['gaji_pokok'], 0, ',', '.') }}/hari | {{ $hari_hadir }} hari hadir
+                <!-- Penghasilan -->
+                <div class="table-section">
+                    <div class="section-header earning">Penghasilan</div>
+                    <div class="slip-row">
+                        <span class="slip-row-label">Upah Pokok (Harian)</span>
+                        <span class="slip-row-value">Rp {{ number_format($total_upah, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="slip-row subtotal">
+                        <span class="slip-row-label">Total Penghasilan (Bruto)</span>
+                        <span class="slip-row-value">Rp {{ number_format($total_upah, 0, ',', '.') }}</span>
+                    </div>
                 </div>
 
-                <div class="section-title earning">PENGHASILAN</div>
-                <div class="row"><span>Upah Pokok</span><span class="currency">{{ number_format($total_upah, 0, ',', '.') }}</span></div>
-                <div class="row" style="font-weight: bold; border-top: 1px dotted #333; padding-top: 2px;"><span>Sub Total</span><span class="currency">{{ number_format($total_upah, 0, ',', '.') }}</span></div>
-
+                <!-- Potongan -->
                 @if ($total_denda > 0)
-                    <div class="section-title deduction">POTONGAN</div>
-                    <div class="row"><span>Denda</span><span class="currency">{{ number_format($total_denda, 0, ',', '.') }}</span></div>
-                    <div class="row" style="font-weight: bold; border-top: 1px dotted #333; padding-top: 2px;"><span>Sub Total</span><span class="currency">{{ number_format($total_denda, 0, ',', '.') }}</span></div>
+                    <div class="table-section">
+                        <div class="section-header deduction">Potongan</div>
+                        <div class="slip-row">
+                            <span class="slip-row-label">Denda Keterlambatan</span>
+                            <span class="slip-row-value">Rp {{ number_format($total_denda, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="slip-row subtotal">
+                            <span class="slip-row-label">Total Potongan</span>
+                            <span class="slip-row-value">Rp {{ number_format($total_denda, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
                 @endif
 
-                <div class="total-section">
-                    <div class="net-salary"><span>GAJI BERSIH</span><span class="currency">{{ number_format($gaji_bersih, 0, ',', '.') }}</span></div>
+                <!-- Total -->
+                <div class="net-salary-card">
+                    <span class="net-salary-label">Gaji Bersih (Take Home Pay)</span>
+                    <span class="net-salary-value">Rp {{ number_format($gaji_bersih, 0, ',', '.') }}</span>
                 </div>
 
-                <div class="footer">Dicetak: {{ date('d/m/Y H:i') }}<br>Sistem Payroll v1.0</div>
+                <!-- Footer -->
+                <div class="slip-footer">
+                    <div class="system-info">
+                        Dicetak: {{ date('d/m/Y H:i') }}<br>
+                        Sistem Payroll Premium v2.0
+                    </div>
+                    <div class="signature-block">
+                        <div class="signature-title">Manager Payroll</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-subtitle">{{ $generalsetting->nama_perusahaan }}</div>
+                    </div>
+                </div>
             </div>
         @endforeach
     </div>

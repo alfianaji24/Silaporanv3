@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('pengaturan_umum', 'status_potongan_jam')) {
-            Schema::table('pengaturan_umum', function (Blueprint $table) {
-                $table->boolean('status_potongan_jam')->default(1)->after('total_jam_bulan');
-            });
-        }
+        Schema::table('pengaturan_umum', function (Blueprint $table) {
+            $table->boolean('status_potongan_jam')->default(1)->after('total_jam_bulan');
+        });
     }
 
     /**
@@ -23,10 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('pengaturan_umum', 'status_potongan_jam')) {
-            Schema::table('pengaturan_umum', function (Blueprint $table) {
-                $table->dropColumn('status_potongan_jam');
-            });
-        }
+        Schema::table('pengaturan_umum', function (Blueprint $table) {
+            $table->dropColumn('status_potongan_jam');
+        });
     }
 };

@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Presensi Karyawan {{ date('Y-m-d H:i:s') }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.4.1/paper.css">
     <link rel="stylesheet" href="{{ asset('assets/css/report.css') }}">
     <style>
         @page {
@@ -18,7 +17,7 @@
             font-family: Arial, Helvetica, sans-serif;
             font-size: 12px;
             margin: 0;
-            padding: 0;
+            padding: 10mm;
         }
 
         .sheet {
@@ -102,8 +101,7 @@
     <script src="{{ asset('assets/external/js/sweetalert2@11.js') }}"></script>
 </head>
 
-<body class="A4">
-    <section class="sheet padding-10mm">
+<body>
         <div class="header" style="margin-bottom: 10px">
             <table style="width: 100%">
                 <tr>
@@ -180,6 +178,7 @@
                         <th>Jadwal Kerja</th>
                         <th>Jam Masuk</th>
                         <th>Jam Pulang</th>
+                        <th>Jam Istirahat</th>
                         <th>Status</th>
                         <th>Terlambat</th>
                         <th>Denda</th>
@@ -227,9 +226,16 @@
                             ];
 
                             $ceklibur = ceklibur($datalibur, $search);
-                            $ceklembur = ceklembur($datalembur, $search);
-                            $lembur_jam = hitungLembur($ceklembur);
-                            $jml_jam_lembur = !empty($ceklembur) ? $lembur_jam : 0;
+
+                            // Cek snapshot lembur (data terkunci)
+                            $d_row = $presensiByDate[$tanggal_presensi] ?? null;
+                            if ($d_row && $d_row->jam_lembur_aktual !== null) {
+                                $jml_jam_lembur = $d_row->jam_lembur_aktual;
+                            } else {
+                                $ceklembur = ceklembur($datalembur, $search);
+                                $lembur_jam = hitungLembur($ceklembur);
+                                $jml_jam_lembur = !empty($ceklembur) ? $lembur_jam : 0;
+                            }
                             $nama_hari = getHari($tanggal_presensi);
 
                             $d = $presensiByDate[$tanggal_presensi] ?? null;
@@ -239,6 +245,7 @@
                             $ket_jam_kerja = '-';
                             $ket_jam_in = '-';
                             $ket_jam_out = '-';
+                            $ket_istirahat = '-';
                             $ket_terlambat = '';
                         @endphp
 
@@ -287,14 +294,29 @@
                                     $pulangcepat = $pulangcepat > $d->total_jam ? $d->total_jam : $pulangcepat;
                                     if ($pulangcepat != null) $jml_pulangcepat++;
 
+                                    $potongan_istirahat = hitungPotonganIstirahat($d->istirahat_out, $d->istirahat_in, $d->jam_awal_istirahat, $d->jam_akhir_istirahat);
                                     $potongan_tidak_absen = (empty($d->jam_out) || empty($d->jam_in)) ? $d->total_jam : 0;
-                                    $potongan_jam = $potongan_tidak_absen == 0 ? ($pulangcepat + $potongan_jam_terlambat) : $potongan_tidak_absen;
+                                    $status_potongan_istirahat = $d->status_potongan_istirahat ?? $generalsetting->potongan_istirahat;
+                                    $potongan_jam = $potongan_tidak_absen == 0 ? ($pulangcepat + $potongan_jam_terlambat + ($status_potongan_istirahat == 1 ? $potongan_istirahat : 0)) : $potongan_tidak_absen;
 
                                     $status_potongan_harian = $d->status_potongan ?? $generalsetting->status_potongan_jam;
                                     if ($status_potongan_harian == 0) $potongan_jam = 0;
 
                                     if (empty($d->jam_in)) $jml_tidakscanmasuk++;
                                     if (empty($d->jam_out)) $jml_tidakscanpulang++;
+
+                                    if ($generalsetting->absen_istirahat == 1) {
+                                        $istirahat_in_val = (!empty($d->istirahat_in)) ? date('H:i', strtotime($d->istirahat_in)) : null;
+                                        $istirahat_out_val = (!empty($d->istirahat_out)) ? date('H:i', strtotime($d->istirahat_out)) : null;
+
+                                        if ($istirahat_out_val && $istirahat_in_val) {
+                                            $ket_istirahat = '<span style="color:#3498db">' . $istirahat_out_val . ' - ' . $istirahat_in_val . '</span>';
+                                        } else {
+                                            $ket_istirahat = '<span style="color:red">Belum Absen</span>';
+                                        }
+                                    } else {
+                                        $ket_istirahat = '-';
+                                    }
 
                                     $ket_status = 'HADIR';
                                 } elseif ($d->status == 'i') {
@@ -343,13 +365,16 @@
                                         $mapDept = $jadwal_bydept[$keyDeptCabang] ?? [];
                                         $totalJamJadwal = $mapDept[$nama_hari] ?? null;
                                     }
+                                    if ($totalJamJadwal === null) {
+                                        $totalJamJadwal = $jadwal_global[$nama_hari] ?? null;
+                                    }
 
                                     if ($totalJamJadwal !== null && !$is_future) {
                                         $jml_alfa++;
                                         $bgcolor = 'red';
                                         $textcolor = 'white';
                                         $ket_status = 'ALPA';
-                                        $potongan_jam = $generalsetting->status_potongan_jam == 1 ? $totalJamJadwal : 0;
+                                        $potongan_jam = $generalsetting->status_potongan_jam == 1 ? (is_array($totalJamJadwal) ? $totalJamJadwal['total_jam'] : $totalJamJadwal) : 0;
                                     } else {
                                         $ket_status = '-';
                                     }
@@ -371,6 +396,7 @@
                             <td>{{ $ket_jam_kerja }}</td>
                             <td style="text-align: center">{{ $ket_jam_in }}</td>
                             <td style="text-align: center">{{ $ket_jam_out }}</td>
+                             <td style="text-align: center">{!! $ket_istirahat !!}</td>
                             <td style="text-align: center; background-color: {{ $bgcolor }}; color: {{ $textcolor }}; position: relative;">
                                 @if(isset($d) && (isset($d->status_potongan) || isset($d->denda)))
                                     <span style="position:absolute; top:2px; right:2px;">
@@ -469,7 +495,6 @@
                 </tbody>
             </table>
         </div>
-    </section>
 
     <script>
         $(document).ready(function() {

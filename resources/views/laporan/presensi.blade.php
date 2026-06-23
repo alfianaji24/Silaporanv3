@@ -1,61 +1,47 @@
 @extends('layouts.app')
-@section('titlepage', 'Laporan Presensi & Gaji')
+@section('titlepage', 'Laporan Presensi')
 
 @section('content')
 @section('navigasi')
-<div class="d-flex justify-content-between align-items-center w-100">
-    <div>
-        Laporan Presensi & Gaji
-        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
-            Generate laporan presensi dan gaji karyawan, export ke Excel/PDF, dan monitoring data kehadiran.
-        </div>
-    </div>
-    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
-        <ol class="breadcrumb breadcrumb-style1 mb-0">
-            <li class="breadcrumb-item">
-                <a href="{{ route('dashboard.index') }}">
-                    <i class="ti ti-home-2 ti-xs"></i>
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="javascript:void(0);">
-                    <i class="ti ti-file-report ti-xs me-1"></i> Laporan
-                </a>
-            </li>
-            <li class="breadcrumb-item active">
-                <i class="ti ti-chart-line ti-xs me-1"></i> Presensi & Gaji
-            </li>
-        </ol>
-    </nav>
-</div>
+    <span>Laporan Presensi</span>
 @endsection
 <div class="row">
     <div class="col-lg-6 col-sm-12 col-xs-12">
         <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-printer me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Laporan Presensi Karyawan</h6>
+                </div>
+            </div>
             <div class="card-body">
-                <form action="{{ route('laporan.cetakpresensi') }}" method="POST" target="_blank" id="formPresensi">
+                <form action="{{ route('laporan.cetakpresensi') }}" method="POST" target="_blank" id="formPresensi" class="mt-2">
                     @csrf
+                    <input type="hidden" name="format_laporan" value="1">
                     <div class="form-group mb-3">
-                        <select name="kode_cabang" id="kode_cabang_presensi" class="form-select select2Kodecabangpresensi">
+                        <select name="kode_cabang" id="kode_cabang" class="form-select select2">
                             <option value="">Semua Cabang</option>
                             @foreach ($cabang as $d)
                                 <option value="{{ $d->kode_cabang }}">{{ textUpperCase($d->nama_cabang) }}</option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="form-group mb-3">
-                        <select name="kode_dept" id="kode_dept_presensi" class="form-select select2Kodedeptpresensi">
+                        <select name="kode_dept" id="kode_dept" class="form-select select2">
                             <option value="">Semua Departemen</option>
                             @foreach ($departemen as $d)
                                 <option value="{{ $d->kode_dept }}">{{ textUpperCase($d->nama_dept) }}</option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="form-group mb-3">
-                        <select name="nik" id="nik_presensi" class="form-select select2Nikpresensi">
+                        <select name="nik" id="nik" class="form-select select2">
                             <option value="">Semua Karyawan</option>
                         </select>
                     </div>
+
                     <div class="form-group mb-3">
                         <select name="periode_laporan" id="periode_laporan" class="form-select">
                             <option value="">Periode Laporan</option>
@@ -64,42 +50,19 @@
                             <option value="3">Range Tanggal</option>
                         </select>
                     </div>
+
                     <div class="row" id="baris_tanggal">
                         <div class="col-6">
                             <div class="form-group mb-3">
-                                <input type="text" name="dari" id="dari" class="form-control flatpickr-date"
-                                    placeholder="Dari">
+                                <input type="text" name="dari" id="dari" class="form-control flatpickr-date" placeholder="Dari">
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group mb-3">
-                                <input type="text" name="sampai" id="sampai" class="form-control flatpickr-date"
-                                    placeholder="Sampai">
+                                <input type="text" name="sampai" id="sampai" class="form-control flatpickr-date" placeholder="Sampai">
                             </div>
                         </div>
                     </div>
-                    <div class="form-group mb-3">
-                        <select name="format_laporan" id="format_laporan" class="form-select">
-                            <option value="">Format Laporan</option>
-                            <option value="1" selected>Laporan Presensi</option>
-                            <option value="2">Laporan Gaji</option>
-                            <option value="3">Slip Gaji</option>
-                        </select>
-                    </div>
-                    <div class="form-group mb-3" id="baris_jenis_upah">
-                        <select name="jenis_upah" id="jenis_upah" class="form-select">
-                            <option value="" disabled selected>Pilih Jenis Upah</option>
-                            <option value="Bulanan">Bulanan</option>
-                            <option value="Harian">Harian</option>
-                        </select>
-                    </div>
-                    {{-- <div class="form-group mb-3">
-                        <select name="format_laporan" id="format_laporan" class="form-select">
-                            <option value="">Format Laporan</option>
-                            <option value="1" selected>Standar</option>
-                            <option value="2">P/S/M</option>
-                        </select>
-                    </div> --}}
 
                     <div class="row" id="baris_bulan">
                         <div class="col">
@@ -113,10 +76,10 @@
                                 </select>
                             </div>
                         </div>
-
                     </div>
+
                     <div class="row" id="baris_tahun">
-                        <div class="co">
+                        <div class="col">
                             <div class="form-group mb-3">
                                 <select name="tahun" id="tahun" class="form-select">
                                     <option value="">Tahun</option>
@@ -127,204 +90,118 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-6 col-md-12 col-sm-12">
-                            <button type="submit" name="submitButton" class="btn btn-primary w-100" id="submitButton">
+
+                    <div class="form-group mb-3">
+                        <select name="format_rekap" id="format_rekap" class="form-select">
+                            <option value="1">Format 1 (Default)</option>
+                            <option value="2">Format 2 (Struktur Baru)</option>
+                        </select>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
+                            <button type="submit" name="submitButton" class="btn btn-primary w-100">
                                 <i class="ti ti-printer me-1"></i> Cetak
                             </button>
                         </div>
-                        <div class="col-lg-6 col-md-12 col-sm-12">
-                            <button type="submit" name="exportButton" class="btn btn-success w-100" id="exportButton">
+                        <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
+                            <button type="submit" name="exportButton" class="btn btn-success w-100">
                                 <i class="ti ti-download me-1"></i> Export Excel
                             </button>
                         </div>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
 </div>
 @endsection
+
 @push('myscript')
 <script>
     $(function() {
-        const select2Kodecabangpresensi = $(".select2Kodecabangpresensi");
-        if (select2Kodecabangpresensi.length) {
-            select2Kodecabangpresensi.each(function() {
+        // Initialize Select2
+        const initSelect2 = (selector) => {
+            $(selector).each(function() {
                 var $this = $(this);
+                var placeholder = $this.find("option:first").text();
                 $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Cabang',
+                    placeholder: placeholder,
                     allowClear: true,
                     dropdownParent: $this.parent()
                 });
             });
-        }
+        };
 
-        const select2Kodedeptpresensi = $(".select2Kodedeptpresensi");
-        if (select2Kodedeptpresensi.length) {
-            select2Kodedeptpresensi.each(function() {
-                var $this = $(this);
-                $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Departemen',
-                    allowClear: true,
-                    dropdownParent: $this.parent()
-                });
-            });
-        }
+        initSelect2(".select2");
 
-        const select2Nikpresensi = $(".select2Nikpresensi");
-        if (select2Nikpresensi.length) {
-            select2Nikpresensi.each(function() {
-                var $this = $(this);
-                $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Karyawan',
-                    allowClear: true,
-                    dropdownParent: $this.parent()
-                });
-            });
-        }
-
+        // Load Karyawan Function
         function loadKaryawan() {
-            const kode_cabang = $("#kode_cabang_presensi").val();
-            const kode_dept = $("#kode_dept_presensi").val();
+            const kode_cabang = $("#kode_cabang").val();
+            const kode_dept = $("#kode_dept").val();
+            const dari = $("#dari").val();
+            const targetSelect = $("#nik");
 
             $.ajax({
                 type: "GET",
                 url: "{{ route('karyawan.getkaryawan') }}",
                 data: {
                     kode_cabang: kode_cabang,
-                    kode_dept: kode_dept
+                    kode_dept: kode_dept,
+                    tanggal: dari // Optional use
                 },
                 cache: false,
                 success: function(respond) {
-                    $("#nik_presensi").empty();
-                    $("#nik_presensi").append("<option value=''>Semua Karyawan</option>");
+                    targetSelect.empty();
+                    targetSelect.append(`<option value=''>Semua Karyawan</option>`);
                     respond.forEach(function(item) {
-                        $("#nik_presensi").append("<option value='" + item.nik + "'>" + item.nik + " - " + item
-                            .nama_karyawan +
-                            "</option>");
+                        targetSelect.append(`<option value="${item.nik}">${item.nik} - ${item.nama_karyawan}</option>`);
                     });
                 }
             });
         }
 
-        $("#kode_cabang_presensi, #kode_dept_presensi").change(function() {
+        $("#kode_cabang, #kode_dept, #dari").change(function() {
             loadKaryawan();
         });
 
+        loadKaryawan();
+
+        // Toggle logic for Periode
+        function togglePeriode() {
+            const periode = $("#periode_laporan").val();
+            if (periode == "3") {
+                $("#baris_tanggal").show();
+                $("#baris_bulan, #baris_tahun").hide();
+            } else {
+                $("#baris_tanggal").hide();
+                $("#baris_bulan, #baris_tahun").show();
+            }
+        }
+
+        $("#periode_laporan").change(togglePeriode);
+        togglePeriode();
+
         $("#formPresensi").submit(function(e) {
-            const periode_laporan = $("#periode_laporan").val();
-            const format_laporan = $("#format_laporan").val();
-            const bulan = $(this).find("#bulan").val();
-            const tahun = $(this).find("#tahun").val();
-            if (periode_laporan == "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Oops...',
-                    text: 'Periode Laporan harus diisi!',
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $("#periode_laporan").focus();
-                    }
-                });
+            const periode = $("#periode_laporan").val();
+            if (periode === "") {
+                Swal.fire('Warning', 'Periode Laporan harus diisi!', 'warning');
+                e.preventDefault();
                 return false;
-            } else if (format_laporan == "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Oops...',
-                    text: 'Format Laporan harus diisi!',
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $("#format_laporan").focus();
-                    }
-                });
-                return false;
-            } else if (bulan == "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Oops...',
-                    text: 'Bulan harus diisi!',
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $("#bulan").focus();
-                    }
-                });
-                return false;
-            } else if (tahun == "") {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Oops...',
-                    text: 'Tahun harus diisi!',
-                    showConfirmButton: true,
-                    didClose: () => {
-                        $("#tahun").focus();
-                    }
-                });
-                return false;
-            } else if (periode_laporan == "3") {
-                const dari = $("#dari").val();
-                const sampai = $("#sampai").val();
-                if (dari == "") {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Oops...',
-                        text: 'Tanggal Dari harus diisi!',
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $("#dari").focus();
-                        }
-                    });
+            }
+            if (periode === "3") {
+                if ($("#dari").val() === "" || $("#sampai").val() === "") {
+                    Swal.fire('Warning', 'Range Tanggal harus diisi!', 'warning');
+                    e.preventDefault();
                     return false;
-                } else if (sampai == "") {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Oops...',
-                        text: 'Tanggal Sampai harus diisi!',
-                        showConfirmButton: true,
-                        didClose: () => {
-                            $("#sampai").focus();
-                        }
-                    });
+                }
+            } else {
+                if ($("#bulan").val() === "" || $("#tahun").val() === "") {
+                    Swal.fire('Warning', 'Bulan/Tahun harus diisi!', 'warning');
+                    e.preventDefault();
                     return false;
                 }
             }
-        });
-
-        function togglePeriodeLaporan() {
-            const periode_laporan = $("#periode_laporan").val();
-            if (periode_laporan == "3") {
-                $("#baris_tanggal").show();
-                $("#baris_bulan").hide();
-                $("#baris_tahun").hide();
-            } else {
-                $("#baris_tanggal").hide();
-                $("#baris_bulan").show();
-                $("#baris_tahun").show();
-            }
-        }
-
-        function toggleJenisUpah() {
-            const format_laporan = $("#format_laporan").val();
-            // 1 = Laporan Presensi, 2 = Laporan Gaji, 3 = Slip Gaji
-            if (format_laporan == "1") {
-                $("#baris_jenis_upah").hide();
-                $("#jenis_upah").removeAttr('required');
-            } else {
-                $("#baris_jenis_upah").show();
-                $("#jenis_upah").attr('required', true);
-            }
-        }
-
-        togglePeriodeLaporan();
-        toggleJenisUpah();
-
-        $("#periode_laporan").change(function() {
-            togglePeriodeLaporan();
-        });
-
-        $("#format_laporan").change(function() {
-            toggleJenisUpah();
         });
     });
 </script>

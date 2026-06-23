@@ -13,8 +13,7 @@ use App\Http\Controllers\GajipokokController;
 use App\Http\Controllers\GeneralsettingController;
 use App\Http\Controllers\GrupController;
 use App\Http\Controllers\HariliburController;
-use App\Http\Controllers\IPBlacklistController;
-use App\Http\Controllers\SessionManagementController;
+
 use App\Http\Controllers\IzinabsenController;
 use App\Http\Controllers\IzincutiController;
 use App\Http\Controllers\IzindinasController;
@@ -36,6 +35,10 @@ use App\Http\Controllers\JenistunjanganController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\LemburController;
+use App\Http\Controllers\LemburaturanController;
+use App\Http\Controllers\Pph21Controller;
+use App\Http\Controllers\ResignKaryawanController;
+use App\Http\Controllers\UserloginlogController;
 use App\Http\Controllers\PengajuanizinController;
 use App\Http\Controllers\PelanggaranController;
 use App\Http\Controllers\PenyesuaiangajiController;
@@ -48,6 +51,11 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SlipgajiController;
 use App\Http\Controllers\ShortcutController;
 use App\Http\Controllers\StatuskaryawanController;
+use App\Http\Controllers\StatuskawinController;
+use App\Http\Controllers\PinjamanController;
+use App\Http\Controllers\ReimbursementController;
+use App\Http\Controllers\JenisReimbursementController;
+use App\Http\Controllers\PengajuanreimbursementController;
 use App\Http\Controllers\KaryawanApprovalController;
 use App\Http\Controllers\TunjanganController;
 use App\Http\Controllers\UserController;
@@ -64,6 +72,7 @@ use App\Http\Controllers\ForcePasswordChangeController;
 use App\Http\Controllers\ListAccountController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\LaravelLogController;
+use App\Http\Controllers\LogmesinController;
 use App\Http\Controllers\StorageController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Role;
@@ -635,8 +644,56 @@ Route::middleware('auth')->group(function () {
         Route::post('/laporan/cetakcuti', 'cetakcuti')->name('laporan.cetakcuti')->can('laporan.cuti');
         Route::get('/laporan/jadwal', 'jadwal')->name('laporan.jadwal')->can('laporan.jadwal');
         Route::post('/laporan/cetakjadwal', 'cetakjadwal')->name('laporan.cetakjadwal')->can('laporan.jadwal');
+        Route::get('/laporan/gaji', 'gaji')->name('laporan.gaji')->can('laporan.gaji');
+        Route::get('/laporan/{nik}/{dari}/{sampai}/lemburdetail', 'lemburdetail')->name('laporan.lemburdetail');
     }
     );
+
+    // Resign Karyawan Routes
+    Route::controller(ResignKaryawanController::class)->group(function () {
+        Route::get('/resign', 'index')->name('resign.index');
+        Route::get('/resign/create', 'create')->name('resign.create');
+        Route::post('/resign/store', 'store')->name('resign.store');
+        Route::delete('/resign/{id}/delete', 'destroy')->name('resign.delete');
+    });
+
+    // PPh21 Routes
+    Route::controller(Pph21Controller::class)->group(function () {
+        Route::get('/pph21', 'index')->name('pph21.index')->can('pph21.index');
+        Route::put('/pph21/setting', 'updateSetting')->name('pph21.setting.update')->can('pph21.index');
+        Route::get('/pph21/formula', 'formula')->name('pph21.formula')->can('pph21.index');
+        Route::post('/pph21/formula', 'storeFormula')->name('pph21.formula.store')->can('pph21.index');
+        Route::put('/pph21/formula/{id}/toggle', 'toggleFormula')->name('pph21.formula.toggle')->can('pph21.index');
+        Route::delete('/pph21/formula/{id}', 'destroyFormula')->name('pph21.formula.destroy')->can('pph21.index');
+        Route::post('/pph21/formula/reorder', 'reorderFormula')->name('pph21.formula.reorder');
+        Route::get('/pph21/ter', 'terRates')->name('pph21.ter')->can('pph21.index');
+        Route::put('/pph21/ter/{id}', 'updateTerRate')->name('pph21.ter.update')->can('pph21.index');
+        Route::get('/pph21/progresif', 'progresifRates')->name('pph21.progresif')->can('pph21.index');
+        Route::put('/pph21/progresif/{id}', 'updateProgresifRate')->name('pph21.progresif.update')->can('pph21.index');
+        Route::get('/pph21/simulasi', 'simulasi')->name('pph21.simulasi');
+        Route::post('/pph21/simulasi', 'hitungSimulasi')->name('pph21.simulasi.hitung');
+    });
+
+    // User Login Log Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(UserloginlogController::class)->group(function () {
+        Route::get('/userloginlog', 'index')->name('userloginlog.index')->can('userloginlog.index');
+    });
+
+    // Lembur Aturan Routes
+    Route::middleware('role:super admin')->controller(LemburaturanController::class)->group(function () {
+        Route::get('/lemburaturan', 'index')->name('lemburaturan.index');
+        Route::get('/lemburaturan/create', 'create')->name('lemburaturan.create');
+        Route::post('/lemburaturan', 'store')->name('lemburaturan.store');
+        Route::get('/lemburaturan/edit', 'edit')->name('lemburaturan.edit');
+        Route::put('/lemburaturan/{id}', 'update')->name('lemburaturan.update');
+        Route::delete('/lemburaturan/{id}', 'destroy')->name('lemburaturan.delete');
+
+        Route::get('/lemburaturan/createkhusus', 'createKhusus')->name('lemburaturan.createkhusus');
+        Route::post('/lemburaturan/storekhusus', 'storeKhusus')->name('lemburaturan.storekhusus');
+        Route::get('/lemburaturan/editkhusus', 'editKhusus')->name('lemburaturan.editkhusus');
+        Route::put('/lemburaturan/{id}/updatekhusus', 'updateKhusus')->name('lemburaturan.updatekhusus');
+        Route::delete('/lemburaturan/{id}/deletekhusus', 'destroyKhusus')->name('lemburaturan.deletekhusus');
+    });
 
     Route::controller(FacerecognitionController::class)->group(function () {
         Route::post('/facerecognition/hapus-semua/{nik}', 'destroyAll')->name('facerecognition.destroyAll')->can('karyawan.edit');
@@ -755,36 +812,7 @@ Route::middleware('auth')->group(function () {
     }
     );
 
-    // IP Blacklist Routes (Super Admin Only)
-    Route::middleware('role:super admin')->controller(IPBlacklistController::class)->group(function () {
-        Route::get('/ip-blacklist', 'index')->name('ip-blacklist.index');
-        Route::get('/ip-blacklist/dashboard', 'dashboard')->name('ip-blacklist.dashboard');
-        Route::post('/ip-blacklist', 'store')->name('ip-blacklist.store');
-        Route::put('/ip-blacklist/{id}', 'update')->name('ip-blacklist.update');
-        Route::delete('/ip-blacklist/{id}', 'destroy')->name('ip-blacklist.destroy');
-        Route::post('/ip-blacklist/{id}/toggle', 'toggle')->name('ip-blacklist.toggle');
-        Route::get('/ip-blacklist/unblock-requests', 'unblockRequests')->name('ip-blacklist.unblock-requests');
-        Route::post('/ip-blacklist/{id}/approve-unblock', 'approveUnblock')->name('ip-blacklist.approve-unblock');
-        Route::post('/ip-blacklist/{id}/reject-unblock', 'rejectUnblock')->name('ip-blacklist.reject-unblock');
-    }
-    );
 
-    // Session check & logout untuk karyawan (WebView / mobile)
-    Route::controller(SessionManagementController::class)->group(function () {
-        Route::get('/sessions/check', 'checkSession')->name('sessions.check');
-        Route::post('/sessions/logout-flutter', 'logoutFlutter')->name('sessions.logout-flutter');
-    }
-    );
-
-    // Session Management Routes (Super Admin Only)
-    Route::middleware('role:super admin')->controller(SessionManagementController::class)->group(function () {
-        Route::get('/sessions', 'index')->name('sessions.index');
-        Route::post('/sessions/force-logout', 'forceLogout')->name('sessions.force-logout');
-        Route::post('/sessions/{sessionId}/force-logout', 'forceLogoutSession')->name('sessions.force-logout-session');
-        Route::get('/sessions/user/{userId}', 'getUserSessions')->name('sessions.user');
-        Route::post('/sessions/cleanup', 'cleanupSessions')->name('sessions.cleanup');
-    }
-    );
 
     // Activity Log Routes (Super Admin Only)
     Route::middleware('role:super admin')->controller(ActivityLogController::class)->group(function () {
@@ -801,6 +829,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/system-logs', 'index')->name('system.logs.index');
         Route::get('/system-logs/download', 'download')->name('system.logs.download');
         Route::get('/system-logs/statistics', 'statistics')->name('system.logs.statistics');
+    }
+    );
+
+    // Log Mesin Routes (Super Admin Only)
+    Route::middleware('role:super admin')->controller(LogmesinController::class)->group(function () {
+        Route::get('/logmesin', 'index')->name('logmesin.index')->can('logmesin.index');
     }
     );
 
@@ -824,6 +858,78 @@ Route::middleware('auth')->group(function () {
     // Mutasi Karyawan
     Route::resource('mutasi', App\Http\Controllers\MutasiKaryawanController::class);
     Route::get('/mutasi/{nik}/getKaryawan', [App\Http\Controllers\MutasiKaryawanController::class , 'getKaryawan'])->name('mutasi.getKaryawan');
+
+    // Status Kawin Routes
+    Route::controller(StatuskawinController::class)->group(function () {
+        Route::get('/statuskawin', 'index')->name('statuskawin.index')->can('statuskawin.index');
+        Route::get('/statuskawin/create', 'create')->name('statuskawin.create')->can('statuskawin.create');
+        Route::post('/statuskawin', 'store')->name('statuskawin.store')->can('statuskawin.create');
+        Route::get('/statuskawin/{kode_status_kawin}/edit', 'edit')->name('statuskawin.edit')->can('statuskawin.edit');
+        Route::put('/statuskawin/{kode_status_kawin}', 'update')->name('statuskawin.update')->can('statuskawin.edit');
+        Route::delete('/statuskawin/{kode_status_kawin}', 'destroy')->name('statuskawin.destroy')->can('statuskawin.delete');
+    });
+
+    // Pinjaman Routes
+    Route::controller(PinjamanController::class)->group(function () {
+        Route::get('/pinjaman', 'index')->name('pinjaman.index')->can('pinjaman.index');
+        Route::get('/pinjaman/create', 'create')->name('pinjaman.create')->can('pinjaman.create');
+        Route::post('/pinjaman', 'store')->name('pinjaman.store')->can('pinjaman.create');
+        Route::post('/pinjaman/preview', 'preview')->name('pinjaman.preview')->can('pinjaman.create');
+        Route::get('/pinjaman/generate-pembayaran', 'generatePembayaran')->name('pinjaman.generate')->can('pinjaman.generate');
+        Route::post('/pinjaman/generate-pembayaran', 'prosesGeneratePembayaran')->name('pinjaman.prosesgenerate')->can('pinjaman.generate');
+        Route::get('/pinjaman/{id}/show', 'show')->name('pinjaman.show')->can('pinjaman.index');
+        Route::get('/pinjaman/{id}/edit', 'edit')->name('pinjaman.edit')->can('pinjaman.edit');
+        Route::put('/pinjaman/{id}', 'update')->name('pinjaman.update')->can('pinjaman.edit');
+        Route::delete('/pinjaman/{id}/delete', 'destroy')->name('pinjaman.delete')->can('pinjaman.delete');
+        Route::get('/pinjaman/{id}/pembayaran', 'createPembayaranManual')->name('pinjaman.pembayaran')->can('pinjaman.pembayaran');
+        Route::post('/pinjaman/{id}/pembayaran', 'storePembayaranManual')->name('pinjaman.storepembayaran')->can('pinjaman.pembayaran');
+        Route::delete('/pinjaman/pembayaran/{id}/delete', 'destroyPembayaran')->name('pinjaman.deletepembayaran')->can('pinjaman.pembayaran');
+        Route::get('/pinjaman/history/{id}', 'showHistoryGenerate')->name('pinjaman.history.show')->can('pinjaman.generate');
+        Route::delete('/pinjaman/history/{id}', 'destroyHistoryGenerate')->name('pinjaman.history.delete')->can('pinjaman.generate');
+    });
+
+    // Jenis Reimbursement Routes
+    Route::controller(JenisReimbursementController::class)->group(function () {
+        Route::get('/jenisreimbursement', 'index')->name('jenisreimbursement.index')->can('jenisreimbursement.index');
+        Route::get('/jenisreimbursement/create', 'create')->name('jenisreimbursement.create')->can('jenisreimbursement.create');
+        Route::post('/jenisreimbursement', 'store')->name('jenisreimbursement.store')->can('jenisreimbursement.create');
+        Route::get('/jenisreimbursement/{id}/edit', 'edit')->name('jenisreimbursement.edit')->can('jenisreimbursement.edit');
+        Route::put('/jenisreimbursement/{id}/update', 'update')->name('jenisreimbursement.update')->can('jenisreimbursement.edit');
+        Route::delete('/jenisreimbursement/{id}/delete', 'destroy')->name('jenisreimbursement.delete')->can('jenisreimbursement.delete');
+        Route::get('/jenisreimbursement/{id}/setkaryawan', 'setkaryawan')->name('jenisreimbursement.setkaryawan')->can('jenisreimbursement.edit');
+        Route::get('/jenisreimbursement/{id}/addkaryawan', 'addkaryawan')->name('jenisreimbursement.addkaryawan')->can('jenisreimbursement.edit');
+        Route::post('/jenisreimbursement/{id}/storekaryawan', 'storekaryawan')->name('jenisreimbursement.storekaryawan')->can('jenisreimbursement.edit');
+        Route::delete('/jenisreimbursement/{id}/destroykaryawan', 'destroykaryawan')->name('jenisreimbursement.destroykaryawan')->can('jenisreimbursement.edit');
+    });
+
+    // Reimbursement Routes
+    Route::controller(ReimbursementController::class)->group(function () {
+        Route::get('/reimbursement', 'index')->name('reimbursement.index')->can('reimbursement.index');
+        Route::get('/reimbursement/create', 'create')->name('reimbursement.create')->can('reimbursement.create');
+        Route::post('/reimbursement', 'store')->name('reimbursement.store')->can('reimbursement.create');
+        Route::get('/reimbursement/{id}/show', 'show')->name('reimbursement.show')->can('reimbursement.index');
+        Route::delete('/reimbursement/{id}/delete', 'destroy')->name('reimbursement.delete')->can('reimbursement.delete');
+        Route::post('/reimbursement/{no_reimbursement}/storeapprove', 'storeapprove')->name('reimbursement.storeapprove')->can('reimbursement.approve');
+        Route::delete('/reimbursement/{no_reimbursement}/cancelapprove', 'cancelapprove')->name('reimbursement.cancelapprove')->can('reimbursement.approve');
+    });
+
+    // Pengajuan Reimbursement Routes
+    Route::controller(PengajuanreimbursementController::class)->group(function () {
+        Route::get('/pengajuanreimbursement', 'index')->name('pengajuanreimbursement.index');
+        Route::get('/pengajuanreimbursement/create', 'create')->name('pengajuanreimbursement.create');
+        Route::post('/pengajuanreimbursement', 'store')->name('pengajuanreimbursement.store');
+        Route::get('/pengajuanreimbursement/{id}/edit', 'edit')->name('pengajuanreimbursement.edit');
+        Route::put('/pengajuanreimbursement/{id}', 'update')->name('pengajuanreimbursement.update');
+        Route::get('/pengajuanreimbursement/{id}/show', 'show')->name('pengajuanreimbursement.show');
+        Route::delete('/pengajuanreimbursement/{id}/delete', 'destroy')->name('pengajuanreimbursement.delete');
+    });
+
+    // Backup & Restore Routes
+    Route::middleware('role:super admin')->controller(App\Http\Controllers\BackupController::class)->group(function () {
+        Route::get('/backup', 'index')->name('backup.index');
+        Route::get('/backup/download', 'download')->name('backup.download');
+        Route::post('/backup/restore', 'restore')->name('backup.restore');
+    });
 });
 
 

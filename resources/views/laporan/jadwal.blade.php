@@ -3,40 +3,22 @@
 
 @section('content')
 @section('navigasi')
-<div class="d-flex justify-content-between align-items-center w-100">
-    <div>
-        Laporan Jadwal Karyawan
-        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
-            Generate laporan jadwal kerja karyawan, export ke Excel/PDF, dan monitoring penempatan shift.
-        </div>
-    </div>
-    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
-        <ol class="breadcrumb breadcrumb-style1 mb-0">
-            <li class="breadcrumb-item">
-                <a href="{{ route('dashboard.index') }}">
-                    <i class="ti ti-home-2 ti-xs"></i>
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="javascript:void(0);">
-                    <i class="ti ti-file-report ti-xs me-1"></i> Laporan
-                </a>
-            </li>
-            <li class="breadcrumb-item active">
-                <i class="ti ti-calendar-event ti-xs me-1"></i> Jadwal
-            </li>
-        </ol>
-    </nav>
-</div>
+    <span>Laporan Jadwal Karyawan</span>
 @endsection
 <div class="row">
     <div class="col-lg-6 col-sm-12 col-xs-12">
         <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-printer me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Cetak Laporan Jadwal Karyawan</h6>
+                </div>
+            </div>
             <div class="card-body">
-                <form action="{{ route('laporan.cetakjadwal') }}" method="POST" target="_blank" id="formJadwal">
+                <form action="{{ route('laporan.cetakjadwal') }}" method="POST" target="_blank" id="formJadwal" class="mt-2">
                     @csrf
                     <div class="form-group mb-3">
-                        <select name="kode_cabang" id="kode_cabang_jadwal" class="form-select select2Kodecabangjadwal">
+                        <select name="kode_cabang" id="kode_cabang_jadwal" class="form-select select2Jadwal">
                             <option value="">Semua Cabang</option>
                             @foreach ($cabang as $d)
                                 <option value="{{ $d->kode_cabang }}">{{ textUpperCase($d->nama_cabang) }}</option>
@@ -44,7 +26,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <select name="kode_dept" id="kode_dept_jadwal" class="form-select select2Kodedeptjadwal">
+                        <select name="kode_dept" id="kode_dept_jadwal" class="form-select select2Jadwal">
                             <option value="">Semua Departemen</option>
                             @foreach ($departemen as $d)
                                 <option value="{{ $d->kode_dept }}">{{ textUpperCase($d->nama_dept) }}</option>
@@ -52,7 +34,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <select name="nik" id="nik_jadwal" class="form-select select2Nikjadwal">
+                        <select name="nik" id="nik_jadwal" class="form-select select2Jadwal">
                             <option value="">Semua Karyawan</option>
                         </select>
                     </div>
@@ -89,41 +71,19 @@
 @push('myscript')
 <script>
     $(function() {
-        const select2Kodecabangjadwal = $(".select2Kodecabangjadwal");
-        if (select2Kodecabangjadwal.length) {
-            select2Kodecabangjadwal.each(function() {
+        const initSelect2 = (selector) => {
+            $(selector).each(function() {
                 var $this = $(this);
+                var placeholder = $this.find("option:first").text();
                 $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Cabang',
+                    placeholder: placeholder,
                     allowClear: true,
                     dropdownParent: $this.parent()
                 });
             });
-        }
+        };
 
-        const select2Kodedeptjadwal = $(".select2Kodedeptjadwal");
-        if (select2Kodedeptjadwal.length) {
-            select2Kodedeptjadwal.each(function() {
-                var $this = $(this);
-                $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Departemen',
-                    allowClear: true,
-                    dropdownParent: $this.parent()
-                });
-            });
-        }
-
-        const select2Nikjadwal = $(".select2Nikjadwal");
-        if (select2Nikjadwal.length) {
-            select2Nikjadwal.each(function() {
-                var $this = $(this);
-                $this.wrap('<div class="position-relative"></div>').select2({
-                    placeholder: 'Semua Karyawan',
-                    allowClear: true,
-                    dropdownParent: $this.parent()
-                });
-            });
-        }
+        initSelect2(".select2Jadwal");
 
         function loadKaryawan() {
             const kode_cabang = $("#kode_cabang_jadwal").val();

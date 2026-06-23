@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('presensi', 'status_potongan')) {
-            Schema::table('presensi', function (Blueprint $table) {
-                $table->boolean('status_potongan')->nullable();
-            });
-        }
+        Schema::table('presensi', function (Blueprint $table) {
+            $table->boolean('status_potongan')->nullable();
+        });
     }
 
     /**
@@ -23,10 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('presensi', 'status_potongan')) {
-            Schema::table('presensi', function (Blueprint $table) {
-                $table->dropColumn('status_potongan');
-            });
-        }
+        Schema::table('presensi', function (Blueprint $table) {
+            $table->dropColumn('status_potongan');
+        });
     }
 };

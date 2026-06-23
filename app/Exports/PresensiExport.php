@@ -10,15 +10,17 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 class PresensiExport implements FromView, ShouldAutoSize, WithTitle
 {
     protected $data;
+    protected $view;
 
-    public function __construct(array $data)
+    public function __construct(array $data, $view = 'laporan.presensi_excel')
     {
         $this->data = $data;
+        $this->view = $view;
     }
 
     public function view(): View
     {
-        return view('laporan.presensi_excel', $this->data);
+        return view($this->view, $this->data);
     }
 
     public function title(): string

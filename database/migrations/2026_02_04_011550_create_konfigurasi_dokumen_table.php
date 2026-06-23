@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('konfigurasi_dokumen')) {
-            Schema::create('konfigurasi_dokumen', function (Blueprint $table) {
-                $table->char('kode_dokumen', 10)->primary();
-                $table->string('nama_dokumen', 50);
-                $table->text('konten');
-                $table->timestamps();
-            });
-        }
+        Schema::create('konfigurasi_dokumen', function (Blueprint $table) {
+            $table->char('kode_dokumen', 10)->primary();
+            $table->string('nama_dokumen', 50);
+            $table->text('konten');
+            $table->timestamps();
+        });
     }
 
     /**

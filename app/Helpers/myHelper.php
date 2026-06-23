@@ -435,6 +435,32 @@ function hitungpulangcepat($tanggal_presensi, $jam_out, $jam_pulang, $istirahat,
     }
 }
 
+function hitungPotonganIstirahat($istirahat_out, $istirahat_in, $jam_awal_istirahat, $jam_akhir_istirahat)
+{
+    if (empty($istirahat_out) || empty($istirahat_in) || empty($jam_awal_istirahat) || empty($jam_akhir_istirahat)) {
+        return 0;
+    }
+
+    try {
+        $start_break = new DateTime($jam_awal_istirahat);
+        $end_break = new DateTime($jam_akhir_istirahat);
+        $actual_out = new DateTime($istirahat_out);
+        $actual_in = new DateTime($istirahat_in);
+    } catch (Exception $e) {
+        return 0;
+    }
+
+    if ($actual_in <= $actual_out) {
+        return 0;
+    }
+
+    $scheduled_hours = ($end_break->getTimestamp() - $start_break->getTimestamp()) / 3600;
+    $actual_hours = ($actual_in->getTimestamp() - $actual_out->getTimestamp()) / 3600;
+    $potongan = max(0, $scheduled_hours - $actual_hours);
+
+    return ROUND($potongan, 2);
+}
+
 /**
  * Shift lintas hari kemarin belum absen pulang dan sudah lewat batas_presensi_lintashari.
  */

@@ -2,37 +2,19 @@
 @section('titlepage', 'Laporan Cuti')
 @section('content')
 @section('navigasi')
-<div class="d-flex justify-content-between align-items-center w-100">
-    <div>
-        Laporan Cuti
-        <div class="text-muted mt-1" style="font-size: 0.75rem; font-weight: normal; text-transform: none; letter-spacing: 0px;">
-            Generate laporan cuti karyawan, monitoring pengajuan cuti, dan export ke Excel/PDF.
-        </div>
-    </div>
-    <nav aria-label="breadcrumb" class="d-none d-md-block" style="font-size: 0.75rem;">
-        <ol class="breadcrumb breadcrumb-style1 mb-0">
-            <li class="breadcrumb-item">
-                <a href="{{ route('dashboard.index') }}">
-                    <i class="ti ti-home-2 ti-xs"></i>
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a href="javascript:void(0);">
-                    <i class="ti ti-file-report ti-xs me-1"></i> Laporan
-                </a>
-            </li>
-            <li class="breadcrumb-item active">
-                <i class="ti ti-plane ti-xs me-1"></i> Cuti
-            </li>
-        </ol>
-    </nav>
-</div>
+    <span>Laporan Cuti</span>
 @endsection
 <div class="row">
     <div class="col-lg-6 col-sm-12 col-xs-12">
         <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2" style="background-color: var(--theme-color-1) !important; color: white !important; min-height: 50px;">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-printer me-2 fs-5"></i>
+                    <h6 class="card-title mb-0 text-white">Cetak Laporan Cuti</h6>
+                </div>
+            </div>
             <div class="card-body">
-                <form action="{{ route('laporan.cetakcuti') }}" method="POST" target="_blank" id="formLaporanCuti">
+                <form action="{{ route('laporan.cetakcuti') }}" method="POST" target="_blank" id="formLaporanCuti" class="mt-2">
                     @csrf
                     <div class="form-group mb-3">
                         <select name="kode_cabang" id="kode_cabang" class="form-select select2">
