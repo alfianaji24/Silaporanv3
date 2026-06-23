@@ -558,7 +558,8 @@ class PresensiController extends Controller
                                 }
 
                                 $message .= "\nTelah Berhasil Tercatat\n"
-                                    . "Selamat Bekerja!";
+                                    . "Selamat Bekerja!\n\n"
+                                    . "_This is an automatically generated notification, please do not reply to this message._";
 
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
@@ -659,7 +660,8 @@ class PresensiController extends Controller
                                 }
 
                                 $message .= "\nTelah Berhasil Tercatat\n"
-                                            . "Sampai Jumpa Besok!";
+                                            . "Sampai Jumpa Besok!\n\n"
+                                            . "_This is an automatically generated notification, please do not reply to this message._";
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
@@ -680,7 +682,8 @@ class PresensiController extends Controller
                                 }
 
                                 $message .= "\nTelah Berhasil Tercatat\n"
-                                        . "Sampai Jumpa Besok!";
+                                        . "Sampai Jumpa Besok!\n\n"
+                                        . "_This is an automatically generated notification, please do not reply to this message._";
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {

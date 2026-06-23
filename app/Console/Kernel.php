@@ -25,6 +25,12 @@ class Kernel extends ConsoleKernel
         // Kirim ucapan ulang tahun otomatis setiap hari jam 08:00
         $schedule->command('send:birthday-whatsapp')->dailyAt('08:00')->appendOutputTo(storage_path('logs/birthday-scheduler.log'));
 
+        // Pengingat absen pulang: setelah jam pulang jadwal, maks. +2 jam
+        $schedule->command('send:checkout-reminder-whatsapp')
+            ->everyMinute()
+            ->withoutOverlapping(5)
+            ->appendOutputTo(storage_path('logs/checkout-reminder-scheduler.log'));
+
         // Cek pesan gagal terkirim setiap 1 jam
         $schedule->job(new CheckFailedMessagesJob)
             ->hourly()
