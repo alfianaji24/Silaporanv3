@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
+use App\Models\UserLoginLog;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,10 +38,12 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $loginType = $request->input('login_type', 'user');
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
 
         if ($loginType === 'karyawan') {
-            if (!$user->hasRole('karyawan')) {
+            $isKaryawan = $user && $user->roles->contains('name', 'karyawan');
+            if (!$isKaryawan) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
@@ -51,8 +55,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Session creation is now handled by LogUserLogin event listener
-        // This ensures real-time session tracking for all users
+        // Record successful login into user login log
+        UserLoginLog::create([
+            'user_id' => $user->id,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'login_at' => now(),
+        ]);
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }
@@ -64,8 +73,9 @@ class AuthenticatedSessionController extends Controller
     {
         $agent = new \Jenssegers\Agent\Agent();
         $isMobile = $agent->isMobile();
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
-        $isAdmin = $user && !$user->hasRole('karyawan');
+        $isAdmin = $user && !$user->roles->contains('name', 'karyawan');
 
         Auth::guard('web')->logout();
 
