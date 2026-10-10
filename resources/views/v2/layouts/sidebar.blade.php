@@ -1489,7 +1489,7 @@
         </div>
 
     <!-- Bottom User Profile Pill (Luxury Glassmorphism Finish) -->
-    <div class="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md flex-shrink-0 flex items-center justify-between relative z-10">
+    <!-- <div class="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md flex-shrink-0 flex items-center justify-between relative z-10">
         <div class="flex items-center gap-2.5 min-w-0">
             <div class="w-8 h-8 rounded-xl overflow-hidden bg-white/15 border border-white/25 flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs">
                 @if($userPhoto)
@@ -1509,7 +1509,7 @@
                 <i data-lucide="log-out" class="w-4 h-4"></i>
             </button>
         </form>
-    </div>
+    </div> -->
 </aside>
 
 <script>

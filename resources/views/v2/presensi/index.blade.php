@@ -9,14 +9,13 @@
     $themeColor1 = $general_setting->theme_color_1 ?? '#0a5c41';
     $themeColor2 = $general_setting->theme_color_2 ?? '#117956';
     $selectedDate = !empty(request('tanggal')) ? request('tanggal') : date('Y-m-d');
-    
-    // Quick Attendance Counts on Current Page Data
-    $countHadir = $karyawan->where('status', 'h')->count();
-    $countIzin = $karyawan->where('status', 'i')->count();
-    $countSakit = $karyawan->where('status', 's')->count();
-    $countCuti = $karyawan->where('status', 'c')->count();
-    $countAlpa = $karyawan->where('status', 'a')->count();
-    $countBelumAbsen = $karyawan->whereNull('status')->count();
+    $totalKaryawan = $presensiStats['total'] ?? $karyawan->total();
+    $countHadir = $presensiStats['hadir'] ?? 0;
+    $countIzin = $presensiStats['izin'] ?? 0;
+    $countSakit = $presensiStats['sakit'] ?? 0;
+    $countCuti = $presensiStats['cuti'] ?? 0;
+    $countAlpa = $presensiStats['alpa'] ?? 0;
+    $countBelumAbsen = $presensiStats['belum_absen'] ?? 0;
 @endphp
 
 <div class="space-y-5">
@@ -90,7 +89,7 @@
                         <span>Tercatat Hadir</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/20 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countHadir / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countHadir / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>
@@ -119,7 +118,7 @@
                         <span>Disetujui</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/15 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countIzin / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countIzin / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>
@@ -148,7 +147,7 @@
                         <span>Surat Dokter</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/15 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countSakit / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countSakit / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>
@@ -177,7 +176,7 @@
                         <span>Cuti Tahunan</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/15 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countCuti / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countCuti / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>
@@ -206,7 +205,7 @@
                         <span>Tanpa Keterangan</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/15 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countAlpa / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countAlpa / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>
@@ -235,7 +234,7 @@
                         <span>Menunggu</span>
                     </span>
                     <span class="font-black text-white text-[10px] bg-white/15 px-2 py-0.5 rounded-md">
-                        {{ $karyawan->count() > 0 ? round(($countBelumAbsen / $karyawan->count()) * 100) : 0 }}%
+                        {{ $totalKaryawan > 0 ? round(($countBelumAbsen / $totalKaryawan) * 100) : 0 }}%
                     </span>
                 </div>
             </div>

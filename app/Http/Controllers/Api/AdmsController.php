@@ -631,7 +631,7 @@ class AdmsController extends Controller
                             // Send WA
                             if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                                 try {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen masuk (Fingerprint) pada " . $jam_presensi . " Semangat Bekerja";
+                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'masuk', $jam_presensi);
                                     dispatch(new SendWaMessage($karyawan->no_hp, $message));
                                     Log::info('WA masuk queued');
                                 } catch (\Exception $waException) {
@@ -675,7 +675,7 @@ class AdmsController extends Controller
                             // Kita hanya kirim notif pulang jika ini adalah update pertama jam out hari ini
                             if ($presensi_hariini == null || $presensi_hariini->jam_out == null) {
                                 try {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang (Fingerprint) pada " . $jam_presensi . " Hati-hati di Jalan";
+                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
                                     dispatch(new SendWaMessage($karyawan->no_hp, $message));
                                 } catch (\Exception $waException) {
                                     Log::error('WA Error', ['nik' => $karyawan->nik, 'error' => $waException->getMessage()]);

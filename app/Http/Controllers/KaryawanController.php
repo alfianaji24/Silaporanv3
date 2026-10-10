@@ -93,6 +93,11 @@ class KaryawanController extends Controller
         if (!empty($request->nama_karyawan)) {
             $query->where('nama_karyawan', 'like', '%' . $request->nama_karyawan . '%');
         }
+
+        $statusAktif = $request->has('status_aktif') ? $request->status_aktif : '1';
+        if ($statusAktif === '1' || $statusAktif === '0') {
+            $query->where('karyawan.status_aktif_karyawan', $statusAktif);
+        }
         $sortBy = $request->get('sort_by', 'nama_karyawan');
         if ($sortBy === 'nik_show') {
             $query->orderBy('karyawan.nik_show', 'asc');

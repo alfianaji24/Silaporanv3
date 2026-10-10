@@ -153,7 +153,7 @@ class PresensiController extends Controller
                     // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                     if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                         try {
-                            $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen masuk pada " . $jam_presensi . " Semagat Bekerja";
+                            $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'masuk', $jam_presensi);
                             $this->sendwa($karyawan->no_hp, $message);
                         }
                         catch (\Exception $waException) {
@@ -196,7 +196,7 @@ class PresensiController extends Controller
                 // Kirim Notifikasi Ke WA (dibungkus try-catch agar error WA tidak mempengaruhi response sukses)
                 if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
                     try {
-                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                        $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
                         $this->sendwa($karyawan->no_hp, $message);
                     }
                     catch (\Exception $waException) {

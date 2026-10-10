@@ -129,9 +129,31 @@ class PresensiController extends Controller
             $query->where('nama_karyawan', 'like', '%' . $request->nama_karyawan . '%');
         }
 
+        $statsQuery = clone $query;
+        $statsQuery->getQuery()->columns = null;
+        $statsQuery->getQuery()->orders = null;
+        $statsRow = $statsQuery->selectRaw("
+                COUNT(*) as total,
+                COALESCE(SUM(CASE WHEN presensi.status = 'h' THEN 1 ELSE 0 END), 0) as hadir,
+                COALESCE(SUM(CASE WHEN presensi.status = 'i' THEN 1 ELSE 0 END), 0) as izin,
+                COALESCE(SUM(CASE WHEN presensi.status = 's' THEN 1 ELSE 0 END), 0) as sakit,
+                COALESCE(SUM(CASE WHEN presensi.status = 'c' THEN 1 ELSE 0 END), 0) as cuti,
+                COALESCE(SUM(CASE WHEN presensi.status = 'a' THEN 1 ELSE 0 END), 0) as alpa,
+                COALESCE(SUM(CASE WHEN presensi.status IS NULL THEN 1 ELSE 0 END), 0) as belum_absen
+            ")->first();
+
         $karyawan = $query->paginate(10);
         $karyawan->appends(request()->all());
         $data['karyawan'] = $karyawan;
+        $data['presensiStats'] = [
+            'total' => (int) ($statsRow->total ?? 0),
+            'hadir' => (int) ($statsRow->hadir ?? 0),
+            'izin' => (int) ($statsRow->izin ?? 0),
+            'sakit' => (int) ($statsRow->sakit ?? 0),
+            'cuti' => (int) ($statsRow->cuti ?? 0),
+            'alpa' => (int) ($statsRow->alpa ?? 0),
+            'belum_absen' => (int) ($statsRow->belum_absen ?? 0),
+        ];
         $data['cabang'] = $user->getCabang();
         $data['denda_list'] = Denda::all()->toArray();
 
@@ -551,11 +573,11 @@ class PresensiController extends Controller
                             try {
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Masuk pada " . $jam_presensi . "Hati Hati di Jalan";
+                                        $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'masuk', $jam_presensi);
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Masuk pada " . $jam_presensi . "Semangat Bekerja";
+                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'masuk', $jam_presensi);
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {
@@ -606,11 +628,11 @@ class PresensiController extends Controller
                             try {
                                 if ($generalsetting->tujuan_notifikasi_wa == 0) {
                                     if ($karyawan->no_hp != "") {
-                                        $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                                        $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
                                         $this->sendwa($karyawan->no_hp, $message);
                                     }
                                 } else {
-                                    $message = "Terimakasih, Hari ini " . $karyawan->nama_karyawan . " absen Pulang pada " . $jam_presensi . "Hati Hati di Jalan";
+                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
                                     $this->sendwa($generalsetting->id_group_wa, $message);
                                 }
                             } catch (\Exception $waException) {

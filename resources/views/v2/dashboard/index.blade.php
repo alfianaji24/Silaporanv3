@@ -222,11 +222,11 @@
     for ($day = 1; $day <= $daysInMonth; $day++) {
         $dateKey = sprintf('%04d-%02d-%02d', $bulanIniObj->year, $bulanIniObj->month, $day);
         $perfChartLabels[] = sprintf('%02d', $day);
-        
+
         $rec = $rawMonthlyAttendance->get($dateKey);
         $tw = $rec ? (int)$rec->tepat_waktu : 0;
         $lt = $rec ? (int)$rec->terlambat : 0;
-        
+
         $perfChartTepatWaktu[] = $tw;
         $perfChartTerlambat[] = $lt;
         $totalBulanTepatWaktu += $tw;
@@ -269,12 +269,12 @@
     </div>
 
     <!-- Top Action Buttons: Export & Date Picker -->
-    <div class="flex items-center gap-2.5 self-start sm:self-auto">
+    <!-- <div class="flex items-center gap-2.5 self-start sm:self-auto">
         <div class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/90 rounded-lg text-xs font-semibold text-slate-700 shadow-2xs">
             <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500"></i>
             <span>{{ \Carbon\Carbon::now(config('app.timezone'))->translatedFormat('d F Y') }}</span>
         </div>
-    </div>
+    </div> -->
 </div>
 
 <!-- Leave Approval Info Banner (Blue Outline Alert) -->
@@ -290,11 +290,11 @@
 
 <!-- ================= ROW 1: USER PROFILE CARD + LEAVE DETAILS DONUT + LEAVE SUMMARY TABLE ================= -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
-    
+
     <!-- 1. User Profile Card (4 cols) Full Theme Gradient & Subtle Minimalist Watermark -->
     <div class="lg:col-span-4 rounded-2xl p-5 shadow-lg flex flex-col justify-between relative overflow-hidden group transition-all duration-300 text-white select-none border border-white/10"
          style="background: linear-gradient(135deg, {{ $themeColor1 }} 0%, {{ $themeColor2 }} 100%);">
-        
+
         <!-- Clean Minimalist Geometric Watermark (Right Bottom only) -->
         <svg class="absolute -right-8 -bottom-8 w-48 h-48 text-white/[0.06] pointer-events-none" viewBox="0 0 200 200" fill="none">
             <circle cx="160" cy="160" r="120" stroke="currentColor" stroke-width="1.5"/>
@@ -343,8 +343,8 @@
                 <button @click="openCardMenu = !openCardMenu" class="p-1.5 text-white/70 hover:text-white hover:bg-white/15 rounded-lg transition backdrop-blur-xs">
                     <i data-lucide="more-vertical" class="w-4 h-4"></i>
                 </button>
-                <div x-show="openCardMenu" 
-                     @click.away="openCardMenu = false" 
+                <div x-show="openCardMenu"
+                     @click.away="openCardMenu = false"
                      x-cloak
                      class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-20 text-xs text-slate-800">
                     <a href="{{ route('profile.index') }}" class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 transition">
@@ -381,12 +381,12 @@
 
         <!-- Bottom Action Buttons: Edit Profile & General Setting -->
         <div class="mt-4 pt-3 border-t border-white/15 grid grid-cols-2 gap-2 relative z-10">
-            <a href="{{ route('profile.editprofile') }}" 
+            <a href="{{ route('profile.editprofile') }}"
                class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-white font-semibold text-xs backdrop-blur-xs transition shadow-2xs group/btn">
                 <i data-lucide="user-pen" class="w-3.5 h-3.5 text-white/90 group-hover/btn:scale-110 transition-transform"></i>
                 <span class="truncate">Edit Profile</span>
             </a>
-            <a href="{{ route('generalsetting.index') }}" 
+            <a href="{{ route('generalsetting.index') }}"
                class="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-white font-semibold text-xs backdrop-blur-xs transition shadow-2xs group/btn">
                 <i data-lucide="settings-2" class="w-3.5 h-3.5 text-white/90 group-hover/btn:rotate-45 transition-transform"></i>
                 <span class="truncate">Pengaturan</span>
@@ -407,14 +407,14 @@
                 <!-- Background track circle -->
                 <circle cx="56" cy="56" r="46" stroke="#f1f5f9" stroke-width="6" fill="transparent" />
                 <!-- Animated Seconds Progress Arc -->
-                <circle id="secondsProgressRing" 
-                        cx="56" cy="56" r="46" 
-                        stroke="{{ $themeColor1 }}" 
-                        stroke-width="6" 
-                        stroke-linecap="round" 
-                        stroke-dasharray="289.02" 
-                        stroke-dashoffset="0" 
-                        fill="transparent" 
+                <circle id="secondsProgressRing"
+                        cx="56" cy="56" r="46"
+                        stroke="{{ $themeColor1 }}"
+                        stroke-width="6"
+                        stroke-linecap="round"
+                        stroke-dasharray="289.02"
+                        stroke-dashoffset="0"
+                        fill="transparent"
                         style="transition: stroke-dashoffset 0.15s linear;" />
             </svg>
 
@@ -427,7 +427,7 @@
         </div>
 
         <div class="w-full">
-            <a href="{{ route('presensi.index') }}" 
+            <a href="{{ route('presensi.index') }}"
                class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-white font-bold text-xs tracking-wide shadow-sm hover:opacity-95 active:scale-98 transition"
                style="background: linear-gradient(135deg, {{ $themeColor1 }}, {{ $themeColor2 }})">
                 <i data-lucide="device-desktop" class="w-4 h-4"></i>
@@ -517,7 +517,7 @@
 
 <!-- ================= ROW 2: LEAVE DETAILS DONUT + 4 STAT CARDS & TIMELINE ================= -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
-    
+
     <!-- 1. Statistik Pendidikan Karyawan Donut Chart (4 cols) -->
     <div class="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col h-full">
         <!-- Header -->
@@ -585,10 +585,10 @@
 
     <!-- 2. 4 Stat Cards + Productivity Bar (8 cols) -->
     <div class="lg:col-span-8 flex flex-col justify-between gap-4">
-        
+
         <!-- 4 Real Kehadiran Statistics Cards Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            
+
             <!-- Card 1: Total Hadir -->
             <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 cursor-pointer group stat-card-clickable"
                  data-status="h">
@@ -737,7 +737,7 @@
                         $widthPct = $totalStatusEmployees > 0 ? max(round(($st['count'] / $totalStatusEmployees) * 100), ($st['count'] > 0 ? 3 : 0)) : 0;
                     @endphp
                     @if($st['count'] > 0)
-                        <div class="rounded-full h-full transition-all duration-500" 
+                        <div class="rounded-full h-full transition-all duration-500"
                              style="width: {{ $widthPct }}%; background-color: {{ $st['color'] }};"
                              title="{{ $st['nama'] }}: {{ $st['count'] }} Karyawan"></div>
                     @endif
@@ -767,7 +767,7 @@
 
 <!-- ================= ROW 3: PERFORMANCE CHART + SKILLS PROGRESS + TEAM BIRTHDAY & HOLIDAYS ================= -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-5">
-    
+
     <!-- 1. Performance Monthly Attendance Chart (5 cols - Tepat Waktu vs Terlambat) -->
     <div class="lg:col-span-5 bg-white rounded-xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between">
         <div class="flex items-center justify-between mb-2">
@@ -895,7 +895,7 @@
                 <span>Sesuai Hak Akses</span>
             </span>
             @if(count($birthday ?? []) > 0)
-                <button type="button" 
+                <button type="button"
                         onclick="kirimUcapanSemuaV2()"
                         id="btnKirimUcapanV2"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white font-semibold text-[11px] bg-emerald-600 hover:bg-emerald-700 transition">
@@ -910,11 +910,11 @@
 
     <!-- 3. Upcoming Holidays & Calendar Widget (3 cols) -->
     <div class="lg:col-span-3 space-y-3.5 flex flex-col justify-between">
-        
+
         <!-- Featured Next Holiday Card (Gradient Festive Box) -->
         <div class="rounded-2xl p-4 text-white shadow-xs relative overflow-hidden flex flex-col justify-between group transition-all duration-300 border border-white/10"
              style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
-            
+
             <!-- Geometric curve watermark -->
             <svg class="absolute -right-6 -bottom-6 w-32 h-32 text-white/10 pointer-events-none" viewBox="0 0 200 200" fill="none">
                 <circle cx="150" cy="150" r="100" stroke="currentColor" stroke-width="2"/>
@@ -937,7 +937,7 @@
                 <h4 class="text-sm font-extrabold text-white leading-snug line-clamp-2 mt-1">
                     {{ $nextHoliday ? $nextHoliday->keterangan : 'Libur Nasional / Cuti Bersama' }}
                 </h4>
-                
+
                 <div class="flex items-center gap-1.5 text-xs text-sky-100 font-medium mt-1.5">
                     <i data-lucide="calendar" class="w-3.5 h-3.5 text-sky-200"></i>
                     <span>{{ $nextHoliday ? \Carbon\Carbon::parse($nextHoliday->tanggal)->translatedFormat('l, d F Y') : 'Menunggu jadwal libur' }}</span>
@@ -946,7 +946,7 @@
 
             <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between">
                 <span class="text-[10px] text-sky-100">Kalender Perusahaan</span>
-                <a href="{{ route('harilibur.index') }}" 
+                <a href="{{ route('harilibur.index') }}"
                    class="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg backdrop-blur-xs transition">
                     <span>Lihat Semua</span>
                     <i data-lucide="arrow-right" class="w-3 h-3"></i>
@@ -1008,11 +1008,11 @@
 
 <!-- ================= ROW 4: TEAM MEMBERS + NOTIFICATIONS + MEETINGS SCHEDULE ================= -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-    
+
     <!-- 1. Statistik Habis Kontrak Karyawan Card (Interactive Tabs V2) -->
-    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between" 
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs flex flex-col justify-between"
          x-data="{ activeContractTab: 'bulanini' }">
-        
+
         <!-- Header -->
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
@@ -1083,7 +1083,7 @@
 
         <!-- Tab Contents (Max Height with Scroll) -->
         <div class="space-y-2.5 max-h-[210px] overflow-y-auto pr-1 flex-1">
-            
+
             <!-- 1. Lewat Jatuh Tempo List -->
             <div x-show="activeContractTab === 'lewat'" class="space-y-2">
                 @forelse($kontrak_lewat ?? [] as $k)
@@ -1350,7 +1350,7 @@
                     $menitTerlambat = $jamMasuk->diffInMinutes($jadwal);
                     $jamTerlambat = floor($menitTerlambat / 60);
                     $sisaMenit = $menitTerlambat % 60;
-                    
+
                     $durasiTerlambatText = '';
                     if ($jamTerlambat > 0) {
                         $durasiTerlambatText .= $jamTerlambat . 'j ';
@@ -1497,7 +1497,7 @@
                             <span class="block text-[10px] text-slate-400">Klik untuk membuka lampiran</span>
                         </div>
                     </div>
-                    <a href="#" id="dashDetailLampiranLink" target="_blank" 
+                    <a href="#" id="dashDetailLampiranLink" target="_blank"
                        class="px-3 py-1.5 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 text-slate-700 font-bold text-xs rounded-xl shadow-2xs transition shrink-0 inline-flex items-center gap-1">
                         <span>Buka</span>
                         <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
@@ -1548,7 +1548,7 @@
         const fullDateEl = document.getElementById('liveFullDate');
 
         const now = new Date();
-        
+
         // Time Components
         const hours24 = now.getHours();
         const hours12 = hours24 % 12 || 12;
@@ -1614,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="text-xs text-slate-400 font-semibold mt-3">Memuat data presensi...</div>
             </div>
         `);
-        
+
         $('#modalKaryawanPresensiLabel').text('Detail Kehadiran Karyawan');
         $('#modalKaryawanPresensi').modal('show');
 

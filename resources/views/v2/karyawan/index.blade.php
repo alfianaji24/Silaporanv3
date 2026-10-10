@@ -8,7 +8,7 @@
 @php
     $themeColor1 = $general_setting->theme_color_1 ?? '#0a5c41';
     $themeColor2 = $general_setting->theme_color_2 ?? '#117956';
-    
+
     $totalKaryawan = $stats['total_karyawan'] ?? $karyawan->total();
     $totalAktif = $stats['aktif'] ?? 0;
     $totalNonaktif = $stats['nonaktif'] ?? 0;
@@ -56,7 +56,7 @@
             <div class="flex flex-wrap items-center gap-2">
                 @can('karyawan.create')
                     <!-- Tambah Karyawan -->
-                    <button type="button" id="btnCreate" 
+                    <button type="button" id="btnCreate"
                             class="inline-flex items-center gap-1.5 px-4 py-2 text-white font-bold rounded-xl text-xs shadow-xs transition-all duration-200 active:scale-95 cursor-pointer hover:opacity-95"
                             style="background: linear-gradient(135deg, {{ $themeColor1 }}, {{ $themeColor2 }});">
                         <i class="ti ti-plus text-sm"></i>
@@ -64,14 +64,14 @@
                     </button>
 
                     <!-- Export Excel -->
-                    <a href="{{ route('karyawan.export', request()->query()) }}" 
+                    <a href="{{ route('karyawan.export', request()->query()) }}"
                        class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-300/90 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs shadow-2xs transition active:scale-95">
                         <i class="ti ti-file-spreadsheet text-emerald-600 text-sm"></i>
                         <span>Export</span>
                     </a>
 
                     <!-- Import Excel -->
-                    <button type="button" id="btnImport" 
+                    <button type="button" id="btnImport"
                             class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-300/90 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs shadow-2xs transition active:scale-95 cursor-pointer">
                         <i class="ti ti-upload text-sky-600 text-sm"></i>
                         <span>Import</span>
@@ -80,13 +80,13 @@
                     <!-- More Ops (Dropdown) -->
                     @can('users.create')
                     <div class="relative" x-data="{ openMore: false }" @click.outside="openMore = false">
-                        <button @click="openMore = !openMore" 
+                        <button @click="openMore = !openMore"
                                 type="button"
                                 class="inline-flex items-center gap-1 px-2.5 py-2 bg-white border border-slate-300/90 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold shadow-2xs transition"
                                 title="Operasi Akun Massal">
                             <i class="ti ti-dots text-base"></i>
                         </button>
-                        <div x-show="openMore" 
+                        <div x-show="openMore"
                              x-transition:enter="transition ease-out duration-100"
                              x-transition:enter-start="transform opacity-0 scale-95"
                              x-transition:enter-end="transform opacity-100 scale-100"
@@ -94,12 +94,12 @@
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
                              class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1.5 z-40 text-xs">
-                            <a href="{{ route('karyawan.generatealluser') }}" 
+                            <a href="{{ route('karyawan.generatealluser') }}"
                                class="flex items-center gap-2 px-3.5 py-2 text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition font-medium">
                                 <i class="ti ti-user-plus text-amber-500 text-sm"></i>
                                 <span>Buat Semua User</span>
                             </a>
-                            <a href="{{ route('karyawan.deletealluser') }}" 
+                            <a href="{{ route('karyawan.deletealluser') }}"
                                class="delete-all-user flex items-center gap-2 px-3.5 py-2 text-rose-600 hover:bg-rose-50 transition font-medium border-t border-slate-100">
                                 <i class="ti ti-user-x text-rose-500 text-sm"></i>
                                 <span>Reset Semua User</span>
@@ -121,7 +121,7 @@
         </div>
 
         <div class="relative z-10 flex flex-wrap md:flex-nowrap items-stretch justify-between gap-y-6">
-            
+
             <!-- Segment 1: Total Karyawan -->
             <div class="flex-1 min-w-[130px] sm:min-w-[150px] px-3 sm:px-4 flex flex-col justify-between group">
                 <div>
@@ -268,15 +268,27 @@
     <div class="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/90 shadow-2xs">
         <form action="{{ route('karyawan.index') }}" method="GET" class="w-full">
             <div class="flex flex-col lg:flex-row items-center gap-2.5 sm:gap-3 w-full">
-                
+
                 <!-- Search Input (Icon separated with pl-11, completely fixing overlap!) -->
                 <div class="flex-1 min-w-0 w-full relative">
                     <i class="ti ti-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none"></i>
-                    <input type="text" 
-                           name="nama_karyawan" 
-                           value="{{ request('nama_karyawan') }}" 
-                           placeholder="Cari Nama Karyawan / NIK..." 
+                    <input type="text"
+                           name="nama_karyawan"
+                           value="{{ request('nama_karyawan') }}"
+                           placeholder="Cari Nama Karyawan / NIK..."
                            class="w-full pl-11 pr-4 py-2.5 text-xs bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-300/90 rounded-xl text-slate-800 font-medium placeholder-slate-400 shadow-2xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition">
+                </div>
+
+                <!-- Status Aktif Karyawan -->
+                @php
+                    $statusAktifFilter = request()->has('status_aktif') ? request('status_aktif') : '1';
+                @endphp
+                <div class="w-full sm:w-auto lg:w-44 shrink-0">
+                    <select name="status_aktif" class="w-full px-3 py-2.5 text-xs bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-300/90 rounded-xl text-slate-800 font-medium shadow-2xs focus:outline-none focus:border-emerald-600 transition">
+                        <option value="1" {{ $statusAktifFilter === '1' ? 'selected' : '' }}>Aktif</option>
+                        <option value="0" {{ $statusAktifFilter === '0' ? 'selected' : '' }}>Nonaktif</option>
+                        <option value="all" {{ $statusAktifFilter === 'all' ? 'selected' : '' }}>Semua Status</option>
+                    </select>
                 </div>
 
                 <!-- Cabang Filter -->
@@ -325,14 +337,14 @@
 
                 <!-- Buttons: Cari & Reset -->
                 <div class="flex items-center gap-1.5 shrink-0 w-full lg:w-auto">
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full lg:w-auto px-4 py-2.5 text-white font-bold text-xs rounded-xl shadow-xs transition inline-flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-95 active:scale-95 whitespace-nowrap"
                             style="background-color: {{ $themeColor1 }};">
                         <i class="ti ti-search text-sm"></i>
                         <span>Cari</span>
                     </button>
-                    @if(request()->hasAny(['nama_karyawan', 'kode_cabang', 'kode_dept', 'kode_jabatan', 'sort_by']))
-                        <a href="{{ route('karyawan.index') }}" 
+                    @if(request()->hasAny(['nama_karyawan', 'kode_cabang', 'kode_dept', 'kode_jabatan', 'sort_by', 'status_aktif']))
+                        <a href="{{ route('karyawan.index') }}"
                            class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition inline-flex items-center gap-1"
                            title="Reset Filter">
                             <i class="ti ti-rotate text-sm"></i>
@@ -346,7 +358,7 @@
         <!-- Divider with Counter & View Mode Switcher -->
         <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div class="text-slate-500 text-[11.5px]">
-                Menampilkan <strong>{{ $karyawan->firstItem() ?? 0 }} - {{ $karyawan->lastItem() ?? 0 }}</strong> dari <strong>{{ $karyawan->total() }}</strong> pegawai 
+                Menampilkan <strong>{{ $karyawan->firstItem() ?? 0 }} - {{ $karyawan->lastItem() ?? 0 }}</strong> dari <strong>{{ $karyawan->total() }}</strong> pegawai
                 <span class="text-slate-300 mx-1.5">|</span>
                 Aktif: <strong class="text-emerald-700 font-bold">{{ $totalAktif }}</strong>
                 <span class="text-slate-300 mx-1">|</span>
@@ -355,14 +367,14 @@
 
             <!-- View Switcher: Kartu List (Siprenpas style) vs Tabel -->
             <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200/80">
-                <button type="button" 
+                <button type="button"
                         @click="viewMode = 'list'; $nextTick(() => window.initTooltips && window.initTooltips())"
                         :class="viewMode === 'list' ? 'bg-white text-slate-800 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition">
                     <i class="ti ti-layout-list text-sm"></i>
                     <span>Kartu List</span>
                 </button>
-                <button type="button" 
+                <button type="button"
                         @click="viewMode = 'table'; $nextTick(() => window.initTooltips && window.initTooltips())"
                         :class="viewMode === 'table' ? 'bg-white text-slate-800 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-800'"
                         class="flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] transition">
@@ -385,7 +397,7 @@
             @endphp
             <div class="bg-white border {{ $d->status_aktif_karyawan == '1' ? 'border-slate-200/90 hover:border-emerald-300/90' : 'border-rose-200/80 hover:border-rose-300' }} rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-sm transition-all duration-200 group">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    
+
                     <!-- Left: Identity & Details -->
                     <div class="flex items-start sm:items-center gap-3.5 sm:gap-4 flex-1 min-w-0">
                         <!-- Row Index Badge -->
@@ -418,7 +430,7 @@
                         <div class="flex-1 min-w-0">
                             <!-- Name & Status Badges -->
                             <div class="flex flex-wrap items-center gap-2">
-                                <a href="{{ route('karyawan.show', $encryptedNik) }}" 
+                                <a href="{{ route('karyawan.show', $encryptedNik) }}"
                                    class="text-sm sm:text-base font-bold text-slate-800 group-hover:text-emerald-700 transition truncate max-w-md block" title="{{ $d->nama_karyawan }}">
                                     {{ $d->nama_karyawan }}
                                 </a>
@@ -488,7 +500,7 @@
                                 <div class="flex items-center gap-2 pl-1 border-l border-slate-200">
                                     <span class="text-[11px] text-slate-400">Kontrol:</span>
                                     <!-- Location Lock -->
-                                    <a href="{{ route('karyawan.lockunlocklocation', $encryptedNik) }}" 
+                                    <a href="{{ route('karyawan.lockunlocklocation', $encryptedNik) }}"
                                        class="inline-flex items-center gap-0.5 text-[11px] font-semibold {{ $d->lock_location == '1' ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600' }}"
                                        title="{{ $d->lock_location == '1' ? 'Lokasi Terkunci (Radius Kantor) - Klik Buka' : 'Bebas Lokasi - Klik Kunci' }}">
                                         <i class="ti ti-{{ $d->lock_location == '1' ? 'lock' : 'lock-open' }}"></i>
@@ -496,7 +508,7 @@
                                     </a>
                                     <span class="text-slate-300">•</span>
                                     <!-- Jam Kerja Lock -->
-                                    <a href="{{ route('karyawan.lockunlockjamkerja', $encryptedNik) }}" 
+                                    <a href="{{ route('karyawan.lockunlockjamkerja', $encryptedNik) }}"
                                        class="inline-flex items-center gap-0.5 text-[11px] font-semibold {{ $d->lock_jam_kerja == '1' ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600' }}"
                                        title="{{ $d->lock_jam_kerja == '1' ? 'Jam Kerja Terkunci - Klik Buka' : 'Bebas Jam Kerja - Klik Kunci' }}">
                                         <i class="ti ti-{{ $d->lock_jam_kerja == '1' ? 'lock' : 'lock-open' }}"></i>
@@ -505,7 +517,7 @@
                                     <span class="text-slate-300">•</span>
                                     <!-- Akses Web -->
                                     @can('karyawan.lockunlockaksesweb')
-                                        <a href="{{ route('karyawan.lockunlockaksesweb', $encryptedNik) }}" 
+                                        <a href="{{ route('karyawan.lockunlockaksesweb', $encryptedNik) }}"
                                            class="inline-flex items-center gap-0.5 text-[11px] font-semibold {{ $d->status_akses_web !== '0' ? 'text-emerald-600 hover:text-emerald-700' : 'text-rose-500 hover:text-rose-600' }}"
                                            title="{{ $d->status_akses_web !== '0' ? 'Akses Web Aktif - Klik Nonaktifkan' : 'Akses Web Nonaktif - Klik Aktifkan' }}">
                                             <i class="ti ti-{{ $d->status_akses_web !== '0' ? 'world' : 'world-off' }}"></i>
@@ -524,17 +536,17 @@
 
                     <!-- Right: Action Buttons Toolbar (Icon-Only) -->
                     <div class="flex items-center justify-end gap-1 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-                        
+
                         <!-- User Account Button -->
                         @can('users.create')
                             @if (empty($d->id_user))
-                                <a href="{{ route('karyawan.createuser', $encryptedNik) }}" 
+                                <a href="{{ route('karyawan.createuser', $encryptedNik) }}"
                                    class="w-8 h-8 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                    title="Buat Akun User">
                                     <i class="ti ti-user-plus text-sm"></i>
                                 </a>
                             @else
-                                <a href="{{ route('karyawan.deleteuser', $encryptedNik) }}" 
+                                <a href="{{ route('karyawan.deleteuser', $encryptedNik) }}"
                                    class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                    title="Hapus Akun User">
                                     <i class="ti ti-user-x text-sm"></i>
@@ -544,7 +556,7 @@
 
                         <!-- Set Jam Kerja -->
                         @can('karyawan.setjamkerja')
-                            <button type="button" 
+                            <button type="button"
                                     class="w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center justify-center transition active:scale-95 btnSetJamkerja cursor-pointer shadow-2xs"
                                     nik="{{ $encryptedNik }}"
                                     title="Set Jam Kerja">
@@ -554,7 +566,7 @@
 
                         <!-- Set Cabang -->
                         @can('karyawan.setcabang')
-                            <button type="button" 
+                            <button type="button"
                                     class="w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center transition active:scale-95 btnSetCabang cursor-pointer shadow-2xs"
                                     nik="{{ $encryptedNik }}"
                                     title="Set Cabang">
@@ -564,7 +576,7 @@
 
                         <!-- Edit -->
                         @can('karyawan.edit')
-                            <button type="button" 
+                            <button type="button"
                                     class="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 border border-blue-200 flex items-center justify-center transition active:scale-95 btnEdit cursor-pointer shadow-2xs"
                                     nik="{{ $encryptedNik }}"
                                     title="Edit Karyawan">
@@ -574,7 +586,7 @@
 
                         <!-- Detail -->
                         @can('karyawan.show')
-                            <a href="{{ route('karyawan.show', $encryptedNik) }}" 
+                            <a href="{{ route('karyawan.show', $encryptedNik) }}"
                                class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                title="Detail Karyawan">
                                 <i class="ti ti-file-description text-sm"></i>
@@ -586,8 +598,8 @@
                             <form method="POST" action="{{ route('karyawan.delete', $encryptedNik) }}" class="deleteform inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition active:scale-95 delete-confirm cursor-pointer shadow-2xs" 
+                                <button type="submit"
+                                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition active:scale-95 delete-confirm cursor-pointer shadow-2xs"
                                         title="Hapus Karyawan">
                                     <i class="ti ti-trash text-sm"></i>
                                 </button>
@@ -613,7 +625,7 @@
 
     <!-- ================= 5. EMPLOYEE LIST: TABLE VIEW (SEAMLESS SOLID HEADER ALA SIPRENPAS) ================= -->
     <div x-show="viewMode === 'table'" class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
-        
+
         <!-- Seamless Solid Card Header -->
         <div class="px-5 pt-4 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-white border-0"
              style="background-color: {{ $themeColor1 }};">
@@ -658,7 +670,7 @@
                             $encryptedNik = Crypt::encrypt($d->nik);
                         @endphp
                         <tr class="hover:bg-slate-50/80 transition-colors group">
-                            
+
                             <!-- No Index -->
                             <td class="py-2.5 px-3.5 text-center text-slate-400 font-bold text-xs">
                                 <span class="w-6 h-6 rounded-md bg-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 group-hover:border group-hover:border-emerald-200 inline-flex items-center justify-center font-bold text-slate-600 transition text-[11px]">
@@ -677,7 +689,7 @@
                                         @endif
                                     </div>
                                     <div class="min-w-0">
-                                        <a href="{{ route('karyawan.show', $encryptedNik) }}" 
+                                        <a href="{{ route('karyawan.show', $encryptedNik) }}"
                                            class="font-semibold text-slate-800 hover:text-emerald-700 transition block truncate">
                                             {{ $d->nama_karyawan }}
                                         </a>
@@ -742,14 +754,14 @@
                             <td class="py-2.5 px-3 text-center">
                                 <div class="inline-flex items-center justify-center gap-2">
                                     <!-- Lock Location -->
-                                    <a href="{{ route('karyawan.lockunlocklocation', $encryptedNik) }}" 
+                                    <a href="{{ route('karyawan.lockunlocklocation', $encryptedNik) }}"
                                        class="w-7 h-7 rounded-lg flex items-center justify-center transition {{ $d->lock_location == '1' ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-rose-50 text-rose-500 hover:bg-rose-100' }}"
                                        title="{{ $d->lock_location == '1' ? 'Lokasi Terkunci (Radius Kantor) - Klik Buka' : 'Bebas Lokasi - Klik Kunci' }}">
                                         <i class="ti ti-{{ $d->lock_location == '1' ? 'lock' : 'lock-open' }}"></i>
                                     </a>
 
                                     <!-- Lock Jam Kerja -->
-                                    <a href="{{ route('karyawan.lockunlockjamkerja', $encryptedNik) }}" 
+                                    <a href="{{ route('karyawan.lockunlockjamkerja', $encryptedNik) }}"
                                        class="w-7 h-7 rounded-lg flex items-center justify-center transition {{ $d->lock_jam_kerja == '1' ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-rose-50 text-rose-500 hover:bg-rose-100' }}"
                                        title="{{ $d->lock_jam_kerja == '1' ? 'Jam Kerja Terkunci - Klik Buka' : 'Bebas Jam Kerja - Klik Kunci' }}">
                                         <i class="ti ti-{{ $d->lock_jam_kerja == '1' ? 'lock' : 'lock-open' }}"></i>
@@ -757,7 +769,7 @@
 
                                     <!-- Akses Web -->
                                     @can('karyawan.lockunlockaksesweb')
-                                        <a href="{{ route('karyawan.lockunlockaksesweb', $encryptedNik) }}" 
+                                        <a href="{{ route('karyawan.lockunlockaksesweb', $encryptedNik) }}"
                                            class="w-7 h-7 rounded-lg flex items-center justify-center transition {{ $d->status_akses_web !== '0' ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-rose-50 text-rose-500 hover:bg-rose-100' }}"
                                            title="{{ $d->status_akses_web !== '0' ? 'Akses Web Aktif - Klik Nonaktifkan' : 'Akses Web Nonaktif - Klik Aktifkan' }}">
                                             <i class="ti ti-{{ $d->status_akses_web !== '0' ? 'world' : 'world-off' }}"></i>
@@ -776,13 +788,13 @@
                                     <!-- User Account Pill Button (Icon-Only) -->
                                     @can('users.create')
                                         @if (empty($d->id_user))
-                                            <a href="{{ route('karyawan.createuser', $encryptedNik) }}" 
+                                            <a href="{{ route('karyawan.createuser', $encryptedNik) }}"
                                                class="w-8 h-8 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                                title="Buat Akun User">
                                                 <i class="ti ti-user-plus text-sm"></i>
                                             </a>
                                         @else
-                                            <a href="{{ route('karyawan.deleteuser', $encryptedNik) }}" 
+                                            <a href="{{ route('karyawan.deleteuser', $encryptedNik) }}"
                                                class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                                title="Hapus Akun User">
                                                 <i class="ti ti-user-x text-sm"></i>
@@ -792,9 +804,9 @@
 
                                     <!-- Set Jam Kerja -->
                                     @can('karyawan.setjamkerja')
-                                        <button type="button" 
+                                        <button type="button"
                                                 class="btnSetJamkerja w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer"
-                                                nik="{{ $encryptedNik }}" 
+                                                nik="{{ $encryptedNik }}"
                                                 title="Set Jam Kerja">
                                             <i class="ti ti-clock text-sm"></i>
                                         </button>
@@ -802,9 +814,9 @@
 
                                     <!-- Set Cabang -->
                                     @can('karyawan.setcabang')
-                                        <button type="button" 
+                                        <button type="button"
                                                 class="btnSetCabang w-8 h-8 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer"
-                                                nik="{{ $encryptedNik }}" 
+                                                nik="{{ $encryptedNik }}"
                                                 title="Set Cabang">
                                             <i class="ti ti-map-pin text-sm"></i>
                                         </button>
@@ -812,9 +824,9 @@
 
                                     <!-- Edit -->
                                     @can('karyawan.edit')
-                                        <button type="button" 
+                                        <button type="button"
                                                 class="btnEdit w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 hover:text-blue-700 border border-blue-200 flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer"
-                                                nik="{{ $encryptedNik }}" 
+                                                nik="{{ $encryptedNik }}"
                                                 title="Edit Karyawan">
                                             <i class="ti ti-edit text-sm"></i>
                                         </button>
@@ -822,7 +834,7 @@
 
                                     <!-- Show Detail -->
                                     @can('karyawan.show')
-                                        <a href="{{ route('karyawan.show', $encryptedNik) }}" 
+                                        <a href="{{ route('karyawan.show', $encryptedNik) }}"
                                            class="w-8 h-8 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 flex items-center justify-center transition active:scale-95 shadow-2xs"
                                            title="Detail Profil">
                                             <i class="ti ti-file-description text-sm"></i>
@@ -834,7 +846,7 @@
                                         <form method="POST" action="{{ route('karyawan.delete', $encryptedNik) }}" class="deleteform inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" 
+                                            <button type="submit"
                                                     class="delete-confirm w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center transition active:scale-95 shadow-2xs cursor-pointer"
                                                     title="Hapus Karyawan">
                                                 <i class="ti ti-trash text-sm"></i>

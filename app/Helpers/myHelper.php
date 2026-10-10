@@ -96,6 +96,30 @@ function formatAngka($nilai)
     return $nilai;
 }
 
+function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $waktu): string
+{
+    $waktuAbsen = Carbon::parse($waktu);
+    $jam = (int) $waktuAbsen->format('G');
+
+    if ($jam >= 5 && $jam < 11) {
+        $kondisi = 'pagi';
+    } elseif ($jam >= 11 && $jam < 15) {
+        $kondisi = 'siang';
+    } elseif ($jam >= 15 && $jam < 19) {
+        $kondisi = 'sore';
+    } else {
+        $kondisi = 'malam';
+    }
+
+    $jenisAbsen = strtolower($jenisAbsen);
+    $penutup = $jenisAbsen === 'masuk' ? 'Selamat Bekerja' : 'Selamat beristirahat';
+
+    return "Selamat {$kondisi}, {$namaKaryawan}\n"
+        . "Anda sudah melakukan absen {$jenisAbsen} " . $waktuAbsen->format('d-m-Y H:i') . "\n\n"
+        . "Sudah berhasil kami terima,\n"
+        . $penutup;
+}
+
 
 function formatAngkaDesimal($nilai)
 {
@@ -1190,6 +1214,5 @@ function get_admin_theme()
     }
     return $theme;
 }
-
 
 
