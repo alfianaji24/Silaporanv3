@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login | {{ $general_setting->nama_aplikasi ?? 'E-Presensi Mobile' }}</title>
+    <title>Login | {{ $general_setting->nama_aplikasi ?? 'SILAPORAN Mobile' }}</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi GPS V2' }}">
+    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN GPS V2' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi' }}">
+    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN' }}">
     <meta name="description" content="Aplikasi {{ $general_setting->nama_aplikasi ?? 'Presensi GPS' }} untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -30,8 +31,21 @@
 
     <style>
         :root {
-            --theme-color-1: {{ $general_setting->theme_color_1 ?? '#106f62' }};
-            --theme-color-2: {{ $general_setting->theme_color_2 ?? '#0b5247' }};
+            --theme-color-1: {
+                    {
+                    $general_setting->theme_color_1 ?? '#106f62'
+                }
+            }
+
+            ;
+
+            --theme-color-2: {
+                    {
+                    $general_setting->theme_color_2 ?? '#0b5247'
+                }
+            }
+
+            ;
             --theme-color-light: color-mix(in srgb, var(--theme-color-1) 15%, #ffffff);
             --theme-color-fade: color-mix(in srgb, var(--theme-color-1) 30%, #ffffff);
         }
@@ -43,7 +57,8 @@
             font-family: 'Poppins', sans-serif;
         }
 
-        body, html {
+        body,
+        html {
             background-color: #f2f6f5;
             color: #333;
             height: 100%;
@@ -86,7 +101,7 @@
             left: -20px;
             width: 150px;
             height: 150px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
             z-index: -1;
         }
@@ -115,14 +130,15 @@
             z-index: 6;
         }
 
-        .leaf-1::after { /* leaf inner line */
+        .leaf-1::after {
+            /* leaf inner line */
             content: '';
             position: absolute;
             left: 50%;
             bottom: 0;
             width: 1px;
             height: 90%;
-            background: rgba(0,0,0,0.1);
+            background: rgba(0, 0, 0, 0.1);
         }
 
         .leaf-2 {
@@ -146,7 +162,7 @@
             height: 48px;
             background: #fff;
             border-radius: 8px 8px 25px 25px;
-            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.06);
+            box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.06);
             z-index: 10;
         }
 
@@ -156,7 +172,7 @@
             left: 14px;
             width: 52px;
             height: 15px;
-            background: rgba(0,0,0,0.15);
+            background: rgba(0, 0, 0, 0.15);
             border-radius: 50%;
             z-index: 4;
         }
@@ -170,7 +186,8 @@
             padding: 30px 35px 20px;
             display: flex;
             flex-direction: column;
-            margin-top: -30px; /* pull up over dark background */
+            margin-top: -30px;
+            /* pull up over dark background */
         }
 
         .container {
@@ -217,7 +234,7 @@
             font-weight: 500;
             color: #444;
             outline: none;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03);
             transition: all 0.3s ease;
         }
 
@@ -232,7 +249,7 @@
             transform: translateY(-2px);
         }
 
-        .form-control:focus + ion-icon,
+        .form-control:focus+ion-icon,
         .form-group:focus-within ion-icon {
             color: var(--theme-color-1);
             transform: translateY(calc(-50% - 2px));
@@ -267,6 +284,7 @@
             transition: all 0.3s ease;
             margin-bottom: 35px;
         }
+
         .btn-login:active {
             transform: scale(0.96) translateY(2px);
             box-shadow: 0 4px 10px color-mix(in srgb, var(--theme-color-1) 30%, transparent);
@@ -280,14 +298,17 @@
             font-size: 13px;
         }
 
-        .divider::before, .divider::after {
+        .divider::before,
+        .divider::after {
             content: '';
             flex: 1;
             height: 1px;
             background: #d0deda;
         }
 
-        .divider span { margin: 0 10px; }
+        .divider span {
+            margin: 0 10px;
+        }
 
         .social-login {
             display: flex;
@@ -305,12 +326,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
             text-decoration: none;
         }
 
-        .social-btn ion-icon { font-size: 24px; }
-        .fb-icon { color: #1877F2; }
+        .social-btn ion-icon {
+            font-size: 24px;
+        }
+
+        .fb-icon {
+            color: #1877F2;
+        }
+
         /* Complex google icon pure CSS recreation */
         .google-icon {
             background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
@@ -319,7 +346,10 @@
             color: transparent;
             -webkit-text-fill-color: transparent;
         }
-        .apple-icon { color: #000; }
+
+        .apple-icon {
+            color: #000;
+        }
 
         .signup-text {
             text-align: center;
@@ -349,13 +379,21 @@
             align-items: center;
             justify-content: space-between;
             z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             animation: slideDown 0.3s ease-out;
             background: #fff;
         }
 
-        .alert-danger { color: #c62828; border-left: 5px solid #c62828; }
-        .alert-success { color: #2e7d32; border-left: 5px solid #2e7d32; }
+        .alert-danger {
+            color: #c62828;
+            border-left: 5px solid #c62828;
+        }
+
+        .alert-success {
+            color: #2e7d32;
+            border-left: 5px solid #2e7d32;
+        }
+
         .alert-close {
             background: none;
             border: none;
@@ -367,23 +405,31 @@
         }
 
         @keyframes slideDown {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body>
     @if (session('error'))
-        <div class="alert alert-danger" id="alert-box">
-            <span>{{ session('error') }}</span>
-            <button class="alert-close" onclick="document.getElementById('alert-box').style.display='none'">&times;</button>
-        </div>
+    <div class="alert alert-danger" id="alert-box">
+        <span>{{ session('error') }}</span>
+        <button class="alert-close" onclick="document.getElementById('alert-box').style.display='none'">&times;</button>
+    </div>
     @endif
     @if ($errors->any())
-        <div class="alert alert-danger" id="alert-box-2">
-            <span>{{ $errors->first() }}</span>
-            <button class="alert-close" onclick="document.getElementById('alert-box-2').style.display='none'">&times;</button>
-        </div>
+    <div class="alert alert-danger" id="alert-box-2">
+        <span>{{ $errors->first() }}</span>
+        <button class="alert-close" onclick="document.getElementById('alert-box-2').style.display='none'">&times;</button>
+    </div>
     @endif
 
     <div class="top-section">
@@ -391,15 +437,15 @@
 
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; z-index: 20; position: relative;">
             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
-                <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
+            <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
             @else
-                <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
+            <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Logo" style="width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); background: rgba(255,255,255,0.9); border-radius: 50%; padding: 8px;" />
             @endif
             <div style="color: #fff; font-size: 22px; font-weight: 800; letter-spacing: 1px;">{{ $general_setting->nama_aplikasi ?? 'Silaporan V3' }}</div>
         </div>
 
         <h1 style="text-shadow: 0 2px 10px rgba(0,0,0,0.1);">Welcome!</h1>
-        <p style="opacity: 0.9;">to {{ $general_setting->nama_perusahaan ?? 'E-Presensi GPS' }}</p>
+        <p style="opacity: 0.9;">to {{ $general_setting->nama_perusahaan ?? 'SILAPORAN GPS' }}</p>
 
         <div class="plant-wrapper">
             <div class="leaf-1"></div>
@@ -442,7 +488,12 @@
                 </a>
                 <a href="#" class="social-btn" style="border: 1px solid #eee;">
                     <!-- Using raw svg for google logo for better crossbrowser rendering -->
-                    <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    <svg viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
                 </a>
                 <a href="#" class="social-btn">
                     <ion-icon name="logo-apple" class="apple-icon"></ion-icon>
@@ -473,4 +524,5 @@
     </script>
     @include('components.pwa-install-prompt')
 </body>
+
 </html>

@@ -8,10 +8,10 @@
     <title>Login | {{ $general_setting->nama_aplikasi ?? 'Sign in' }}</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi GPS V2' }}">
+    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN GPS V2' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi' }}">
+    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN' }}">
     <meta name="description" content="Aplikasi {{ $general_setting->nama_aplikasi ?? 'Presensi GPS' }} untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -28,9 +28,23 @@
     <link rel="stylesheet" href="{{ asset('assets/login/css/style.css') }}" />
     <style>
         :root {
+
             /* Dynamic Theme Colors */
-            --theme-color-1: {{ $general_setting->theme_color_1 ?? '#053b22' }};
-            --theme-color-2: {{ $general_setting->theme_color_2 ?? '#0b6a3a' }};
+            --theme-color-1: {
+                    {
+                    $general_setting->theme_color_1 ?? '#053b22'
+                }
+            }
+
+            ;
+
+            --theme-color-2: {
+                    {
+                    $general_setting->theme_color_2 ?? '#0b6a3a'
+                }
+            }
+
+            ;
         }
 
         .sign-btn {
@@ -74,6 +88,7 @@
                 opacity: 1;
             }
         }
+
         .text-group h2 {
             color: #ffffff !important;
         }
@@ -90,9 +105,9 @@
                         @csrf
                         <div class="logo">
                             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
-                                <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Company Logo" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-bottom: 20px; background: #fff; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+                            <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Company Logo" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-bottom: 20px; background: #fff; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
                             @else
-                                <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="easyclass" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-bottom: 20px; background: #fff; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+                            <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="easyclass" style="width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-bottom: 20px; background: #fff; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
                             @endif
                             <h4>{{ $general_setting->nama_aplikasi ?? 'Silaporan V3' }}</h4>
                         </div>
@@ -102,17 +117,17 @@
                         </div>
 
                         @if (session('error'))
-                            <div class="alert alert-danger">
-                                {{ session('error') }}
-                            </div>
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
                         @endif
 
                         @if ($errors->any())
-                            <div class="alert alert-danger">
-                                @foreach ($errors->all() as $error)
-                                    {{ $error }}<br>
-                                @endforeach
-                            </div>
+                        <div class="alert alert-danger">
+                            @foreach ($errors->all() as $error)
+                            {{ $error }}<br>
+                            @endforeach
+                        </div>
                         @endif
 
                         <div class="actual-form">

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Admin Login | E-Presensi</title>
+    <title>Admin Login | SILAPORAN</title>
 
     <meta name="description" content="Halaman Login Khusus Administrator" />
 
@@ -235,7 +235,7 @@
     <div class="blob-2"></div>
 
     @php
-        $general_setting = \App\Models\Pengaturanumum::where('id', 1)->first();
+    $general_setting = \App\Models\Pengaturanumum::where('id', 1)->first();
     @endphp
 
     <div class="login-container">
@@ -245,9 +245,9 @@
                 <div class="brand-logo-container">
                     <div class="logo-box">
                         @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
-                            <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" />
+                        <img src="{{ asset('storage/logo/' . $general_setting->logo) }}" alt="Logo" />
                         @else
-                            <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Default Logo" />
+                        <img src="{{ asset('assets/login/images/logoweb-1.png') }}" alt="Default Logo" />
                         @endif
                     </div>
                     <h4 class="logo-title">{{ $general_setting->nama_aplikasi ?? 'Silaporan V3' }}</h4>
@@ -323,4 +323,5 @@
         });
     </script>
 </body>
+
 </html>

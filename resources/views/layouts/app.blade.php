@@ -36,10 +36,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- PWA Meta Tags -->
-    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi GPS V2' }}">
+    <meta name="application-name" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN GPS V2' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'E-Presensi' }}">
+    <meta name="apple-mobile-web-app-title" content="{{ $general_setting->nama_aplikasi ?? 'SILAPORAN' }}">
     <meta name="description" content="Aplikasi {{ $general_setting->nama_aplikasi ?? 'Presensi GPS' }} untuk Karyawan">
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
@@ -92,25 +92,25 @@
                 <!-- Content wrapper -->
                 <div class="content-wrapper">
                     <div class="container-fluid flex-grow-1 container-p-y">
-@if(session()->has('impersonator_id'))
-    <div class="alert alert-warning mb-3 rounded-3 d-flex justify-content-between align-items-center py-2.5 px-4 shadow-sm border-0" style="background-color: #fff8db; color: #856404; font-family: inherit;">
-        <div class="d-flex align-items-center">
-            <i class="ti ti-alert-triangle me-2 fs-4"></i>
-            <span>Anda sedang melihat halaman sebagai user: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->username }})</span>
-        </div>
-        <a href="{{ route('users.stopimpersonate') }}" class="btn btn-warning btn-sm fw-bold shadow-none" style="background-color: #ffe082; border-color: #ffd54f; color: #5d4037;">
-            <i class="ti ti-logout me-1"></i> Kembali ke Admin
-        </a>
-    </div>
-@endif
+                        @if(session()->has('impersonator_id'))
+                        <div class="alert alert-warning mb-3 rounded-3 d-flex justify-content-between align-items-center py-2.5 px-4 shadow-sm border-0" style="background-color: #fff8db; color: #856404; font-family: inherit;">
+                            <div class="d-flex align-items-center">
+                                <i class="ti ti-alert-triangle me-2 fs-4"></i>
+                                <span>Anda sedang melihat halaman sebagai user: <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->username }})</span>
+                            </div>
+                            <a href="{{ route('users.stopimpersonate') }}" class="btn btn-warning btn-sm fw-bold shadow-none" style="background-color: #ffe082; border-color: #ffd54f; color: #5d4037;">
+                                <i class="ti ti-logout me-1"></i> Kembali ke Admin
+                            </a>
+                        </div>
+                        @endif
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div class="flex-grow-1">
                                 <h4 class="py-2 mb-0 w-100">@yield('navigasi')</h4>
                             </div>
                             @if(View::hasSection('page-actions'))
-                                <div class="ms-3">
-                                    @yield('page-actions')
-                                </div>
+                            <div class="ms-3">
+                                @yield('page-actions')
+                            </div>
                             @endif
                         </div>
                         @yield('content')

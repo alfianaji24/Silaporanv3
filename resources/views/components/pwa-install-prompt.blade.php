@@ -3,13 +3,13 @@
     <div class="pwa-install-content">
         <div class="pwa-install-icon">
             @if (!empty($general_setting->logo) && Storage::disk('public')->exists('logo/' . $general_setting->logo))
-                <img src="{{ asset('storage/logo/' . $general_setting->logo) }}?v={{ Storage::disk('public')->exists('logo/' . $general_setting->logo) ? Storage::disk('public')->lastModified('logo/' . $general_setting->logo) : time() }}" alt="Logo" class="pwa-app-logo">
+            <img src="{{ asset('storage/logo/' . $general_setting->logo) }}?v={{ Storage::disk('public')->exists('logo/' . $general_setting->logo) ? Storage::disk('public')->lastModified('logo/' . $general_setting->logo) : time() }}" alt="Logo" class="pwa-app-logo">
             @else
-                <img src="{{ asset('assets/img/icons/pwa/icon-192x192.png') }}?v={{ file_exists(public_path('assets/img/icons/pwa/icon-192x192.png')) ? filemtime(public_path('assets/img/icons/pwa/icon-192x192.png')) : time() }}" alt="Logo" class="pwa-app-logo">
+            <img src="{{ asset('assets/img/icons/pwa/icon-192x192.png') }}?v={{ file_exists(public_path('assets/img/icons/pwa/icon-192x192.png')) ? filemtime(public_path('assets/img/icons/pwa/icon-192x192.png')) : time() }}" alt="Logo" class="pwa-app-logo">
             @endif
         </div>
         <div class="pwa-install-text">
-            <h4>Install {{ $general_setting->nama_aplikasi ?? 'E-Presensi' }}</h4>
+            <h4>Install {{ $general_setting->nama_aplikasi ?? 'SILAPORAN' }}</h4>
             <p>Install aplikasi untuk presensi yang lebih mudah dan cepat!</p>
         </div>
         <div class="pwa-install-actions">
@@ -340,7 +340,7 @@
             } else if (isAndroid) {
                 message = 'Untuk menginstall aplikasi di Android:\n1. Tap menu browser (3 titik)\n2. Pilih "Add to Home screen"\n3. Tap "Add"';
             } else {
-                message = 'Untuk menginstall aplikasi:\n1. Klik menu browser\n2. Pilih "Install E-Presensi"\n3. Klik "Install"';
+                message = 'Untuk menginstall aplikasi:\n1. Klik menu browser\n2. Pilih "Install SILAPORAN"\n3. Klik "Install"';
             }
 
             alert(message);

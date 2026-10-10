@@ -30,25 +30,25 @@ class LemburController extends Controller
         $qlembur->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan');
         $qlembur->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
         $qlembur->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang');
-        
+
         // Filter berdasarkan akses cabang dan departemen jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!empty($userCabangs)) {
                 $qlembur->whereIn('karyawan.kode_cabang', $userCabangs);
             } else {
                 $qlembur->whereRaw('1 = 0');
             }
-            
+
             if (!empty($userDepartemens)) {
                 $qlembur->whereIn('karyawan.kode_dept', $userDepartemens);
             } else {
                 $qlembur->whereRaw('1 = 0');
             }
         }
-        
+
         if (!empty($request->dari) && !empty($request->sampai)) {
             $qlembur->whereBetween('lembur.tanggal', [$request->dari, $request->sampai]);
         }
@@ -76,7 +76,7 @@ class LemburController extends Controller
         $lembur = $qlembur->paginate(15);
         $lembur->appends($request->all());
         $data['lembur'] = $lembur;
-        
+
         // Executive Metrics / Summary Statistics
         $qStats = Lembur::query()->join('karyawan', 'lembur.nik', '=', 'karyawan.nik');
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
@@ -105,7 +105,7 @@ class LemburController extends Controller
             'approved' => $statsData->approved ?? 0,
             'rejected' => $statsData->rejected ?? 0,
         ];
-        
+
         if ($user->hasRole('karyawan')) {
             $data['cabang'] = collect();
             $data['departemen'] = collect();
@@ -128,28 +128,28 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $qkaryawan = Karyawan::query();
         $qkaryawan->select('karyawan.nik', 'karyawan.nama_karyawan');
-        
+
         // Filter karyawan berdasarkan akses jika bukan super admin
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!empty($userCabangs)) {
                 $qkaryawan->whereIn('kode_cabang', $userCabangs);
             } else {
                 $qkaryawan->whereRaw('1 = 0');
             }
-            
+
             if (!empty($userDepartemens)) {
                 $qkaryawan->whereIn('kode_dept', $userDepartemens);
             } else {
                 $qkaryawan->whereRaw('1 = 0');
             }
         }
-        
+
         $karyawan = $qkaryawan->get();
         $data['karyawan'] = $karyawan;
 
@@ -213,39 +213,39 @@ class LemburController extends Controller
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $karyawanData = Karyawan::where('nik', $lembur->nik)->first();
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($karyawanData->kode_cabang, $userCabangs) || !in_array($karyawanData->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
         }
-        
+
         $qkaryawan = Karyawan::query();
         $qkaryawan->select('karyawan.nik', 'karyawan.nama_karyawan');
-        
+
         // Filter karyawan berdasarkan akses jika bukan super admin
         if (!$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!empty($userCabangs)) {
                 $qkaryawan->whereIn('kode_cabang', $userCabangs);
             } else {
                 $qkaryawan->whereRaw('1 = 0');
             }
-            
+
             if (!empty($userDepartemens)) {
                 $qkaryawan->whereIn('kode_dept', $userDepartemens);
             } else {
                 $qkaryawan->whereRaw('1 = 0');
             }
         }
-        
+
         $karyawan = $qkaryawan->get();
         $data['karyawan'] = $karyawan;
         $data['lembur'] = $lembur;
@@ -286,7 +286,7 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
@@ -294,12 +294,12 @@ class LemburController extends Controller
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($lembur->kode_cabang, $userCabangs) || !in_array($lembur->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
@@ -315,22 +315,22 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($lembur->kode_cabang, $userCabangs) || !in_array($lembur->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
         }
-        
+
         try {
             if (isset($request->approve)) {
                 Lembur::where('id', $id)->update([
@@ -353,22 +353,22 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($lembur->kode_cabang, $userCabangs) || !in_array($lembur->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
         }
-        
+
         try {
             Lembur::where('id', $id)->update([
                 'status' => 0
@@ -383,7 +383,7 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
@@ -391,17 +391,17 @@ class LemburController extends Controller
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($lembur->kode_cabang, $userCabangs) || !in_array($lembur->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
         }
-        
+
         $data['lembur'] = $lembur;
         $viewPrefix = session('admin_theme', 'v2') === 'v2' ? 'v2.' : '';
         return view($viewPrefix . 'lembur.show', $data);
@@ -534,7 +534,7 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('lembur.id', $id)
             ->select(
@@ -569,7 +569,7 @@ class LemburController extends Controller
             // Cek akses cabang & departemen jika admin cabang/dept
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             $karyawanData = Karyawan::where('nik', $lembur->nik)->first();
             if (!in_array($karyawanData->kode_cabang, $userCabangs) || !in_array($karyawanData->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
@@ -600,22 +600,22 @@ class LemburController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $id = Crypt::decrypt($id);
         $lembur = Lembur::where('id', $id)
             ->join('karyawan', 'lembur.nik', '=', 'karyawan.nik')
             ->first();
-        
+
         // Cek akses jika bukan super admin dan bukan karyawan
         if (!$user->hasRole('karyawan') && !$user->isSuperAdmin()) {
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             if (!in_array($lembur->kode_cabang, $userCabangs) || !in_array($lembur->kode_dept, $userDepartemens)) {
                 abort(403, 'Anda tidak memiliki akses ke data lembur ini.');
             }
         }
-        
+
         try {
             Lembur::where('id', $id)->delete();
             return Redirect::back()->with(messageSuccess('Data Berhasil Dihapus'));
@@ -644,7 +644,7 @@ class LemburController extends Controller
 
         $data['wajah'] = Facerecognition::where('nik', $lembur->nik)->count();
         $data['lembur'] = $lembur;
-        return view('lembur.create-presensi', $data);
+        return view('lembur.creatSILAPORAN', $data);
     }
 
     public function storepresensi(Request $request)
