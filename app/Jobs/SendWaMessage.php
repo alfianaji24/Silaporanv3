@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Device;
+use App\Models\Message;
 use App\Models\Pengaturanumum;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -11,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class SendWaMessage implements ShouldQueue
 {
@@ -37,6 +39,7 @@ class SendWaMessage implements ShouldQueue
         $generalsetting = Pengaturanumum::where('id', 1)->first();
         if (!$generalsetting) {
             Log::warning('SendWaMessage: Pengaturan umum tidak ditemukan');
+            $this->recordMessage('WhatsApp Gateway', $this->phoneNumber, 'failed', null, 'Pengaturan umum tidak ditemukan');
             return;
         }
 
@@ -44,6 +47,7 @@ class SendWaMessage implements ShouldQueue
         $domainWaGateway = $generalsetting->domain_wa_gateway;
         $providerWa = $generalsetting->provider_wa;
         $tujuanNotifikasi = $generalsetting->tujuan_notifikasi_wa;
+        $penerima = $this->resolveRecipient($generalsetting);
         Log::info('SendWaMessage: Pengaturan umum', [
             'apiKey' => $apiKey,
             'domainWaGateway' => $domainWaGateway,
@@ -51,12 +55,6 @@ class SendWaMessage implements ShouldQueue
             'tujuanNotifikasi' => $tujuanNotifikasi,
             'phoneNumber' => $this->phoneNumber,
         ]);
-        if ($this->birthday) {
-            $penerima = $this->phoneNumber;
-        } else {
-            $penerima = $tujuanNotifikasi == 1 ? $generalsetting->id_group_wa : $this->phoneNumber;
-        }
-
         Log::info('SendWaMessage: Penerima', [
             'penerima' => $penerima,
             'tujuanNotifikasi' => $tujuanNotifikasi,
@@ -70,6 +68,7 @@ class SendWaMessage implements ShouldQueue
                 'phoneNumber' => $this->phoneNumber,
                 'id_group_wa' => $generalsetting->id_group_wa,
             ]);
+            $this->recordMessage($this->getSender($providerWa), '-', 'failed', null, 'Nomor penerima kosong');
             return;
         }
 
@@ -115,6 +114,21 @@ class SendWaMessage implements ShouldQueue
             if ($errno || $httpCode >= 400) {
                 throw new \RuntimeException('SendWaMessage Fonnte gagal: ' . ($err ?: ('HTTP ' . $httpCode)));
             }
+
+            $responseData = is_string($response) ? json_decode($response, true) : null;
+            if (is_array($responseData) && $this->providerRejected($responseData)) {
+                throw new \RuntimeException(
+                    'SendWaMessage Fonnte gagal: ' . $this->getResponseError($responseData, 'Provider menolak pesan')
+                );
+            }
+
+            $this->recordMessage(
+                'Fonnte',
+                $penerima,
+                'success',
+                $this->getMessageId($responseData),
+                null
+            );
             return;
         }
 
@@ -128,6 +142,7 @@ class SendWaMessage implements ShouldQueue
         $sender = Device::where('status', 1)->first();
         if (!$sender) {
             Log::warning('SendWaMessage: Device sender aktif tidak ditemukan');
+            $this->recordMessage('WhatsApp Gateway', $penerima, 'failed', null, 'Device sender aktif tidak ditemukan');
             return;
         }
 
@@ -159,7 +174,140 @@ class SendWaMessage implements ShouldQueue
         ]);
 
         if (!$response->successful()) {
-            throw new \RuntimeException('SendWaMessage Gateway gagal: HTTP ' . $response->status());
+            $responseData = $response->json();
+            throw new \RuntimeException(
+                'SendWaMessage Gateway gagal: '
+                . $this->getResponseError(
+                    is_array($responseData) ? $responseData : [],
+                    'HTTP ' . $response->status()
+                )
+            );
+        }
+
+        $responseData = $response->json();
+        if (is_array($responseData) && $this->providerRejected($responseData)) {
+            throw new \RuntimeException(
+                'SendWaMessage Gateway gagal: '
+                . $this->getResponseError($responseData, 'Provider menolak pesan')
+            );
+        }
+
+        $this->recordMessage(
+            (string) $sender->number,
+            $penerima,
+            'success',
+            $this->getMessageId(is_array($responseData) ? $responseData : null),
+            null
+        );
+    }
+
+    public function failed(?Throwable $exception): void
+    {
+        $generalsetting = Pengaturanumum::where('id', 1)->first();
+        $recipient = $this->resolveRecipient($generalsetting);
+        $sender = $this->getSender($generalsetting?->provider_wa);
+
+        $this->recordMessage(
+            $sender,
+            $recipient !== '' ? $recipient : '-',
+            'failed',
+            null,
+            $exception?->getMessage() ?? 'Pengiriman WhatsApp gagal'
+        );
+    }
+
+    private function resolveRecipient(?Pengaturanumum $settings): string
+    {
+        if ($this->birthday || !$settings || $settings->tujuan_notifikasi_wa != 1) {
+            return $this->phoneNumber;
+        }
+
+        return (string) $settings->id_group_wa;
+    }
+
+    private function getSender(?string $provider): string
+    {
+        if ($provider === 'fe') {
+            return 'Fonnte';
+        }
+
+        return (string) (Device::where('status', 1)->value('number') ?: 'WhatsApp Gateway');
+    }
+
+    private function providerRejected(array $response): bool
+    {
+        foreach (['success', 'status'] as $key) {
+            if (!array_key_exists($key, $response)) {
+                continue;
+            }
+
+            $value = $response[$key];
+            if ($value === false || $value === 0) {
+                return true;
+            }
+            if (is_string($value) && in_array(strtolower($value), ['false', '0', 'failed', 'error', 'rejected'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getResponseError(array $response, string $fallback): string
+    {
+        foreach (['message', 'error', 'detail'] as $key) {
+            if (isset($response[$key]) && is_scalar($response[$key])) {
+                return (string) $response[$key];
+            }
+        }
+
+        return $fallback;
+    }
+
+    private function getMessageId(?array $response): ?string
+    {
+        if (!$response) {
+            return null;
+        }
+
+        $messageId = $response['message_id']
+            ?? $response['data']['message_id']
+            ?? $response['id']
+            ?? $response['data']['id']
+            ?? null;
+
+        if (is_array($messageId)) {
+            $messageId = reset($messageId);
+            if (is_array($messageId)) {
+                $messageId = $messageId['id'] ?? $messageId['message_id'] ?? null;
+            }
+        }
+
+        return is_scalar($messageId) ? substr((string) $messageId, 0, 255) : null;
+    }
+
+    private function recordMessage(
+        string $sender,
+        string $recipient,
+        string $status,
+        ?string $messageId,
+        ?string $errorMessage
+    ): void {
+        try {
+            Message::create([
+                'pengirim' => substr($sender, 0, 255),
+                'penerima' => substr($recipient, 0, 255),
+                'pesan' => $this->message,
+                'status' => $status,
+                'message_id' => $messageId,
+                'error_message' => $errorMessage,
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('SendWaMessage: Gagal menyimpan riwayat pesan WhatsApp', [
+                'recipient' => $recipient,
+                'status' => $status,
+                'error' => $exception->getMessage(),
+            ]);
         }
     }
 }
