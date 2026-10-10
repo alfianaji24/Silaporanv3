@@ -115,8 +115,9 @@ function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $wak
     $penutup = $jenisAbsen === 'masuk' ? 'Selamat Bekerja' : 'Selamat beristirahat';
 
     return "Selamat {$kondisi}, {$namaKaryawan}\n"
-        . "Anda sudah melakukan absen {$jenisAbsen} " . $waktuAbsen->format('d-m-Y H:i') . "\n\n"
+        . "Anda sudah melakukan absen {$jenisAbsen} : " . $waktuAbsen->format('d-m-Y H:i') . "\n\n"
         . "Sudah berhasil kami terima,\n"
+        . "_Mohon dapat di simpan Nomor Whatsapp ini agar tidak terjadi kendala kembali, Terima Kasih_\n"
         . $penutup;
 }
 
@@ -828,10 +829,10 @@ function hitungJamNetto($jam_aktual, $tipe_hari)
     foreach ($rules as $rule) {
         $start = $rule->jam_dari; // Direct use of 0-based start from DB
         $end = $rule->jam_sampai ?: 999;
-        
+
         // Calculate the portion of overtime that falls within this absolute tier [start, end]
         $jam_di_tier_ini = max(0, min($jam_aktual, $end) - $start);
-        
+
         if ($jam_di_tier_ini > 0) {
             $jam_netto += ($jam_di_tier_ini * $rule->faktor);
         }
@@ -857,10 +858,10 @@ function hitungPotonganIstirahat($start_break, $end_break, $jam_awal_istirahat, 
         $tgl = date('Y-m-d', $awal);
         $awal_skd = strtotime($tgl . ' ' . $jam_awal_istirahat);
         $akhir_skd = strtotime($tgl . ' ' . $jam_akhir_istirahat);
-        
+
         // Handle if scheduled break ends on next day (rare but possible)
         if ($akhir_skd < $awal_skd) {
-             $akhir_skd = strtotime($tgl . ' ' . $jam_akhir_istirahat . ' +1 day');
+            $akhir_skd = strtotime($tgl . ' ' . $jam_akhir_istirahat . ' +1 day');
         }
 
         $durasi_skd = $akhir_skd - $awal_skd;
@@ -887,7 +888,7 @@ function getLemburKhusus($nik)
 
 /**
  * Hitung rentang tanggal (dari & sampai) berdasarkan konfigurasi periode gaji.
- * 
+ *
  * @param int $bulan Bulan (1-12)
  * @param int $tahun Tahun (misal 2026)
  * @param \App\Models\PeriodeGaji|null $periode Model PeriodeGaji (opsional)
@@ -956,7 +957,7 @@ function getRentangPeriodeGaji($bulan, $tahun, $periode = null)
 
 /**
  * Dapatkan periode gaji aktif seorang karyawan pada bulan/tahun tertentu.
- * 
+ *
  * @param string $nik
  * @param int|null $bulan
  * @param int|null $tahun
@@ -1009,7 +1010,7 @@ function getPeriodeGajiKaryawanByDate($nik, $bulan = null, $tahun = null)
 
 /**
  * Dapatkan jam kerja karyawan pada tanggal tertentu berdasarkan hierarki prioritas
- * 
+ *
  * @param string $nik
  * @param string $tanggal (Format: Y-m-d)
  * @return \App\Models\Jamkerja|object|null
@@ -1103,7 +1104,7 @@ if (!function_exists('getJamKerja')) {
 
 /**
  * Cek apakah tanggal tertentu merupakan hari libur untuk karyawan
- * 
+ *
  * @param string $nik
  * @param string $tanggal (Format: Y-m-d)
  * @return \App\Models\Detailharilibur|object|null
@@ -1118,7 +1119,7 @@ function cekHariLiburKaryawan($nik, $tanggal)
 
 /**
  * Hitung hari cuti efektif (hanya hari kerja, abaikan hari libur dan off)
- * 
+ *
  * @param string $nik
  * @param string $dari (Format: Y-m-d)
  * @param string $sampai (Format: Y-m-d)
@@ -1214,5 +1215,3 @@ function get_admin_theme()
     }
     return $theme;
 }
-
-
