@@ -112,12 +112,12 @@ function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $wak
     }
 
     $jenisAbsen = strtolower($jenisAbsen);
-    $penutup = $jenisAbsen === 'masuk' ? 'Selamat Bekerja' : 'Selamat beristirahat';
+    $penutup = $jenisAbsen === 'masuk' ? 'Terima Kasih, Selamat Bekerja' : 'Selamat beristirahat';
 
     return "Selamat {$kondisi}, {$namaKaryawan}\n"
         . "Anda sudah melakukan absen {$jenisAbsen} : " . $waktuAbsen->format('d-m-Y H:i') . "\n\n"
-        . "Sudah berhasil kami terima,\n"
-        . "_Mohon dapat di simpan Nomor Whatsapp ini agar tidak terjadi kendala kembali, Terima Kasih_\n"
+        . "Sudah berhasil kami terima,\n\n"
+        . "_Mohon dapat di simpan Nomor Whatsapp ini agar tidak terjadi kendala kembali_\n\n"
         . $penutup;
 }
 
