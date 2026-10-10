@@ -1,0 +1,126 @@
+/**
+ * Modern Floating Outlined Form Style (Card / Fieldset Pattern)
+ * Digunakan untuk form input dengan style floating legend, icon, helper text, dan state validasi.
+ */
+
+.custom-fieldset {
+    position: relative;
+    border: 1.5px solid #d9dee3;
+    border-radius: 12px;
+    padding: 10px 16px 8px 16px;
+    margin-bottom: 4px;
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+
+.custom-fieldset:focus-within {
+    border-color: var(--bs-primary, #7367f0);
+    box-shadow: 0 0 0 0.2rem rgba(115, 103, 240, 0.12);
+}
+
+/* State Error / Invalid */
+.custom-fieldset.is-invalid-field {
+    border-color: #ea5455 !important;
+    box-shadow: 0 0 0 0.15rem rgba(234, 84, 85, 0.15) !important;
+}
+
+.custom-fieldset.is-invalid-field .custom-legend {
+    color: #ea5455 !important;
+}
+
+.custom-fieldset.is-invalid-field .custom-field-icon {
+    color: #ea5455 !important;
+}
+
+.custom-legend {
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: #fff;
+    padding: 0 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: #566a7f;
+    margin: 0;
+    line-height: 1;
+    z-index: 1;
+    width: auto;
+    float: none;
+    transition: color 0.2s ease;
+}
+
+.custom-field-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-field-icon {
+    font-size: 1.25rem;
+    color: #8592a3;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.custom-field-input {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-size: 0.92rem;
+    color: #566a7f;
+    background: transparent !important;
+    width: 100%;
+}
+
+.custom-field-input:focus {
+    outline: none !important;
+}
+
+.custom-field-input::placeholder {
+    color: #a1acb8;
+    font-size: 0.88rem;
+}
+
+.custom-field-select {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 24px 0 0 !important;
+    font-size: 0.9rem;
+    color: #566a7f;
+    background-color: transparent !important;
+    cursor: pointer;
+    width: 100%;
+}
+
+.custom-field-select:focus {
+    outline: none !important;
+}
+
+.custom-helper-text {
+    font-size: 0.75rem;
+    color: #a1acb8;
+    margin-top: 2px;
+    margin-left: 6px;
+    margin-bottom: 12px;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.custom-error-feedback {
+    font-size: 0.75rem;
+    color: #ea5455;
+    margin-top: 2px;
+    margin-left: 6px;
+    margin-bottom: 12px;
+    display: none;
+    font-weight: 500;
+}
+
+.status-toggle-card {
+    border: 1.5px solid #d9dee3;
+    border-radius: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+}

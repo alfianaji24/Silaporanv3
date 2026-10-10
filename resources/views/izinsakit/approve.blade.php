@@ -1,0 +1,91 @@
+<form action="{{ isset($isDelegation) && $isDelegation ? route('karyawan-approval.izinsakit.storeapprove', Crypt::encrypt($izinsakit->kode_izin_sakit)) : route('izinsakit.storeapprove', Crypt::encrypt($izinsakit->kode_izin_sakit)) }}" method="POST" id="formApproveizinsakit">
+    @csrf
+    <div class="row">
+        <div class="col">
+            <table class="table">
+                <tr>
+                    <th>Kode Izin Sakit</th>
+                    <td class="text-end">{{ $izinsakit->kode_izin_sakit }}</td>
+                </tr>
+                <tr>
+                    <th>Tanggal</th>
+                    <td class="text-end">{{ DateToIndo($izinsakit->tanggal) }}</td>
+                </tr>
+                <tr>
+                    <th>NIK</th>
+                    <td class="text-end">{{ $izinsakit->nik }}</td>
+                </tr>
+                <tr>
+                    <th>Nama Karyawan</th>
+                    <td class="text-end">{{ $izinsakit->nama_karyawan }}</td>
+                </tr>
+                <tr>
+                    <th>Jabatan</th>
+                    <td class="text-end">{{ $izinsakit->nama_jabatan }}</td>
+                </tr>
+                <tr>
+                    <th>Dept</th>
+                    <td class="text-end">{{ $izinsakit->nama_dept }}</td>
+                </tr>
+                <tr>
+                    <th>Cabang</th>
+                    <td class="text-end">{{ $izinsakit->nama_cabang }}</td>
+                </tr>
+                <tr>
+                    <th>Lama</th>
+                    <td class="text-end">
+                        @php
+                            $lama = hitungHariKerja($izinsakit->nik, $izinsakit->dari, $izinsakit->sampai)['total_hari'];
+                            $batasi_hari_izin_sakit = $general_setting->batasi_hari_izin_sakit ?? false;
+                            $jml_hari_izin_sakit_max = $general_setting->jml_hari_izin_sakit_max ?? 0;
+                        @endphp
+                        {{ $lama }} Hari / {{ DateToIndo($izinsakit->dari) }} - {{ DateToIndo($izinsakit->sampai) }}
+                        @if ($batasi_hari_izin_sakit == 1 && $jml_hari_izin_sakit_max > 0 && $lama > $jml_hari_izin_sakit_max)
+                            <div class="text-warning small mt-1" style="font-size: 0.75rem;">
+                                <i class="ti ti-info-circle me-1"></i> (Sesuai batas aturan, maksimal <strong>{{ $jml_hari_izin_sakit_max }} hari kerja</strong> yang akan tercatat sebagai sakit)
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <th>Keterangan</th>
+                    <td class="text-end">{{ $izinsakit->keterangan }}</td>
+                </tr>
+                @if (!empty($izinsakit->doc_sid))
+                <tr>
+                    <th>SID</th>
+                    <td class="text-end">
+                        <a href="{{ asset('storage/uploads/sid/' . $izinsakit->doc_sid) }}?t={{ time() }}" target="_blank">
+                            <img src="{{ asset('storage/uploads/sid/' . $izinsakit->doc_sid) }}?t={{ time() }}" alt="SID" class="img-fluid" style="max-width: 150px; border-radius: 8px; border: 1px solid #e0e0e0;">
+                        </a>
+                    </td>
+                </tr>
+                @endif
+            </table>
+
+        </div>
+    </div>
+    <div class="row mt-2 mb-2">
+        <div class="col">
+            <x-textarea label="Catatan" name="catatan" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary w-100" name="approve" type="submit" value="approve"><i class="ti ti-thumb-up me-1"></i> Approve </button>
+        </div>
+        <div class="col">
+            <button class="btn btn-danger w-100" name="tolak" type="submit" value="tolak"><i class="ti ti-thumb-down me-1"></i> Tolak </button>
+        </div>
+    </div>
+
+</form>
+
+<script>
+    $(document).on('click', '[name="approve"]', function() {
+        $('#formApproveizinsakit').submit();
+        $(this).prop('readonly', true);
+        $('button[name="tolak"]').prop('disabled', true);
+        $(this).html("<i class='fa fa-spin fa-spinner me-1'></i> Processing...");
+    })
+</script>
