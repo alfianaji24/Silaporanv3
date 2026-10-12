@@ -951,33 +951,54 @@ class PresensiController extends Controller
 
 
         $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
-        //Cek Jam Kerja By Date
-        $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-            ->where('nik', $karyawan->nik)
+        $ajuan_jadwal = AjuanJadwal::where('nik', $karyawan->nik)
             ->where('tanggal', $tanggal_presensi)
+            ->where('status', 'a')
             ->first();
 
-        //Jika Tidak Memiliki Jam Kerja By Date
+        $jamkerja = $ajuan_jadwal
+            ? Jamkerja::where('kode_jam_kerja', $ajuan_jadwal->kode_jam_kerja_tujuan)->first()
+            : null;
+
         if ($jamkerja == null) {
-            //Cek Jam Kerja harian / Jam Kerja Khusus / Jam Kerja Per Orangannya
+            $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('nik', $karyawan->nik)
+                ->where('tanggal', $tanggal_presensi)
+                ->first();
+        }
+
+        if ($jamkerja == null) {
+            $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
+            if ($cek_group) {
+                $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
+                    ->where('tanggal', $tanggal_presensi)
+                    ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                    ->first();
+            }
+        }
+
+        if ($jamkerja == null) {
             $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
                 ->where('nik', $karyawan->nik)->where('hari', $namahari)->first();
+        }
 
-            // Jika Jam Kerja Harian Kosong
-            if ($jamkerja == null) {
-                // Fallback: Cek Jadwal Kerja Global
-                $gs = Pengaturanumum::where('id', 1)->first();
-                if ($gs && $gs->global_jamkerja_aktif) {
-                    $globalJk = GlobalJamkerja::where('hari', $namahari)->first();
-                    if ($globalJk && $globalJk->kode_jam_kerja) {
-                        $jamkerja = Jamkerja::where('kode_jam_kerja', $globalJk->kode_jam_kerja)->first();
-                    }
-                }
-                // Legacy fallback jika global tidak aktif
-                if ($jamkerja == null) {
-                    $jamkerja = Jamkerja::where('kode_jam_kerja', 'JK01')->first();
-                }
+        if ($jamkerja == null) {
+            $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+                ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('kode_dept', $karyawan->kode_dept)
+                ->where('kode_cabang', $karyawan->kode_cabang)
+                ->where('hari', $namahari)->first();
+        }
+
+        if ($jamkerja == null && $generalsetting && $generalsetting->global_jamkerja_aktif) {
+            $globalJk = GlobalJamkerja::where('hari', $namahari)->first();
+            if ($globalJk && $globalJk->kode_jam_kerja) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', $globalJk->kode_jam_kerja)->first();
             }
+        }
+
+        if ($jamkerja == null) {
+            return Redirect::back()->with(messageError('Tidak ada jadwal'));
         }
 
         //Cek Presensi
@@ -990,8 +1011,6 @@ class PresensiController extends Controller
 
         if ($presensi != null && $presensi->status != 'h') {
             return Redirect::back()->with(messageError('Sudah Melakukan Presesni'));
-        } else if ($jamkerja == null) {
-            return Redirect::back()->with(messageError('Tidak Memiliki Jadwal'));
         }
 
         $kode_jam_kerja = $jamkerja->kode_jam_kerja;
