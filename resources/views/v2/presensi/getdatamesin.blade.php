@@ -52,6 +52,7 @@
                                         <form method="POST" class="m-0" action="{{ route('presensi.updatefrommachine', [Crypt::encrypt($d->pin), 0]) }}">
                                             @csrf
                                             <input type="hidden" name="scan_date" value="{{ date('Y-m-d H:i:s', strtotime($d->scan_date)) }}">
+                                            <input type="hidden" name="tanggal_presensi" value="{{ $tanggal_presensi }}">
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1 active:scale-95 cursor-pointer" title="Ambil sebagai Jam Masuk">
                                                 <i class="ti ti-login"></i> Masuk
                                             </button>
@@ -59,6 +60,7 @@
                                         <form method="POST" class="m-0" action="{{ route('presensi.updatefrommachine', [Crypt::encrypt($d->pin), 1]) }}">
                                             @csrf
                                             <input type="hidden" name="scan_date" value="{{ date('Y-m-d H:i:s', strtotime($d->scan_date)) }}">
+                                            <input type="hidden" name="tanggal_presensi" value="{{ $tanggal_presensi }}">
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1 active:scale-95 cursor-pointer" title="Ambil sebagai Jam Pulang">
                                                 <i class="ti ti-logout"></i> Pulang
                                             </button>
@@ -167,6 +169,7 @@
                                         <form method="POST" class="m-0" action="{{ route('presensi.updatefrommachine', [Crypt::encrypt($log->pin), 0]) }}">
                                             @csrf
                                             <input type="hidden" name="scan_date" value="{{ date('Y-m-d H:i:s', strtotime($log->jam_absen)) }}">
+                                            <input type="hidden" name="tanggal_presensi" value="{{ $tanggal_presensi }}">
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1 active:scale-95 cursor-pointer" title="Set sebagai Jam Masuk">
                                                 <i class="ti ti-login"></i> Masuk
                                             </button>
@@ -174,6 +177,7 @@
                                         <form method="POST" class="m-0" action="{{ route('presensi.updatefrommachine', [Crypt::encrypt($log->pin), 1]) }}">
                                             @csrf
                                             <input type="hidden" name="scan_date" value="{{ date('Y-m-d H:i:s', strtotime($log->jam_absen)) }}">
+                                            <input type="hidden" name="tanggal_presensi" value="{{ $tanggal_presensi }}">
                                             <button type="submit" class="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] shadow-2xs transition flex items-center gap-1 active:scale-95 cursor-pointer" title="Set sebagai Jam Pulang">
                                                 <i class="ti ti-logout"></i> Pulang
                                             </button>

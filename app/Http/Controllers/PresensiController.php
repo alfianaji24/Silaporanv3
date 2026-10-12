@@ -780,19 +780,25 @@ class PresensiController extends Controller
 
     public function getdatamesin(Request $request)
     {
+        $request->validate([
+            'tanggal' => 'required|date_format:Y-m-d',
+            'pin' => 'required',
+        ]);
 
         $tanggal = $request->tanggal;
         $pin = $request->pin;
         $general_setting = Pengaturanumum::where('id', 1)->first();
-        // dd($pin);
-        // $kode_jadwal = $request->kode_jadwal;
-        // if ($kode_jadwal == "JD004") {
-        //     $nextday = date('Y-m-d', strtotime('+1 day', strtotime($tanggal)));
-        // } else {
-        //     $nextday =  $tanggal;
-        // }
         $specific_value = $pin;
         $karyawan = Karyawan::where('pin', $pin)->first();
+        $jamkerja = $karyawan
+            ? $this->getJamkerjaKaryawanByDate($karyawan, $tanggal, $general_setting)
+            : null;
+        $tanggal_berikutnya = Carbon::parse($tanggal)->addDay()->format('Y-m-d');
+        $tanggal_akhir_log = $jamkerja && $jamkerja->lintashari == 1
+            ? $tanggal_berikutnya
+            : $tanggal;
+        $tanggal_presensi = $tanggal;
+
         $is_locked = false;
         if ($karyawan) {
             $presensi_lock = Presensi::where('nik', $karyawan->nik)->where('tanggal', $tanggal)->first();
@@ -804,7 +810,12 @@ class PresensiController extends Controller
 
         //Mesin 1
         $url = 'https://developer.fingerspot.io/api/get_attlog';
-        $data = '{"trans_id":"1", "cloud_id":"' . $general_setting->cloud_id . '", "start_date":"' . $tanggal . '", "end_date":"' . $tanggal . '"}';
+        $data = json_encode([
+            'trans_id' => '1',
+            'cloud_id' => $general_setting->cloud_id,
+            'start_date' => $tanggal,
+            'end_date' => $tanggal_akhir_log,
+        ]);
         $authorization = "Authorization: Bearer " . $general_setting->api_key;
 
         $ch = curl_init($url);
@@ -823,8 +834,13 @@ class PresensiController extends Controller
             $datamesin1 = $res->data;
         }
 
-        $filtered_array = array_filter($datamesin1, function ($obj) use ($specific_value) {
-            return isset($obj->pin) && $obj->pin == $specific_value;
+        $filtered_array = array_filter($datamesin1, function ($obj) use ($specific_value, $tanggal, $tanggal_akhir_log) {
+            if (!isset($obj->pin, $obj->scan_date) || $obj->pin != $specific_value) {
+                return false;
+            }
+
+            $tanggal_scan = Carbon::parse($obj->scan_date)->format('Y-m-d');
+            return $tanggal_scan >= $tanggal && $tanggal_scan <= $tanggal_akhir_log;
         });
 
 
@@ -853,16 +869,73 @@ class PresensiController extends Controller
         $log_lokal = \App\Models\LogMesinPresensi::select('log_mesin_presensis.*', 'mesin_fingerprints.nama_mesin', 'mesin_fingerprints.sn', 'mesin_fingerprints.lokasi')
             ->leftJoin('mesin_fingerprints', 'log_mesin_presensis.id_mesin', '=', 'mesin_fingerprints.id')
             ->where('pin', $pin)
-            ->whereDate('jam_absen', $tanggal)
+            ->whereDate('jam_absen', '>=', $tanggal)
+            ->whereDate('jam_absen', '<=', $tanggal_akhir_log)
             ->orderBy('jam_absen', 'desc')
             ->get();
 
         $theme = session('admin_theme', 'v2');
         if ($theme === 'v2') {
-            return view('v2.presensi.getdatamesin', compact('filtered_array', 'is_locked', 'log_lokal'));
+            return view('v2.presensi.getdatamesin', compact('filtered_array', 'is_locked', 'log_lokal', 'tanggal_presensi'));
         }
 
-        return view('presensi.getdatamesin', compact('filtered_array', 'is_locked', 'log_lokal'));
+        return view('presensi.getdatamesin', compact('filtered_array', 'is_locked', 'log_lokal', 'tanggal_presensi'));
+    }
+
+    private function getJamkerjaKaryawanByDate(Karyawan $karyawan, string $tanggal, ?Pengaturanumum $generalsetting)
+    {
+        $namahari = getnamaHari(date('D', strtotime($tanggal)));
+
+        $ajuan_jadwal = AjuanJadwal::where('nik', $karyawan->nik)
+            ->where('tanggal', $tanggal)
+            ->where('status', 'a')
+            ->first();
+
+        $jamkerja = $ajuan_jadwal
+            ? Jamkerja::where('kode_jam_kerja', $ajuan_jadwal->kode_jam_kerja_tujuan)->first()
+            : null;
+
+        if ($jamkerja == null) {
+            $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('nik', $karyawan->nik)
+                ->where('tanggal', $tanggal)
+                ->first();
+        }
+
+        if ($jamkerja == null) {
+            $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
+            if ($cek_group) {
+                $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
+                    ->where('tanggal', $tanggal)
+                    ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                    ->first();
+            }
+        }
+
+        if ($jamkerja == null) {
+            $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('nik', $karyawan->nik)
+                ->where('hari', $namahari)
+                ->first();
+        }
+
+        if ($jamkerja == null) {
+            $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
+                ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
+                ->where('kode_dept', $karyawan->kode_dept)
+                ->where('kode_cabang', $karyawan->kode_cabang)
+                ->where('hari', $namahari)
+                ->first();
+        }
+
+        if ($jamkerja == null && $generalsetting && $generalsetting->global_jamkerja_aktif) {
+            $globalJk = GlobalJamkerja::where('hari', $namahari)->first();
+            if ($globalJk && $globalJk->kode_jam_kerja) {
+                $jamkerja = Jamkerja::where('kode_jam_kerja', $globalJk->kode_jam_kerja)->first();
+            }
+        }
+
+        return $jamkerja;
     }
 
 
@@ -909,6 +982,11 @@ class PresensiController extends Controller
 
     public function updatefrommachine(Request $request, $pin, $status_scan)
     {
+        $request->validate([
+            'scan_date' => 'required|date',
+            'tanggal_presensi' => 'nullable|date_format:Y-m-d',
+        ]);
+
         $pin = Crypt::decrypt($pin);
         $scan = $request->scan_date;
 
@@ -936,6 +1014,11 @@ class PresensiController extends Controller
         $jam_sekarang = $carbon_scan->format('H:i');
         $tanggal_kemarin = $carbon_scan->copy()->subDay()->format('Y-m-d');
         $tanggal_besok = $carbon_scan->copy()->addDay()->format('Y-m-d');
+        $tanggal_presensi_request = $request->input('tanggal_presensi');
+
+        if ($tanggal_presensi_request && !in_array($tanggal_presensi_request, [$tanggal_sekarang, $tanggal_kemarin], true)) {
+            return Redirect::back()->with(messageError('Tanggal presensi tidak sesuai dengan waktu scan'));
+        }
 
         //Cek Presensi Kemarin
         $presensi_kemarin = Presensi::where('nik', $karyawan->nik)
@@ -946,59 +1029,18 @@ class PresensiController extends Controller
         $lintas_hari = $presensi_kemarin ? $presensi_kemarin->lintashari : 0;
 
         //Jika Presensi Kemarin Status Lintas Hari nya 1 Makan Tanggal Presensi Sekarang adalah Tanggal Kemarin
-        $tanggal_presensi = $lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang;
+        $tanggal_presensi = $tanggal_presensi_request ?? ($lintas_hari == 1 ? $tanggal_kemarin : $tanggal_sekarang);
         $tanggal_pulang = $lintas_hari == 1 ? $tanggal_besok : $tanggal_sekarang;
 
 
-        $namahari = getnamaHari(date('D', strtotime($tanggal_presensi)));
-        $ajuan_jadwal = AjuanJadwal::where('nik', $karyawan->nik)
-            ->where('tanggal', $tanggal_presensi)
-            ->where('status', 'a')
-            ->first();
-
-        $jamkerja = $ajuan_jadwal
-            ? Jamkerja::where('kode_jam_kerja', $ajuan_jadwal->kode_jam_kerja_tujuan)->first()
-            : null;
-
-        if ($jamkerja == null) {
-            $jamkerja = Setjamkerjabydate::join('presensi_jamkerja', 'presensi_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                ->where('nik', $karyawan->nik)
-                ->where('tanggal', $tanggal_presensi)
-                ->first();
-        }
-
-        if ($jamkerja == null) {
-            $cek_group = GrupDetail::where('nik', $karyawan->nik)->first();
-            if ($cek_group) {
-                $jamkerja = GrupJamkerjaBydate::where('kode_grup', $cek_group->kode_grup)
-                    ->where('tanggal', $tanggal_presensi)
-                    ->join('presensi_jamkerja', 'grup_jamkerja_bydate.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                    ->first();
-            }
-        }
-
-        if ($jamkerja == null) {
-            $jamkerja = Setjamkerjabyday::join('presensi_jamkerja', 'presensi_jamkerja_byday.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                ->where('nik', $karyawan->nik)->where('hari', $namahari)->first();
-        }
-
-        if ($jamkerja == null) {
-            $jamkerja = Detailsetjamkerjabydept::join('presensi_jamkerja_bydept', 'presensi_jamkerja_bydept_detail.kode_jk_dept', '=', 'presensi_jamkerja_bydept.kode_jk_dept')
-                ->join('presensi_jamkerja', 'presensi_jamkerja_bydept_detail.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja')
-                ->where('kode_dept', $karyawan->kode_dept)
-                ->where('kode_cabang', $karyawan->kode_cabang)
-                ->where('hari', $namahari)->first();
-        }
-
-        if ($jamkerja == null && $generalsetting && $generalsetting->global_jamkerja_aktif) {
-            $globalJk = GlobalJamkerja::where('hari', $namahari)->first();
-            if ($globalJk && $globalJk->kode_jam_kerja) {
-                $jamkerja = Jamkerja::where('kode_jam_kerja', $globalJk->kode_jam_kerja)->first();
-            }
-        }
+        $jamkerja = $this->getJamkerjaKaryawanByDate($karyawan, $tanggal_presensi, $generalsetting);
 
         if ($jamkerja == null) {
             return Redirect::back()->with(messageError('Tidak ada jadwal'));
+        }
+
+        if ($tanggal_presensi_request && $tanggal_presensi_request !== $tanggal_sekarang && $jamkerja->lintashari != 1) {
+            return Redirect::back()->with(messageError('Jadwal karyawan tidak lintas hari'));
         }
 
         //Cek Presensi
