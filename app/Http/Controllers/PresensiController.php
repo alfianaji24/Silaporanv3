@@ -174,6 +174,10 @@ class PresensiController extends Controller
         $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
         $karyawan = Karyawan::where('nik', $userkaryawan->nik)->first();
 
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return Redirect::back()->with(messageError('Karyawan tidak aktif dan tidak dapat melakukan presensi'));
+        }
+
         if ($karyawan->lock_jam_kerja == 0 && $kode_jam_kerja == null) {
             $cabang = Cabang::where('kode_cabang', $karyawan->kode_cabang)->first();
             $general_setting = Pengaturanumum::where('id', 1)->first();
@@ -330,6 +334,9 @@ class PresensiController extends Controller
         $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
         $karyawan = Karyawan::where('nik', $userkaryawan->nik)->first();
 
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return Redirect::back()->with(messageError('Karyawan tidak aktif dan tidak dapat melakukan presensi'));
+        }
 
         $status_lock_location = $karyawan->lock_location;
 
@@ -912,6 +919,10 @@ class PresensiController extends Controller
             $nik = "";
         } else {
             $nik = $karyawan->nik;
+        }
+
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return Redirect::back()->with(messageError('Karyawan tidak aktif dan tidak dapat melakukan presensi'));
         }
 
         // Ambil timezone dari cabang

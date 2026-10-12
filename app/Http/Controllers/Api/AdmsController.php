@@ -413,6 +413,15 @@ class AdmsController extends Controller
         $karyawan = Karyawan::where('pin', $pin)->first();
 
         if ($karyawan != null) {
+            if ($karyawan->status_aktif_karyawan != '1') {
+                Log::warning('Presensi mesin ditolak untuk karyawan tidak aktif', [
+                    'nik' => $karyawan->nik,
+                    'pin' => $pin,
+                ]);
+                $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 0, 'Presensi ditolak: Karyawan tidak aktif');
+                return;
+            }
+
             Log::info('KARYAWAN DITEMUKAN', ['nik' => $karyawan->nik]);
             $generalsetting = Pengaturanumum::where('id', 1)->first();
             $tanggal_sekarang = date("Y-m-d", strtotime($scan));

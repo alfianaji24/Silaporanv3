@@ -107,6 +107,10 @@ class PublicPresensiController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Karyawan tidak ditemukan'], 200);
         }
 
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return response()->json(['status' => 'error', 'message' => 'Karyawan tidak aktif dan tidak dapat melakukan presensi'], 200);
+        }
+
         $cabang = Cabang::where('kode_cabang', $karyawan->kode_cabang)->first();
         $timezone_cabang = $cabang->timezone ?? $generalsetting->timezone ?? config('app.timezone');
         $carbon_now = Carbon::now($timezone_cabang);

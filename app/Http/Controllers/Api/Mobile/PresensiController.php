@@ -56,6 +56,13 @@ class PresensiController extends Controller
             ], 404);
         }
 
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Karyawan tidak aktif dan tidak dapat melakukan presensi'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'lokasi' => 'required|string', // "latitude,longitude"
             'kode_jam_kerja' => 'required|string',
@@ -451,6 +458,13 @@ class PresensiController extends Controller
                 'success' => false,
                 'message' => 'Profil data karyawan tidak ditemukan'
             ], 404);
+        }
+
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Karyawan tidak aktif dan tidak dapat melakukan presensi'
+            ], 403);
         }
 
         $validator = Validator::make($request->all(), [

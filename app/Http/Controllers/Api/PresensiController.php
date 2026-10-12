@@ -49,6 +49,13 @@ class PresensiController extends Controller
             $nik = $karyawan->nik;
         }
 
+        if ($karyawan->status_aktif_karyawan != '1') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Karyawan tidak aktif dan tidak dapat melakukan presensi',
+            ], 403);
+        }
+
         $tanggal_sekarang = date("Y-m-d", strtotime($scan));
         $jam_sekarang = date("H:i", strtotime($scan));
         $tanggal_kemarin = date("Y-m-d", strtotime($tanggal_sekarang . " -1 days"));
