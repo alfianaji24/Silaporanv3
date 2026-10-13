@@ -888,7 +888,7 @@ class PresensiController extends Controller
         return view('presensi.getdatamesin', compact('filtered_array', 'is_locked', 'log_lokal', 'tanggal_presensi'));
     }
 
-    private function getJamkerjaKaryawanByDate(Karyawan $karyawan, string $tanggal, ?Pengaturanumum $generalsetting)
+    private function getJamkerjaKaryawanByDate(Karyawan $karyawan, string $tanggal, ?Pengaturanumum $generalsetting): ?Jamkerja
     {
         $namahari = getnamaHari(date('D', strtotime($tanggal)));
 
@@ -941,7 +941,13 @@ class PresensiController extends Controller
             }
         }
 
-        return $jamkerja;
+        if ($jamkerja instanceof Jamkerja) {
+            return $jamkerja;
+        }
+
+        return $jamkerja
+            ? Jamkerja::find($jamkerja->kode_jam_kerja)
+            : null;
     }
 
 
