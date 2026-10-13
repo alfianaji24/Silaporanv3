@@ -84,6 +84,12 @@ class PresensiController extends Controller
                 'message' => 'Jam Kerja Tidak Ditemukan',
             ]);
         }
+        if (!$jamkerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jam kerja tidak tersedia untuk jabatan karyawan ini',
+            ], 403);
+        }
 
         // --- PENENTUAN TANGGAL PRESENSI ---
         // Secara default adalah hari ini

@@ -78,6 +78,9 @@ class PublicPresensiController extends Controller
 
         // Get jam kerja
         $jam_kerja = $this->getJamKerjaKaryawan($karyawan);
+        if ($jam_kerja && !$jam_kerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return response()->json(['status' => 'error', 'message' => 'Jadwal tidak tersedia untuk jabatan karyawan ini'], 200);
+        }
 
         // Foto URL
         $foto = null;
@@ -137,6 +140,9 @@ class PublicPresensiController extends Controller
         $jam_kerja = $this->getJamKerjaKaryawan($karyawan, $tanggal_sekarang);
         if (!$jam_kerja) {
             return response()->json(['status' => 'error', 'message' => 'Jadwal kerja tidak ditemukan'], 200);
+        }
+        if (!$jam_kerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return response()->json(['status' => 'error', 'message' => 'Jadwal tidak tersedia untuk jabatan karyawan ini'], 200);
         }
 
         // --- PENENTUAN TANGGAL PRESENSI ---

@@ -189,7 +189,9 @@ class PresensiController extends Controller
             if ($presensi != null) {
                 return redirect('/presensi/create?kode_jam_kerja=' . $presensi->kode_jam_kerja);
             }
-            $data['jamkerja'] = Jamkerja::orderBy('jam_masuk')->get();
+            $data['jamkerja'] = Jamkerja::availableForJabatan($karyawan->kode_jabatan)
+                ->orderBy('jam_masuk')
+                ->get();
             return view('presensi.pilih_jam_kerja', $data);
         }
 
@@ -343,6 +345,10 @@ class PresensiController extends Controller
         $status = $request->status;
         $lokasi = $request->lokasi;
         $kode_jam_kerja = $request->kode_jam_kerja;
+        $jamkerjaPilihan = Jamkerja::find($kode_jam_kerja);
+        if (!$jamkerjaPilihan || !$jamkerjaPilihan->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return Redirect::back()->with(messageError('Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini'));
+        }
 
         //Get Lokasi Kantor untuk mendapatkan timezone cabang
         $cabang = Cabang::where('kode_cabang', $karyawan->kode_cabang)->first();
@@ -1037,6 +1043,10 @@ class PresensiController extends Controller
 
         if ($jamkerja == null) {
             return Redirect::back()->with(messageError('Tidak ada jadwal'));
+        }
+
+        if (!$jamkerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return Redirect::back()->with(messageError('Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini'));
         }
 
         if ($tanggal_presensi_request && $tanggal_presensi_request !== $tanggal_sekarang && $jamkerja->lintashari != 1) {

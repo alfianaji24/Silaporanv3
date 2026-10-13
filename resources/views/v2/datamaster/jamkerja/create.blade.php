@@ -59,6 +59,19 @@
             </div>
         </div>
 
+        <div class="space-y-1.5">
+            <label for="kode_jabatan" class="block text-xs font-bold text-slate-700">Jabatan yang Dapat Menggunakan</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                @foreach ($jabatans as $jabatan)
+                    <label class="flex items-center gap-2 p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:border-emerald-400 cursor-pointer">
+                        <input type="checkbox" name="kode_jabatan[]" value="{{ $jabatan->kode_jabatan }}" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                        <span>{{ $jabatan->nama_jabatan }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-[10.5px] text-slate-500">Pilih satu atau beberapa jabatan yang dapat menggunakan jam kerja ini. Jika tidak dipilih, jam kerja tidak tersedia untuk jabatan mana pun.</p>
+        </div>
+
         <!-- Row 2: Jam Masuk & Jam Pulang -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div class="space-y-1.5">

@@ -152,11 +152,11 @@ class AjuanJadwalController extends Controller
 
     public function create(Request $request)
     {
-        $jamkerja = Jamkerja::orderBy('nama_jam_kerja')->get();
         $user = auth()->user();
         $karyawan = [];
         
         if (!$user->hasRole('karyawan')) {
+             $jamkerja = Jamkerja::orderBy('nama_jam_kerja')->get();
              $qkaryawan = Karyawan::query();
              if (!$user->isSuperAdmin()) {
                  $userCabangs = $user->getCabangCodes();
@@ -169,6 +169,12 @@ class AjuanJadwalController extends Controller
                  }
              }
              $karyawan = $qkaryawan->orderBy('nama_karyawan')->get();
+        } else {
+            $userkaryawan = Userkaryawan::where('id_user', $user->id)->first();
+            $employee = $userkaryawan ? Karyawan::find($userkaryawan->nik) : null;
+            $jamkerja = $employee
+                ? Jamkerja::availableForJabatan($employee->kode_jabatan)->orderBy('nama_jam_kerja')->get()
+                : collect();
         }
         
         $theme = session('admin_theme', 'v2');
@@ -213,6 +219,10 @@ class AjuanJadwalController extends Controller
 
         // Get Employee Data
     $karyawan = Karyawan::where('nik', $nik)->first();
+    $jamkerjaTujuan = Jamkerja::find($request->kode_jam_kerja_tujuan);
+    if (!$karyawan || !$jamkerjaTujuan || !$jamkerjaTujuan->isAvailableForJabatan($karyawan->kode_jabatan)) {
+        return Redirect::back()->with(['warning' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini.']);
+    }
     $kode_cabang = $karyawan->kode_cabang;
     $kode_dept = $karyawan->kode_dept;
     $tanggal = $request->tanggal;
@@ -280,6 +290,11 @@ class AjuanJadwalController extends Controller
     {
         try {
             $ajuan = AjuanJadwal::findOrFail($id);
+            $karyawan = Karyawan::find($ajuan->nik);
+            $jamkerjaTujuan = Jamkerja::find($ajuan->kode_jam_kerja_tujuan);
+            if (!$karyawan || !$jamkerjaTujuan || !$jamkerjaTujuan->isAvailableForJabatan($karyawan->kode_jabatan)) {
+                return Redirect::back()->with(['warning' => 'Jam kerja tujuan tidak tersedia untuk jabatan karyawan ini.']);
+            }
             $ajuan->update(['status' => 'a']); // Approved
             return Redirect::back()->with(['success' => 'Pengajuan Disetujui']);
         } catch (\Exception $e) {

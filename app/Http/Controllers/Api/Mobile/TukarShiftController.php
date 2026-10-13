@@ -52,7 +52,18 @@ class TukarShiftController extends Controller
                 ];
             });
 
-        $shifts = Jamkerja::orderBy('nama_jam_kerja')->get()->map(function ($shift) {
+        $karyawan = Karyawan::find($nik);
+        if (!$karyawan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data karyawan tidak ditemukan.'
+            ], 404);
+        }
+
+        $shifts = Jamkerja::availableForJabatan($karyawan->kode_jabatan)
+            ->orderBy('nama_jam_kerja')
+            ->get()
+            ->map(function ($shift) {
             return [
                 'kode_jam_kerja' => $shift->kode_jam_kerja,
                 'nama_jam_kerja' => $shift->nama_jam_kerja,
@@ -103,6 +114,13 @@ class TukarShiftController extends Controller
                 'success' => false,
                 'message' => 'Data karyawan tidak ditemukan.'
             ], 404);
+        }
+        $jamkerjaTujuan = Jamkerja::find($request->kode_jam_kerja_tujuan);
+        if (!$jamkerjaTujuan || !$jamkerjaTujuan->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini.'
+            ], 422);
         }
 
         $kode_cabang = $karyawan->kode_cabang;

@@ -3,6 +3,20 @@
     @method('PUT')
     <x-input-with-icon icon="ti ti-barcode" label="Kode Jam Kerja" name="kode_jam_kerja" :value="$jamkerja->kode_jam_kerja" readonly />
     <x-input-with-icon icon="ti ti-file-text" label="Nama Jam Kerja" name="nama_jam_kerja" :value="$jamkerja->nama_jam_kerja" maxlength="50" placeholder="Contoh: Jam Kerja Pagi (Maksimal 50 karakter)" />
+    <div class="form-group mb-3">
+        <label class="form-label" style="font-weight: 600;">Jabatan yang Dapat Menggunakan</label>
+        <div class="row g-2">
+            @foreach ($jabatans as $jabatan)
+                <div class="col-md-4 col-sm-6">
+                    <label class="form-check border rounded p-2 d-flex align-items-center gap-2 h-100">
+                        <input class="form-check-input mt-0" type="checkbox" name="kode_jabatan[]" value="{{ $jabatan->kode_jabatan }}" @checked($jamkerja->jabatans->contains('kode_jabatan', $jabatan->kode_jabatan))>
+                        <span class="form-check-label">{{ $jabatan->nama_jabatan }}</span>
+                    </label>
+                </div>
+            @endforeach
+        </div>
+        <small class="text-muted">Centang satu atau beberapa jabatan yang dapat menggunakan jam kerja ini. Jika tidak ada yang dicentang, jam kerja tidak tersedia untuk jabatan mana pun.</small>
+    </div>
     <div class="row">
         <div class="col-lg-6 col-md-12 col-sm-12">
             <x-input-with-icon icon="ti ti-clock" label="Jam Masuk" name="jam_masuk" :value="$jamkerja->jam_masuk" required />

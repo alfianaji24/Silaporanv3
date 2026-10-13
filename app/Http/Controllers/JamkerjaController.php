@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jamkerja;
+use App\Models\Jabatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 
 class JamkerjaController extends Controller
@@ -15,7 +17,7 @@ class JamkerjaController extends Controller
         if (!empty($request->nama_jam_kerja_search)) {
             $query->where('nama_jam_kerja', 'like', '%' . $request->nama_jam_kerja_search . '%');
         }
-        $data['jamkerja'] = $query->get();
+        $data['jamkerja'] = $query->with('jabatans')->get();
 
         $view = session('admin_theme', 'v2') === 'v2' ? 'v2.datamaster.jamkerja.index' : 'datamaster.jamkerja.index';
         return view($view, $data);
@@ -23,8 +25,9 @@ class JamkerjaController extends Controller
 
     public function create()
     {
+        $data['jabatans'] = Jabatan::orderBy('nama_jabatan')->get();
         $view = session('admin_theme', 'v2') === 'v2' ? 'v2.datamaster.jamkerja.create' : 'datamaster.jamkerja.create';
-        return view($view);
+        return view($view, $data);
     }
 
     public function store(Request $request)
@@ -87,7 +90,9 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:7'
-            ]
+            ],
+            'kode_jabatan' => ['nullable', 'array'],
+            'kode_jabatan.*' => ['string', 'exists:jabatan,kode_jabatan']
         ], [
             'kode_jam_kerja.required' => 'Kode Jam Kerja wajib diisi',
             'kode_jam_kerja.max' => 'Kode Jam Kerja maksimal 4 karakter',
@@ -156,20 +161,23 @@ class JamkerjaController extends Controller
             }
 
             // Simpan Data Jam Kerja
-            Jamkerja::create([
-                'kode_jam_kerja' => $kode_jam_kerja,
-                'nama_jam_kerja' => $nama_jam_kerja,
-                'jam_masuk' => $request->jam_masuk,
-                'jam_pulang' => $request->jam_pulang,
-                'istirahat' => $request->istirahat,
-                'lintashari' => $request->lintashari,
-                'batas_presensi_pulang' => $request->lintashari == '1' ? $request->batas_presensi_pulang : null,
-                'total_jam' => $total_jam,
-                'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
-                'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
-                'keterangan' => $keterangan,
-                'color' => $request->color
-            ]);
+            DB::transaction(function () use ($request, $kode_jam_kerja, $nama_jam_kerja, $total_jam, $keterangan) {
+                $jamkerja = Jamkerja::create([
+                    'kode_jam_kerja' => $kode_jam_kerja,
+                    'nama_jam_kerja' => $nama_jam_kerja,
+                    'jam_masuk' => $request->jam_masuk,
+                    'jam_pulang' => $request->jam_pulang,
+                    'istirahat' => $request->istirahat,
+                    'lintashari' => $request->lintashari,
+                    'batas_presensi_pulang' => $request->lintashari == '1' ? $request->batas_presensi_pulang : null,
+                    'total_jam' => $total_jam,
+                    'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
+                    'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
+                    'keterangan' => $keterangan,
+                    'color' => $request->color
+                ]);
+                $jamkerja->jabatans()->sync($request->input('kode_jabatan', []));
+            });
 
             return Redirect::back()->with(messageSuccess('Data Berhasil Disimpan'));
         } catch (\Illuminate\Database\QueryException $e) {
@@ -199,8 +207,9 @@ class JamkerjaController extends Controller
     public function edit($kode_jam_kerja)
     {
         $kode_jam_kerja = Crypt::decrypt($kode_jam_kerja);
-        $data['jamkerja'] = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
-        //dd($data['jamkerja']);
+        $data['jamkerja'] = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->firstOrFail();
+        $data['jabatans'] = Jabatan::orderBy('nama_jabatan')->get();
+        $data['jamkerja']->load('jabatans');
         $view = session('admin_theme', 'v2') === 'v2' ? 'v2.datamaster.jamkerja.edit' : 'datamaster.jamkerja.edit';
         return view($view, $data);
     }
@@ -262,7 +271,9 @@ class JamkerjaController extends Controller
                 'nullable',
                 'string',
                 'max:7'
-            ]
+            ],
+            'kode_jabatan' => ['nullable', 'array'],
+            'kode_jabatan.*' => ['string', 'exists:jabatan,kode_jabatan']
         ], [
             'nama_jam_kerja.required' => 'Nama Jam Kerja wajib diisi',
             'nama_jam_kerja.max' => 'Nama Jam Kerja maksimal 50 karakter',
@@ -314,19 +325,22 @@ class JamkerjaController extends Controller
 
             // Update Data Jam Kerja
             $jamkerja = Jamkerja::find($kode_jam_kerja);
-            $jamkerja->update([
-                'nama_jam_kerja' => $nama_jam_kerja,
-                'jam_masuk' => $request->jam_masuk,
-                'jam_pulang' => $request->jam_pulang,
-                'istirahat' => $request->istirahat,
-                'lintashari' => $request->lintashari,
-                'batas_presensi_pulang' => $request->lintashari == '1' ? $request->batas_presensi_pulang : null,
-                'total_jam' => $total_jam,
-                'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
-                'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
-                'keterangan' => $keterangan,
-                'color' => $request->color
-            ]);
+            DB::transaction(function () use ($request, $jamkerja, $nama_jam_kerja, $total_jam, $keterangan) {
+                $jamkerja->update([
+                    'nama_jam_kerja' => $nama_jam_kerja,
+                    'jam_masuk' => $request->jam_masuk,
+                    'jam_pulang' => $request->jam_pulang,
+                    'istirahat' => $request->istirahat,
+                    'lintashari' => $request->lintashari,
+                    'batas_presensi_pulang' => $request->lintashari == '1' ? $request->batas_presensi_pulang : null,
+                    'total_jam' => $total_jam,
+                    'jam_awal_istirahat' => $request->istirahat == '1' ? $request->jam_awal_istirahat : null,
+                    'jam_akhir_istirahat' => $request->istirahat == '1' ? $request->jam_akhir_istirahat : null,
+                    'keterangan' => $keterangan,
+                    'color' => $request->color
+                ]);
+                $jamkerja->jabatans()->sync($request->input('kode_jabatan', []));
+            });
 
             return Redirect::back()->with(messageSuccess('Data Berhasil Diupdate'));
         } catch (\Illuminate\Database\QueryException $e) {

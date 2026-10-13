@@ -514,6 +514,11 @@ class AdmsController extends Controller
             Log::info('Status jamkerja', ['is_null' => $jamkerja == null]);
 
             if ($jamkerja != null) {
+                if (!$jamkerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+                    $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 0, 'Presensi ditolak: Jam kerja tidak tersedia untuk jabatan karyawan');
+                    return;
+                }
+
                 $kode_jam_kerja = $jamkerja->kode_jam_kerja;
                 Log::info('Jam kerja ditemukan', ['kode' => $kode_jam_kerja]);
                 $jam_kerja = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->first();

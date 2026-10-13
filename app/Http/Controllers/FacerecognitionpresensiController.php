@@ -119,6 +119,12 @@ class FacerecognitionpresensiController extends Controller
         $folderPath = "public/uploads/absensi/";
 
         $jam_kerja = Jamkerja::where('kode_jam_kerja', $kode_jam_kerja)->first();
+        if (!$jam_kerja || !$jam_kerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini',
+            ], 403);
+        }
         $jam_presensi = $tanggal_sekarang . " " . $jam_sekarang;
 
         $batas_jam_absen = $generalsetting->batas_jam_absen * 60;

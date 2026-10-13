@@ -118,6 +118,7 @@
                         <th class="py-2 px-3 text-center w-12 text-white/90 border-0 border-t-0 whitespace-nowrap">No</th>
                         <th class="py-2 px-3 w-28 text-white/90 border-0 border-t-0 whitespace-nowrap">Kode</th>
                         <th class="py-2 px-3.5 min-w-[180px] text-white/90 border-0 border-t-0">Nama Jam Kerja</th>
+                        <th class="py-2 px-3 min-w-40 text-white/90 border-0 border-t-0">Jabatan</th>
                         <th class="py-2 px-3 text-center w-28 text-white/90 border-0 border-t-0 whitespace-nowrap">Masuk</th>
                         <th class="py-2 px-3 text-center w-28 text-white/90 border-0 border-t-0 whitespace-nowrap">Pulang</th>
                         <th class="py-2 px-3 text-center w-36 text-white/90 border-0 border-t-0 whitespace-nowrap">Istirahat</th>
@@ -150,6 +151,14 @@
                                 @if($d->keterangan)
                                     <div class="text-[10.5px] text-slate-500 font-normal leading-tight line-clamp-1" title="{{ $d->keterangan }}">{{ $d->keterangan }}</div>
                                 @endif
+                            </td>
+
+                            <td class="py-1.5 px-3">
+                                @forelse ($d->jabatans as $jabatan)
+                                    <span class="inline-block px-2 py-0.5 mb-1 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-semibold">{{ $jabatan->nama_jabatan }}</span>
+                                @empty
+                                    <span class="text-[10.5px] text-slate-400">Belum ada jabatan (tidak tersedia)</span>
+                                @endforelse
                             </td>
 
                             <!-- Jam Masuk (Font Normal) -->
@@ -244,7 +253,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="py-12 text-center text-slate-400">
+                            <td colspan="11" class="py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
                                         <i class="ti ti-clock-off text-2xl"></i>

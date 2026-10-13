@@ -563,7 +563,9 @@ class KaryawanController extends Controller
             ->first();
         $data['list_bulan'] = config('global.list_bulan');
         $data['start_year'] = config('global.start_year');
-        $data['jamkerja'] = Jamkerja::orderBy('kode_jam_kerja')->get();
+        $data['jamkerja'] = Jamkerja::availableForJabatan($data['karyawan']->kode_jabatan)
+            ->orderBy('kode_jam_kerja')
+            ->get();
         $data['jamkerjabyday'] = Setjamkerjabyday::where('nik', $nik)->pluck('kode_jam_kerja', 'hari')->toArray();
         $view = session('admin_theme', 'v2') === 'v2' ? 'v2.karyawan.setjamkerja' : 'datamaster.karyawan.setjamkerja';
         return view($view, $data);
@@ -609,8 +611,29 @@ class KaryawanController extends Controller
     public function storejamkerjabyday(Request $request, $nik)
     {
         $nik = Crypt::decrypt($nik);
-        $hari = $request->hari;
-        $kode_jam_kerja = $request->kode_jam_kerja;
+        $validated = $request->validate([
+            'hari' => 'required|array',
+            'hari.*' => 'required|string',
+            'kode_jam_kerja' => 'nullable|array',
+            'kode_jam_kerja.*' => 'nullable|exists:presensi_jamkerja,kode_jam_kerja',
+        ]);
+        $hari = $validated['hari'];
+        $kode_jam_kerja = $validated['kode_jam_kerja'] ?? [];
+        $karyawan = Karyawan::findOrFail($nik);
+
+        foreach ($hari as $index => $namaHari) {
+            $kodeJamKerja = $kode_jam_kerja[$index] ?? null;
+            if (!$kodeJamKerja) {
+                continue;
+            }
+
+            $jamkerja = Jamkerja::findOrFail($kodeJamKerja);
+            $jadwalSaatIni = Setjamkerjabyday::where('nik', $nik)->where('hari', $namaHari)->value('kode_jam_kerja');
+            if (!$jamkerja->isAvailableForJabatan($karyawan->kode_jabatan) && $jadwalSaatIni !== $kodeJamKerja) {
+                return Redirect::back()->with(messageError('Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini'));
+            }
+        }
+
         DB::beginTransaction();
         try {
             Setjamkerjabyday::where('nik', $nik)->delete();
@@ -634,11 +657,28 @@ class KaryawanController extends Controller
 
     public function storejamkerjabydate(Request $request)
     {
+        $validated = $request->validate([
+            'nik' => 'required|exists:karyawan,nik',
+            'tanggal' => 'required|date',
+            'kode_jam_kerja' => 'required|exists:presensi_jamkerja,kode_jam_kerja',
+        ]);
         // Convert tanggal to proper format (YYYY-MM-DD) to avoid timezone issues
-        $tanggal = Carbon::parse($request->tanggal)->format('Y-m-d');
+        $tanggal = Carbon::parse($validated['tanggal'])->format('Y-m-d');
+        $karyawan = Karyawan::findOrFail($validated['nik']);
+        $jamkerja = Jamkerja::findOrFail($validated['kode_jam_kerja']);
+        $jadwalSaatIni = Setjamkerjabydate::where('nik', $karyawan->nik)
+            ->where('tanggal', $tanggal)
+            ->value('kode_jam_kerja');
+
+        if (!$jamkerja->isAvailableForJabatan($karyawan->kode_jabatan) && $jadwalSaatIni !== $jamkerja->kode_jam_kerja) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini',
+            ], 422);
+        }
 
         try {
-            $cek = Setjamkerjabydate::where('nik', $request->nik)->where('tanggal', $tanggal)->first();
+            $cek = Setjamkerjabydate::where('nik', $karyawan->nik)->where('tanggal', $tanggal)->first();
             if (!empty($cek)) {
                 // Update jika sudah ada
                 Setjamkerjabydate::where('nik', $request->nik)->where('tanggal', $tanggal)->update([
@@ -649,7 +689,7 @@ class KaryawanController extends Controller
 
             // Simpan baru
             Setjamkerjabydate::create([
-                'nik' => $request->nik,
+                'nik' => $karyawan->nik,
                 'tanggal' => $tanggal,
                 'kode_jam_kerja' => $request->kode_jam_kerja
             ]);

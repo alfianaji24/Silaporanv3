@@ -12,4 +12,28 @@ class Jamkerja extends Model
     protected $primaryKey = 'kode_jam_kerja';
     protected $guarded = [];
     public $incrementing = false;
+
+    public function jabatans()
+    {
+        return $this->belongsToMany(
+            Jabatan::class,
+            'presensi_jam_kerja',
+            'kode_jam_kerja',
+            'kode_jabatan'
+        );
+    }
+
+    public function scopeAvailableForJabatan($query, string $kodeJabatan)
+    {
+        return $query->whereHas('jabatans', function ($query) use ($kodeJabatan) {
+            $query->where('jabatan.kode_jabatan', $kodeJabatan);
+        });
+    }
+
+    public function isAvailableForJabatan(string $kodeJabatan): bool
+    {
+        return $this->jabatans()
+            ->where('jabatan.kode_jabatan', $kodeJabatan)
+            ->exists();
+    }
 }

@@ -117,6 +117,12 @@ class PresensiController extends Controller
                     'message' => 'Data jam kerja tidak ditemukan'
                 ], 404);
             }
+            if (!$jam_kerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini'
+                ], 403);
+            }
 
             // Determine check-in target date
             $tanggal_presensi = $tanggal_sekarang;
@@ -519,6 +525,12 @@ class PresensiController extends Controller
                     'success' => false,
                     'message' => 'Tidak ada istirahat untuk jam kerja saat ini'
                 ], 400);
+            }
+            if (!$jam_kerja->isAvailableForJabatan($karyawan->kode_jabatan)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jam kerja tersebut tidak tersedia untuk jabatan karyawan ini'
+                ], 403);
             }
 
             // Save break selfie

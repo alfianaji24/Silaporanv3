@@ -1,3 +1,8 @@
+@php
+    $themeColor1 = $general_setting->theme_color_1 ?? '#0a5c41';
+    $themeColor2 = $general_setting->theme_color_2 ?? '#117956';
+@endphp
+
 <form action="{{ route('jamkerja.update', Crypt::encrypt($jamkerja->kode_jam_kerja)) }}" method="POST" id="formJamKerjaEditV2" class="space-y-4" novalidate>
     @csrf
     @method('PUT')
@@ -46,6 +51,19 @@
                 </div>
                 <div class="text-rose-500 text-[11px] font-medium hidden error-feedback" id="err_nama_jam_kerja_edit"></div>
             </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <label for="kode_jabatan_edit" class="block text-xs font-bold text-slate-700">Jabatan yang Dapat Menggunakan</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                @foreach ($jabatans as $jabatan)
+                    <label class="flex items-center gap-2 p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-700 hover:border-emerald-400 cursor-pointer">
+                        <input type="checkbox" name="kode_jabatan[]" value="{{ $jabatan->kode_jabatan }}" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" {{ $jamkerja->jabatans->contains('kode_jabatan', $jabatan->kode_jabatan) ? 'checked' : '' }}>
+                        <span>{{ $jabatan->nama_jabatan }}</span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="text-[10.5px] text-slate-500">Pilih satu atau beberapa jabatan yang dapat menggunakan jam kerja ini. Jika tidak dipilih, jam kerja tidak tersedia untuk jabatan mana pun.</p>
         </div>
 
         <!-- Row 2: Jam Masuk & Jam Pulang -->
