@@ -17,7 +17,7 @@ class Jamkerja extends Model
     {
         return $this->belongsToMany(
             Jabatan::class,
-            'presensi_jam_kerja',
+            'presensi_jamkerja_byjab',
             'kode_jam_kerja',
             'kode_jabatan'
         );
