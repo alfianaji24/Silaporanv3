@@ -11,7 +11,7 @@
     <meta name="description" content="Halaman Login Khusus Administrator" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('/assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 
     <!-- Fonts: Plus Jakarta Sans for premium modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

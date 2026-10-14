@@ -98,7 +98,7 @@
     <link rel="dns-prefetch" href="https://unpkg.com">
     <link rel="dns-prefetch" href="https://cdn.amcharts.com">
 
-    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}" sizes="32x32">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('logo.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/template/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/template/css/styleform.css') }}">

@@ -16,6 +16,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#106f62">
 
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="/assets/img/icons/pwa/icon-192x192.png">
 

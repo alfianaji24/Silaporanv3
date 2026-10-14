@@ -88,7 +88,7 @@ class DashboardController extends Controller
 
             $data['notiflembur'] = Lembur::where('nik', $userkaryawan->nik)
                 ->whereIn('status', [0, 1])
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('lembur_in')
                         ->orWhereNull('lembur_out');
                 })
@@ -125,7 +125,7 @@ class DashboardController extends Controller
                 // Jika sisa hari <= 30 hari dan belum lewat (atau lewat hari ini)
                 // Kita anggap sisa_hari < 0 berarti sudah expired
                 if ($sisa_hari >= 0 && $sisa_hari <= 30) {
-                     $notif_kontrak = [
+                    $notif_kontrak = [
                         'sisa_hari' => $sisa_hari,
                         'tanggal_akhir' => $tgl_akhir->translatedFormat('d F Y')
                     ];
@@ -139,7 +139,7 @@ class DashboardController extends Controller
                 ->where('dari', '<=', $today->toDateString())
                 ->where('sampai', '>=', $today->toDateString())
                 ->first();
-            
+
             $data['notif_sp'] = $notif_sp;
 
             // Cek Pengumuman Aktif (Ambil yang terakhir dibuat)
@@ -161,7 +161,7 @@ class DashboardController extends Controller
             // Resolve target branches and departments based on user privileges and selected filters
             $userCabangs = $user->getCabangCodes();
             $userDepartemens = $user->getDepartemenCodes();
-            
+
             $selectedCabang = $request->kode_cabang;
             $selectedDept = $request->kode_dept;
 
@@ -236,15 +236,19 @@ class DashboardController extends Controller
 
             $data['departemen'] = $user->getDepartemen();
             $data['cabang'] = $user->getCabang();
-            
+
             // 4. Birthday Karyawan
             $today = Carbon::now(config('app.timezone'));
-            $data['birthday'] = Karyawan::where('status_aktif_karyawan', 1)
-                ->whereMonth('tanggal_lahir', $today->month)
-                ->whereDay('tanggal_lahir', $today->day)
-                ->join('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
-                ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
-                ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+            $data['birthday'] = Karyawan::whereNotNull('karyawan.tanggal_lahir')
+                ->where(function ($query) {
+                    $query->where('karyawan.status_aktif_karyawan', '1')
+                        ->orWhere('karyawan.status_karyawan', 'A');
+                })
+                ->whereMonth('karyawan.tanggal_lahir', $today->month)
+                ->whereDay('karyawan.tanggal_lahir', $today->day)
+                ->leftJoin('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
+                ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+                ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
                 ->select(
                     'karyawan.*',
                     'jabatan.nama_jabatan',
@@ -278,7 +282,7 @@ class DashboardController extends Controller
             $queryTerlambat->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept');
             $queryTerlambat->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang');
             $queryTerlambat->leftJoin('presensi_jamkerja', 'presensi.kode_jam_kerja', '=', 'presensi_jamkerja.kode_jam_kerja');
-            
+
             $queryTerlambat->where('presensi.tanggal', $todayDate);
             $queryTerlambat->where('presensi.status', 'h');
             $queryTerlambat->whereRaw("presensi.jam_in > CONCAT(presensi.tanggal, ' ', IFNULL(presensi_jamkerja.jam_masuk, '08:00:00'))");
@@ -357,7 +361,11 @@ class DashboardController extends Controller
         try {
             // Ambil karyawan yang ulang tahun hari ini (menggunakan timezone aplikasi)
             $today = Carbon::now(config('app.timezone'));
-            $birthday = Karyawan::where('status_aktif_karyawan', 1)
+            $birthday = Karyawan::whereNotNull('tanggal_lahir')
+                ->where(function ($query) {
+                    $query->where('status_aktif_karyawan', '1')
+                        ->orWhere('status_karyawan', 'A');
+                })
                 ->whereMonth('tanggal_lahir', $today->month)
                 ->whereDay('tanggal_lahir', $today->day)
                 ->when($request->kode_cabang, function ($query) use ($request) {
@@ -394,7 +402,7 @@ class DashboardController extends Controller
                 $message .= "✨ Sukses dalam karir\n";
                 $message .= "✨ Diberkahi rezeki yang berlimpah\n\n";
                 $message .= "Terima kasih atas dedikasi dan kontribusinya selama ini. Semoga hubungan kerja kita terus berjalan dengan baik!\n\n";
-                $message .= "*Salam Hangat,*\nTim HR";
+                $message .= "*Salam Hangat,*\nKepegawaian Puskesmas Balaraja";
 
                 // Format nomor HP (hapus 0 di depan jika ada, pastikan format 62xxx)
                 $phoneNumber = $karyawan->no_hp;
@@ -424,10 +432,10 @@ class DashboardController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        
+
         $userCabangs = $user->getCabangCodes();
         $userDepartemens = $user->getDepartemenCodes();
-        
+
         $selectedCabang = $request->kode_cabang;
         $selectedDept = $request->kode_dept;
 

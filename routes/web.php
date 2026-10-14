@@ -110,6 +110,25 @@ Route::middleware('guest')->group(function () use ($adminPath) {
     Route::get($adminPath, [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'createAdmin'])->name('login.admin');
 });
 
+Route::get('/download', function () {
+    $theme = function_exists('get_admin_theme') ? get_admin_theme() : 'classic';
+    $view = $theme === 'v2' ? 'v2.download.index' : 'download.index';
+
+    return view($view);
+})->name('download');
+
+Route::get('/download/apk', function () {
+    $apkPath = public_path('downloads/apk/Silaporan.apk');
+
+    if (!is_file($apkPath)) {
+        return redirect()->route('download')->with('apk_unavailable', true);
+    }
+
+    return response()->download($apkPath, 'Silaporan.apk', [
+        'Content-Type' => 'application/vnd.android.package-archive',
+    ]);
+})->name('download.apk');
+
 // Face Recognition Presensi Routes (Public - No Login Required)
 Route::controller(FacerecognitionpresensiController::class)->group(function () {
     Route::get('/facerecognition-presensi', 'index')->name('facerecognition-presensi.index');
@@ -130,6 +149,8 @@ Route::controller(App\Http\Controllers\PublicPresensiController::class)->group(f
 // Route::get('/dashboard', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/birthday', [KaryawanController::class, 'birthday'])->name('birthday.index');
 
 Route::middleware('auth')->group(function () {
     // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

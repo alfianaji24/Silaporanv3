@@ -30,6 +30,81 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class KaryawanController extends Controller
 {
+    public function birthday()
+    {
+        $user = auth()->user();
+        $today = Carbon::today();
+        $periodEnd = $today->copy()->addYear();
+
+        $query = Karyawan::query()
+            ->leftJoin('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
+            ->leftJoin('jabatan', 'karyawan.kode_jabatan', '=', 'jabatan.kode_jabatan')
+            ->leftJoin('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
+            ->whereNotNull('karyawan.tanggal_lahir')
+            ->where(function ($query) {
+                $query->where('karyawan.status_aktif_karyawan', '1')
+                    ->orWhere('karyawan.status_karyawan', 'A');
+            })
+            ->select([
+                'karyawan.nama_karyawan',
+                'karyawan.tanggal_lahir',
+                'karyawan.status_karyawan',
+                'jabatan.nama_jabatan',
+            ]);
+
+        if ($user && !$user->isSuperAdmin()) {
+            $userCabangs = $user->getCabangCodes();
+            $userDepartemens = $user->getDepartemenCodes();
+
+            if (empty($userCabangs) || empty($userDepartemens)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('karyawan.kode_cabang', $userCabangs)
+                    ->whereIn('karyawan.kode_dept', $userDepartemens);
+            }
+        }
+
+        $birthdayList = $query->get()
+            ->map(function ($karyawan) use ($today) {
+                $birthDate = Carbon::parse($karyawan->tanggal_lahir);
+                $year = $today->year;
+                $month = $birthDate->month;
+                $day = $birthDate->day;
+
+                $nextBirthday = $this->birthdayForYear($year, $month, $day);
+                if ($nextBirthday->lt($today)) {
+                    $nextBirthday = $this->birthdayForYear($year + 1, $month, $day);
+                }
+
+                $karyawan->next_birthday = $nextBirthday;
+                $karyawan->days_until_birthday = (int) $today->diffInDays($nextBirthday, false);
+
+                return $karyawan;
+            })
+            ->filter(function ($karyawan) use ($periodEnd) {
+                return $karyawan->next_birthday->lte($periodEnd);
+            })
+            ->sortBy(function ($karyawan) {
+                return $karyawan->next_birthday->timestamp;
+            })
+            ->values();
+
+        return view('v2.karyawan.birthday', [
+            'birthdayList' => $birthdayList,
+            'periodStart' => $today,
+            'periodEnd' => $periodEnd,
+        ]);
+    }
+
+    private function birthdayForYear(int $year, int $month, int $day): Carbon
+    {
+        if ($month === 2 && $day === 29 && !Carbon::create($year, 1, 1)->isLeapYear()) {
+            $day = 28;
+        }
+
+        return Carbon::create($year, $month, $day)->startOfDay();
+    }
+
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */

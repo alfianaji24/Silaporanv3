@@ -337,26 +337,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Action dropdown -->
-            <div class="relative" x-data="{ openCardMenu: false }">
-                <button @click="openCardMenu = !openCardMenu" class="p-1.5 text-white/70 hover:text-white hover:bg-white/15 rounded-lg transition backdrop-blur-xs">
-                    <i data-lucide="more-vertical" class="w-4 h-4"></i>
-                </button>
-                <div x-show="openCardMenu"
-                     @click.away="openCardMenu = false"
-                     x-cloak
-                     class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-20 text-xs text-slate-800">
-                    <a href="{{ route('profile.index') }}" class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 transition">
-                        <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
-                        <span>Lihat Profil</span>
-                    </a>
-                    <a href="{{ route('generalsetting.index') }}" class="flex items-center gap-2 px-3 py-2 text-slate-700 hover:bg-slate-50 transition">
-                        <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-400"></i>
-                        <span>Pengaturan</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
         <!-- Detail Data Info List (Clean Minimalist Original Style) -->
