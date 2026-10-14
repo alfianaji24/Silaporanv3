@@ -291,7 +291,13 @@ class PresensiController extends Controller
             }
         }
 
-        return $jamkerja;
+        if ($jamkerja instanceof Jamkerja) {
+            return $jamkerja;
+        }
+
+        return $jamkerja
+            ? Jamkerja::where('kode_jam_kerja', $jamkerja->kode_jam_kerja)->first()
+            : null;
     }
 
     function sendwa($no_hp, $message)
