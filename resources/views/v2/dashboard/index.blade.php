@@ -14,7 +14,7 @@
     $userPhoto = null;
     $userDept = 'Semua Departemen';
     $userCabang = $general_setting->nama_perusahaan ?? 'Kantor Pusat';
-    $userPhone = $general_setting->telepon ?? '-';
+    $userPhone = $authUser->phone ?? '-';
     $userJoinDate = $authUser->created_at ? $authUser->created_at->translatedFormat('d M Y') : '-';
 
     $userKaryawan = \App\Models\Userkaryawan::where('id_user', $authUser->id)->first();
@@ -33,9 +33,6 @@
             }
             if ($karyawanProfile->nama_cabang) {
                 $userCabang = $karyawanProfile->nama_cabang;
-            }
-            if ($karyawanProfile->no_hp) {
-                $userPhone = $karyawanProfile->no_hp;
             }
             if ($karyawanProfile->tgl_masuk) {
                 $userJoinDate = \Carbon\Carbon::parse($karyawanProfile->tgl_masuk)->translatedFormat('d M Y');

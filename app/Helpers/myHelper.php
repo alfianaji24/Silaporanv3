@@ -96,7 +96,7 @@ function formatAngka($nilai)
     return $nilai;
 }
 
-function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $waktu): string
+function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $waktu, $jamMasukKerja = null): string
 {
     $waktuAbsen = Carbon::parse($waktu);
     $jam = (int) $waktuAbsen->format('G');
@@ -112,10 +112,23 @@ function buatPesanNotifikasiAbsen(string $namaKaryawan, string $jenisAbsen, $wak
     }
 
     $jenisAbsen = strtolower($jenisAbsen);
-    $penutup = $jenisAbsen === 'masuk' ? 'Terima Kasih, Selamat Bekerja' : 'Selamat beristirahat';
+    $penutup = $jenisAbsen === 'masuk' ? 'Terima Kasih, Selamat Bekerja' : 'Terima Kasih, Selamat beristirahat';
+    $keteranganTerlambat = '';
+
+    if ($jenisAbsen === 'masuk' && $jamMasukKerja !== null) {
+        $jamMasukTerjadwal = Carbon::parse($jamMasukKerja);
+
+        if ($waktuAbsen->gt($jamMasukTerjadwal)) {
+            $totalMenitTerlambat = $jamMasukTerjadwal->diffInMinutes($waktuAbsen);
+            $jamTerlambat = intdiv($totalMenitTerlambat, 60);
+            $menitTerlambat = $totalMenitTerlambat % 60;
+            $keteranganTerlambat = "\nKeterlambatan : {$jamTerlambat} Jam {$menitTerlambat} Menit";
+        }
+    }
 
     return "Selamat {$kondisi}, {$namaKaryawan}\n"
-        . "Anda sudah melakukan absen {$jenisAbsen} : " . $waktuAbsen->format('d-m-Y H:i') . "\n\n"
+        . "Anda sudah melakukan absen {$jenisAbsen} : " . $waktuAbsen->format('d-m-Y H:i')
+        . $keteranganTerlambat . "\n\n"
         . "Sudah berhasil kami terima,\n\n"
         . "_Mohon dapat di simpan Nomor Whatsapp ini agar tidak terjadi kendala kembali_\n\n"
         . $penutup;

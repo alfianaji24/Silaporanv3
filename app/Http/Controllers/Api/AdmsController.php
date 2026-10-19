@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Models\Karyawan;
 use App\Models\Presensi;
@@ -643,16 +644,13 @@ class AdmsController extends Controller
                                 $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 1, 'Berhasil buat absen masuk baru');
                             }
 
-                            // Send WA
-                            if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
-                                try {
-                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'masuk', $jam_presensi);
-                                    dispatch(new SendWaMessage($karyawan->no_hp, $message));
-                                    Log::info('WA masuk queued');
-                                } catch (\Exception $waException) {
-                                    Log::error('WA Error', ['nik' => $karyawan->nik, 'error' => $waException->getMessage()]);
-                                }
-                            }
+                            $message = buatPesanNotifikasiAbsen(
+                                $karyawan->nama_karyawan,
+                                'masuk',
+                                $jam_presensi,
+                                $jam_masuk_string
+                            );
+                            $this->queueAttendanceWaOnce($karyawan, $generalsetting, $tanggal_presensi, 'masuk', $message);
                         } catch (\Throwable $e) { // Ubah jadi Throwable agar bisa tangkap Error juga
                             Log::error('Gagal simpan absen masuk ADMS', ['nik' => $karyawan->nik, 'error' => $e->getMessage()]);
                             $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 0, 'Gagal simpan absen masuk: ' . $e->getMessage());
@@ -685,17 +683,9 @@ class AdmsController extends Controller
                             $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 1, 'Berhasil buat absen pulang baru');
                         }
 
-                        // Send WA
-                        if ($karyawan->no_hp != null || $karyawan->no_hp != "" && $generalsetting->notifikasi_wa == 1) {
-                            // Kita hanya kirim notif pulang jika ini adalah update pertama jam out hari ini
-                            if ($presensi_hariini == null || $presensi_hariini->jam_out == null) {
-                                try {
-                                    $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
-                                    dispatch(new SendWaMessage($karyawan->no_hp, $message));
-                                } catch (\Exception $waException) {
-                                    Log::error('WA Error', ['nik' => $karyawan->nik, 'error' => $waException->getMessage()]);
-                                }
-                            }
+                        if ($presensi_hariini == null || $presensi_hariini->jam_out == null) {
+                            $message = buatPesanNotifikasiAbsen($karyawan->nama_karyawan, 'pulang', $jam_presensi);
+                            $this->queueAttendanceWaOnce($karyawan, $generalsetting, $tanggal_presensi, 'pulang', $message);
                         }
                     } catch (\Exception $e) {
                         Log::error('Gagal simpan absen pulang ADMS', ['nik' => $karyawan->nik, 'error' => $e->getMessage()]);
@@ -708,6 +698,37 @@ class AdmsController extends Controller
         } else {
             Log::info('Karyawan ADMS Fingerprint Tidak Ditemukan', ['pin' => $pin]);
             $this->recordLogMesin($pin, $scan, $normalized_status, $mesin ? $mesin->id : null, 0, 'Karyawan tidak ditemukan');
+        }
+    }
+
+    private function queueAttendanceWaOnce(Karyawan $karyawan, $generalsetting, string $tanggalPresensi, string $jenisAbsen, string $message): void
+    {
+        if (($generalsetting->notifikasi_wa ?? 0) != 1 || empty($karyawan->no_hp)) {
+            return;
+        }
+
+        $cacheKey = "fingerprint-wa:{$karyawan->nik}:{$tanggalPresensi}:{$jenisAbsen}";
+
+        try {
+            if (!Cache::add($cacheKey, true, now()->addDays(2))) {
+                Log::info('Notifikasi WA fingerprint duplikat diabaikan', [
+                    'nik' => $karyawan->nik,
+                    'tanggal' => $tanggalPresensi,
+                    'jenis_absen' => $jenisAbsen,
+                ]);
+                return;
+            }
+
+            dispatch(new SendWaMessage($karyawan->no_hp, $message));
+            Log::info("WA {$jenisAbsen} queued", ['nik' => $karyawan->nik]);
+        } catch (\Throwable $exception) {
+            Cache::forget($cacheKey);
+            Log::error('Gagal mengantrekan notifikasi WA fingerprint', [
+                'nik' => $karyawan->nik,
+                'tanggal' => $tanggalPresensi,
+                'jenis_absen' => $jenisAbsen,
+                'error' => $exception->getMessage(),
+            ]);
         }
     }
 
