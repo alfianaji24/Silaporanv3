@@ -19,11 +19,11 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-barcode text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="kode_cabang" 
-                               name="kode_cabang" 
-                               maxlength="3" 
-                               placeholder="Contoh: TSM" 
+                        <input type="text"
+                               id="kode_cabang"
+                               name="kode_cabang"
+                               maxlength="3"
+                               placeholder="Contoh: BLJ"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition uppercase">
                     </div>
@@ -43,11 +43,11 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-building text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="nama_cabang" 
-                               name="nama_cabang" 
-                               maxlength="50" 
-                               placeholder="Contoh: TASIKMALAYA" 
+                        <input type="text"
+                               id="nama_cabang"
+                               name="nama_cabang"
+                               maxlength="50"
+                               placeholder="Contoh: TANGERANG"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-bold uppercase tracking-wide text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -69,11 +69,11 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-map-pin text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="alamat_cabang" 
-                               name="alamat_cabang" 
-                               maxlength="100" 
-                               placeholder="Contoh: Jln. Perintis Kemerdekaan No. 80" 
+                        <input type="text"
+                               id="alamat_cabang"
+                               name="alamat_cabang"
+                               maxlength="100"
+                               placeholder="Contoh: Jl. Raya Serang KM24"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -88,11 +88,11 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-phone text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="telepon_cabang" 
-                               name="telepon_cabang" 
-                               maxlength="13" 
-                               placeholder="Contoh: 0265311766" 
+                        <input type="text"
+                               id="telepon_cabang"
+                               name="telepon_cabang"
+                               maxlength="13"
+                               placeholder="Contoh: 021.........."
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs font-mono text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -117,13 +117,13 @@
                     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                         <i class="ti ti-search text-base"></i>
                     </span>
-                    <input type="text" 
-                           id="searchLocationV2" 
-                           placeholder="Cari nama tempat / kota (misal: Tasikmalaya, Jawa Barat)..." 
+                    <input type="text"
+                           id="searchLocationV2"
+                           placeholder="Cari nama tempat / kota (misal: Tangerang, Banten)..."
                            class="w-full h-9 pl-10 pr-3 text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition">
                 </div>
-                <button type="button" 
-                        id="btnSearchLocationV2" 
+                <button type="button"
+                        id="btnSearchLocationV2"
                         class="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer">
                     <i class="ti ti-search text-xs"></i>
                     <span>Cari</span>
@@ -146,11 +146,11 @@
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-rose-500 pointer-events-none flex items-center">
                             <i class="ti ti-location-filled text-sm"></i>
                         </span>
-                        <input type="text" 
-                               id="lokasi_cabang" 
-                               name="lokasi_cabang" 
-                               value="-7.317623,108.199358" 
-                               readonly 
+                        <input type="text"
+                               id="lokasi_cabang"
+                               name="lokasi_cabang"
+                               value="-7.317623,108.199358"
+                               readonly
                                class="w-full h-10 pl-8 pr-3 text-xs font-mono font-bold text-slate-800 bg-slate-100 border border-slate-300 rounded-xl outline-none"
                                required>
                     </div>
@@ -165,13 +165,13 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-radar text-base text-emerald-600"></i>
                         </span>
-                        <input type="number" 
-                               id="radius_cabang" 
-                               name="radius_cabang" 
-                               value="30" 
-                               min="1" 
-                               max="9999" 
-                               placeholder="30" 
+                        <input type="number"
+                               id="radius_cabang"
+                               name="radius_cabang"
+                               value="30"
+                               min="1"
+                               max="9999"
+                               placeholder="30"
                                class="w-full h-10 pl-10 pr-3 text-xs font-bold text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition"
                                required>
                     </div>
@@ -186,8 +186,8 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-clock text-base"></i>
                         </span>
-                        <select name="timezone" 
-                                id="timezone" 
+                        <select name="timezone"
+                                id="timezone"
                                 class="w-full h-10 pl-10 pr-3 text-xs font-bold text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition"
                                 required>
                             <option value="Asia/Jakarta" @selected(($defaultTimezone ?? 'Asia/Jakarta') == 'Asia/Jakarta')>Asia/Jakarta (WIB)</option>
@@ -207,13 +207,13 @@
 
     <!-- Action Buttons -->
     <div class="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
-        <button type="button" 
-                class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition active:scale-95 cursor-pointer" 
+        <button type="button"
+                class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition active:scale-95 cursor-pointer"
                 data-bs-dismiss="modal">
             Batal
         </button>
-        <button type="submit" 
-                id="btnSubmitCabangV2" 
+        <button type="submit"
+                id="btnSubmitCabangV2"
                 class="px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-md flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
                 style="background: linear-gradient(135deg, var(--theme-color-1, #0a5c41), var(--theme-color-2, #117956));">
             <i class="ti ti-device-floppy text-sm"></i>
