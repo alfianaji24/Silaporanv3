@@ -62,10 +62,10 @@ $userPhoto = getfotoKaryawan($sidebarKaryawan->foto);
             @endif
             <div class="flex flex-col min-w-0">
                 <span class="font-extrabold text-[15px] text-white tracking-tight leading-tight truncate">
-                    {{ $general_setting->nama_aplikasi ?? 'GAWE' }}
+                    {{ $general_setting->nama_aplikasi ?? 'AAW' }}
                 </span>
                 <span class="text-[9.5px] font-semibold text-white/65 tracking-wider truncate leading-tight uppercase mt-0.5">
-                    {{ $general_setting->nama_perusahaan ?? 'HRMS & Presensi' }}
+                    {{ $general_setting->nama_perusahaan ?? 'HRIS' }}
                 </span>
             </div>
         </a>
