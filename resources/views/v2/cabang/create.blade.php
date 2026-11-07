@@ -73,7 +73,7 @@
                                id="alamat_cabang"
                                name="alamat_cabang"
                                maxlength="100"
-                               placeholder="Contoh: Jl. Raya Serang KM24"
+                               placeholder="Contoh: Jl. Raya Serang KM.24"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>

@@ -20,11 +20,11 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-barcode text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="kode_cabang_edit" 
-                               name="kode_cabang" 
+                        <input type="text"
+                               id="kode_cabang_edit"
+                               name="kode_cabang"
                                value="{{ $cabang->kode_cabang }}"
-                               readonly 
+                               readonly
                                class="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-300 rounded-xl outline-none cursor-not-allowed">
                     </div>
                 </div>
@@ -38,12 +38,12 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-building text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="nama_cabang_edit" 
-                               name="nama_cabang" 
+                        <input type="text"
+                               id="nama_cabang_edit"
+                               name="nama_cabang"
                                value="{{ $cabang->nama_cabang }}"
-                               maxlength="50" 
-                               placeholder="Contoh: TASIKMALAYA" 
+                               maxlength="50"
+                               placeholder="Contoh: TANGERANG"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm font-bold uppercase tracking-wide text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -65,12 +65,12 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-map-pin text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="alamat_cabang_edit" 
-                               name="alamat_cabang" 
+                        <input type="text"
+                               id="alamat_cabang_edit"
+                               name="alamat_cabang"
                                value="{{ $cabang->alamat_cabang }}"
-                               maxlength="100" 
-                               placeholder="Contoh: Jln. Perintis Kemerdekaan No. 80" 
+                               maxlength="100"
+                               placeholder="Contoh: Jl. Raya Serang KM.24"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -85,12 +85,12 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-phone text-base"></i>
                         </span>
-                        <input type="text" 
-                               id="telepon_cabang_edit" 
-                               name="telepon_cabang" 
+                        <input type="text"
+                               id="telepon_cabang_edit"
+                               name="telepon_cabang"
                                value="{{ $cabang->telepon_cabang }}"
-                               maxlength="13" 
-                               placeholder="Contoh: 0265311766" 
+                               maxlength="13"
+                               placeholder="Contoh: 0265311766"
                                autocomplete="off"
                                class="w-full h-10 pl-10 pr-3.5 text-xs font-mono text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition">
                     </div>
@@ -115,13 +115,13 @@
                     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                         <i class="ti ti-search text-base"></i>
                     </span>
-                    <input type="text" 
-                           id="searchLocationEditV2" 
-                           placeholder="Cari nama tempat / kota (misal: Tasikmalaya, Jawa Barat)..." 
+                    <input type="text"
+                           id="searchLocationEditV2"
+                           placeholder="Cari nama tempat / kota (misal: Tangerang, Banten)..."
                            class="w-full h-9 pl-10 pr-3 text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition">
                 </div>
-                <button type="button" 
-                        id="btnSearchLocationEditV2" 
+                <button type="button"
+                        id="btnSearchLocationEditV2"
                         class="h-9 px-3.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer">
                     <i class="ti ti-search text-xs"></i>
                     <span>Cari</span>
@@ -144,11 +144,11 @@
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-rose-500 pointer-events-none flex items-center">
                             <i class="ti ti-location-filled text-sm"></i>
                         </span>
-                        <input type="text" 
-                               id="lokasi_cabang_edit" 
-                               name="lokasi_cabang" 
-                               value="{{ $cabang->lokasi_cabang }}" 
-                               readonly 
+                        <input type="text"
+                               id="lokasi_cabang_edit"
+                               name="lokasi_cabang"
+                               value="{{ $cabang->lokasi_cabang }}"
+                               readonly
                                class="w-full h-10 pl-8 pr-3 text-xs font-mono font-bold text-slate-800 bg-slate-100 border border-slate-300 rounded-xl outline-none"
                                required>
                     </div>
@@ -163,13 +163,13 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-radar text-base text-emerald-600"></i>
                         </span>
-                        <input type="number" 
-                               id="radius_cabang_edit" 
-                               name="radius_cabang" 
-                               value="{{ $cabang->radius_cabang }}" 
-                               min="1" 
-                               max="9999" 
-                               placeholder="30" 
+                        <input type="number"
+                               id="radius_cabang_edit"
+                               name="radius_cabang"
+                               value="{{ $cabang->radius_cabang }}"
+                               min="1"
+                               max="9999"
+                               placeholder="30"
                                class="w-full h-10 pl-10 pr-3 text-xs font-bold text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition"
                                required>
                     </div>
@@ -184,8 +184,8 @@
                         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none flex items-center">
                             <i class="ti ti-clock text-base"></i>
                         </span>
-                        <select name="timezone" 
-                                id="timezone_edit" 
+                        <select name="timezone"
+                                id="timezone_edit"
                                 class="w-full h-10 pl-10 pr-3 text-xs font-bold text-slate-800 bg-white border border-slate-300 rounded-xl focus:border-emerald-500 outline-none transition"
                                 required>
                             <option value="Asia/Jakarta" @selected(($cabang->timezone ?? $defaultTimezone ?? 'Asia/Jakarta') == 'Asia/Jakarta')>Asia/Jakarta (WIB)</option>
@@ -205,13 +205,13 @@
 
     <!-- Action Buttons -->
     <div class="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-100">
-        <button type="button" 
-                class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition active:scale-95 cursor-pointer" 
+        <button type="button"
+                class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition active:scale-95 cursor-pointer"
                 data-bs-dismiss="modal">
             Batal
         </button>
-        <button type="submit" 
-                id="btnSubmitCabangEditV2" 
+        <button type="submit"
+                id="btnSubmitCabangEditV2"
                 class="px-5 py-2.5 text-xs font-bold text-white rounded-xl shadow-md flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
                 style="background: linear-gradient(135deg, var(--theme-color-1, #0a5c41), var(--theme-color-2, #117956));">
             <i class="ti ti-device-floppy text-sm"></i>

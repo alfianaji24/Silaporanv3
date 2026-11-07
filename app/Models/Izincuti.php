@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ApprovalLayer;
+use App\Services\ApprovalService;
 
 class Izincuti extends Model
 {
@@ -21,20 +21,13 @@ class Izincuti extends Model
 
     public function getNextApprovalLayer()
     {
-        // Asumsi Feature Code untuk model ini adalah 'IZIN'
-        $nextLevel = $this->approval_step;
-        
-        $kode_dept = $this->kode_dept ?? null;
-
-        $layer = ApprovalLayer::where('feature', 'IZIN')
-            ->where('level', $nextLevel)
-            ->where(function ($q) use ($kode_dept) {
-                $q->where('kode_dept', $kode_dept)
-                  ->orWhereNull('kode_dept');
-            })
-            ->first();
-
-        return $layer;
+        return app(ApprovalService::class)->getLayer(
+            'IZIN',
+            $this->approval_step,
+            $this->kode_dept ?? null,
+            $this->kode_jabatan ?? null,
+            $this->kode_cabang ?? null
+        );
     }
 
     protected static function booted()

@@ -61,7 +61,7 @@ class IzincutiController extends Controller
             }
         }
         
-        $qcuti->select('presensi_izincuti.*', 'karyawan.nama_karyawan', 'karyawan.nik_show', 'karyawan.foto', 'jabatan.nama_jabatan', 'departemen.nama_dept', 'cabang.nama_cabang', 'cuti.jenis_cuti', 'cuti.jumlah_hari as jatah_cuti_max', 'presensi_izincuti.keterangan as alasan_cuti');
+        $qcuti->select('presensi_izincuti.*', 'karyawan.nama_karyawan', 'karyawan.nik_show', 'karyawan.foto', 'karyawan.kode_cabang', 'karyawan.kode_dept', 'karyawan.kode_jabatan', 'jabatan.nama_jabatan', 'departemen.nama_dept', 'cabang.nama_cabang', 'cuti.jenis_cuti', 'cuti.jumlah_hari as jatah_cuti_max', 'presensi_izincuti.keterangan as alasan_cuti');
         if (!empty($request->dari) && !empty($request->sampai)) {
             $qcuti->whereBetween('presensi_izincuti.dari', [$request->dari, $request->sampai]);
         }
@@ -425,7 +425,7 @@ class IzincutiController extends Controller
             ->join('departemen', 'karyawan.kode_dept', '=', 'departemen.kode_dept')
             ->join('cabang', 'karyawan.kode_cabang', '=', 'cabang.kode_cabang')
             ->join('cuti', 'presensi_izincuti.kode_cuti', '=', 'cuti.kode_cuti')
-            ->select('presensi_izincuti.*', 'karyawan.nama_karyawan', 'karyawan.nik_show', 'karyawan.foto', 'jabatan.nama_jabatan', 'departemen.nama_dept', 'cabang.nama_cabang', 'cuti.jenis_cuti', 'cuti.jumlah_hari as jatah_cuti_max')
+            ->select('presensi_izincuti.*', 'karyawan.nama_karyawan', 'karyawan.nik_show', 'karyawan.foto', 'karyawan.kode_cabang', 'karyawan.kode_dept', 'jabatan.nama_jabatan', 'departemen.nama_dept', 'cabang.nama_cabang', 'cuti.jenis_cuti', 'cuti.jumlah_hari as jatah_cuti_max')
             ->first();
         
         // Cek akses jika bukan super admin
